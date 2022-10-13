@@ -1,0 +1,9 @@
+---
+
+files_path: /root
+
+booksonic_path: /media/appdata/booksonic_config
+nextcloud_path: /media/appdata/nextcloud_config
+transmission_openvpn_path: /media/appdata/transmission_openvpn_config
+transmission_config_path: /media/appdata/transmission_config
+podcast_tagger_search_path: /media/shares/Audio/Podcasts

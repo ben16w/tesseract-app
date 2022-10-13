@@ -1,0 +1,89 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - dashboard_apps is not none
+      - dashboard_admin_apps is not none
+
+- name: Download Homer archive.
+  ansible.builtin.get_url:
+    url: https://github.com/bastienwirtz/homer/releases/latest/download/homer.zip
+    dest: /tmp/homer.zip
+    mode: 0744
+    owner: root
+    group: root
+
+- name: Change file ownership, group and permissions
+  ansible.builtin.file:
+    path: /opt/homer
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Change file ownership, group and permissions
+  ansible.builtin.file:
+    path: /opt/homer/web
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Extract Homer archive into /opt/homer/web.
+  ansible.builtin.unarchive:
+    src: /tmp/homer.zip
+    dest: /opt/homer/web
+    remote_src: true
+    creates: /opt/homer/web/index.html
+
+- name: Template server.py.
+  notify: restart homer
+  ansible.builtin.template:
+    src: templates/server.py.j2
+    dest: /opt/homer/server.py
+    force: true
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Git checkout
+  ansible.builtin.git:
+    repo: https://github.com/WalkxCode/dashboard-icons
+    dest: /tmp/dashboard-icons
+    version: HEAD
+
+- name: Copy file with owner and permissions
+  ansible.builtin.copy:
+    src: /tmp/dashboard-icons/png/
+    dest: /opt/homer/web/assets/tools
+    remote_src: true
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Template a file to config.yml
+  notify: restart homer
+  ansible.builtin.template:
+    src: templates/config.yml.j2
+    dest: /opt/homer/web/assets/config.yml
+    force: true
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Put homer systemd file into place.
+  notify: restart homer
+  template:
+    src: homer.service.j2
+    dest: /etc/systemd/system/homer.service
+    force: true
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Make sure homer service unit is running and enabled.
+  ansible.builtin.systemd:
+    state: started
+    name: homer
+    enabled: true

@@ -1,0 +1,7 @@
+---
+
+- name: restart homer
+  ansible.builtin.systemd:
+    state: restarted
+    name: homer
+    

@@ -1,0 +1,38 @@
+---
+
+- name: Add an Apt signing key for vagrant. 
+  ansible.builtin.apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- name: Add vagrant repository into sources list
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+    state: present
+    update_cache: true
+
+- name: Install vagrant.
+  ansible.builtin.apt:
+    pkg:
+      - vagrant
+
+- name: Add an Apt signing key for virtualbox. 
+  ansible.builtin.apt_key:
+    url: https://www.virtualbox.org/download/oracle_vbox.asc
+    state: present
+
+- name: Add an Apt signing key for 2016 virtualbox. 
+  ansible.builtin.apt_key:
+    url: https://www.virtualbox.org/download/oracle_vbox_2016.asc
+    state: present
+
+- name: Add virtualbox repository into sources list
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib"
+    state: present
+    update_cache: true
+
+- name: Install virtualbox 6.1.
+  ansible.builtin.apt:
+    pkg:
+      - virtualbox-6.1

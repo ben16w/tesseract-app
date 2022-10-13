@@ -1,0 +1,37 @@
+---
+
+- name: Add an Apt signing key for syncthing. 
+  ansible.builtin.apt_key:
+    url: https://syncthing.net/release-key.gpg
+    state: present
+
+- name: Add syncthing repository into sources list
+  ansible.builtin.apt_repository:
+    repo: deb https://apt.syncthing.net/ syncthing stable
+    state: present
+    update_cache: true
+
+- name: Install syncthing.
+  ansible.builtin.apt:
+    pkg:
+      - syncthing
+
+- name: Start syncthing service.
+  ansible.builtin.service:
+    name: syncthing@{{ tesseract_username }}.service
+    enabled: true
+    state: started
+
+- name: Open syncthing GUI to all.
+  lineinfile:
+    path: /home/{{ tesseract_username }}/.config/syncthing/config.xml
+    search_string: <address>127.0.0.1:8384</address>
+    line: "<address>0.0.0.0:{{syncthing_port }}</address>"
+    owner: "{{ tesseract_username }}"
+    group: "{{ tesseract_username }}"
+    mode: 0600
+  notify: restart syncthing 
+
+# after "<gui"
+#           <user>tesseract</user>
+#         <password>$2a$10$wV15kHDSY.b07cAlaWSy0uJJHiGXBW9e8Qh.GrNF4.LldK99.CxUC</password> # password is tesseract

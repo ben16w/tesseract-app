@@ -1,0 +1,7 @@
+---
+
+- name: Restart syncthing service.
+  ansible.builtin.service:
+    name: syncthing@{{ tesseract_username }}.service
+    state: restarted
+  listen: restart syncthing

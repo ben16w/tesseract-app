@@ -1,0 +1,28 @@
+---
+
+docker_compose_repo: https://github.com/ben16w/tesseract-docker.git
+
+docker_apps: []
+
+shares_path: "/media/shares"
+appdata_path: "/media/appdata"
+
+docker_user: "tesseract"
+
+docker_default_username: "ben"
+docker_default_password: "password"
+docker_tz: "Europe/London"
+domain: ~
+email_username: ~
+email_host: ~
+email_port: ~
+email_password: ~
+docker_sql_password: ~
+#inventory_hostname: ""?
+#uid: ""?
+#gid?: ""?
+
+docker_extra_vars: {}
+  # example_name: "example_value"
+
+files_path: "/root"

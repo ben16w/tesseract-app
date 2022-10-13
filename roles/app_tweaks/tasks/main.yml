@@ -1,0 +1,102 @@
+---
+
+- name: Check if Booksonic config path exists.
+  ansible.builtin.stat:
+    path: "{{ booksonic_path }}"
+  register: booksonic_exists
+
+- name: Install music-tag using pip.
+  pip:
+    name:
+      - music-tag
+  when: booksonic_exists.stat.exists
+
+- name: Create scripts directory if it does not exist.
+  ansible.builtin.file:
+    path: "{{ files_path }}/scripts"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+  when: booksonic_exists.stat.exists
+
+- name: Copy podcast_tagger.py.
+  ansible.builtin.template:
+    src: templates/podcast_tagger.py.j2
+    dest: "{{ files_path }}/scripts/podcast_tagger.py"
+    owner: root
+    group: root
+    mode: 0755
+  when: booksonic_exists.stat.exists
+
+- name: Add cron job for podcast_tagger script.
+  ansible.builtin.cron:
+    name: "Podcast tagger."
+    minute: "0"
+    hour: "0"
+    weekday: "*"
+    job: "python3 {{ files_path }}/scripts/podcast_tagger.py"
+  when: booksonic_exists.stat.exists
+
+- name: Check if Nextcloud config path exists.
+  ansible.builtin.stat:
+    path: "{{ nextcloud_path }}"
+  register: nextcloud_exists
+
+- name: Add cron job to run Nextcloud system cron.php once every 10 minutes.
+  ansible.builtin.cron:
+    name: "Update Nextcloud system cron.php once every 10 minutes."
+    minute: "*/30"
+    job: "docker exec -u {{ created_tesseract_user.uid }} nextcloud php cron.php"
+  when: nextcloud_exists.stat.exists
+
+# Transmission
+
+- name: Check if Transmission config path exists.
+  ansible.builtin.stat:
+    path: "{{ transmission_openvpn_path }}"
+  register: transmission_exists
+
+- name: Put all OpenVPN configuration into place.
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ transmission_openvpn_path }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+    force: true
+  with_items: 
+    - { src: ca.crt, dest: ca.crt }
+    - { src: client.crt, dest: client.crt }
+    - { src: client.key, dest: client.key }
+    - { src: openvpn.ovpn, dest: default.ovpn }
+  when: transmission_exists.stat.exists
+
+# Templates would be better but directrly extracting from cyberghost zip into files directory would no longer be supported.
+- name: Edit openvpn config.
+  lineinfile:
+    path: "{{ transmission_openvpn_path }}/default.ovpn"
+    search_string: "{{ item.search }}"
+    line: "{{ item.line }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - { search: auth-user-pass, line: auth-user-pass /etc/openvpn/custom/openvpn-credentials.txt }
+    - { search: ca, line: ca /etc/openvpn/custom/ca.crt }
+    - { search: cert, line: cert /etc/openvpn/custom/client.crt }
+    - { search: key, line: key /etc/openvpn/custom/client.key }
+  when: transmission_exists.stat.exists
+
+- name: Creating credentials file.
+  ansible.builtin.copy:
+    dest: "{{ transmission_config_path }}/openvpn-credentials.txt"
+    content: |
+      {{ transmission_username }}
+      {{ transmission_password }}
+    owner: root
+    group: root
+    mode: 0644
+  when: transmission_exists.stat.exists
+
+# Change openvpn file permission so other users can't see it

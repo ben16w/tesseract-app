@@ -1,0 +1,118 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - docker_domain is not none
+      - docker_email_username is not none
+      - docker_email_host is not none
+      - docker_email_port is not none
+      - docker_email_password is not none
+      - docker_sql_password is not none
+
+- name: Ensure tesseract user exists.
+  register: created_tesseract_user
+  ansible.builtin.user:
+    name: "{{ tesseract_username }}"
+
+- name: Make sure shares path exists.
+  ansible.builtin.file:
+    path: "{{ shares_path }}"
+    state: directory
+    mode: 0755
+
+- name: Make sure appdata path exists.
+  ansible.builtin.file:
+    path: "{{ appdata_path }}"
+    state: directory
+    mode: 0755
+
+- name: Download docker install script.
+  ansible.builtin.get_url:
+    url: https://get.docker.com
+    dest: /tmp/docker_install.sh
+    mode: 0744
+
+- name: Install docker. # Won't update
+  ansible.builtin.command:
+    cmd: bash /tmp/docker_install.sh
+    creates: /usr/bin/docker
+
+- name: Ensure docker has started.
+  ansible.builtin.service:
+    name: docker
+    state: started
+
+- name: Install docker-compose.
+  ansible.builtin.pip:
+    name:
+      - docker-compose
+
+- name: Create docker directory if it does not exist.
+  ansible.builtin.file:
+    path: "{{ files_path }}/docker"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when: docker_apps | length > 0
+
+- name: Git checkout docker compose files to docker directory.
+  ansible.builtin.git:
+    repo: "{{ docker_compose_repo }}"
+    dest: "{{ files_path }}/docker"
+    version: main
+
+- name: Set environment variables for docker.
+  no_log: true
+  ansible.builtin.blockinfile:
+    path: "{{ files_path }}/docker/.env"
+    create: true
+    owner: root
+    group: root
+    mode: 0600
+    block: |
+      TES_SHARES_PATH="{{ shares_path }}"
+      TES_APPDATA_PATH="{{ appdata_path }}"
+      TES_USERNAME="{{ tesseract_username }}"
+      TES_EMAIL_USERNAME="{{ email_username }}"
+      TES_EMAIL_HOST="{{ email_host }}"
+      TES_EMAIL_PORT="{{ email_port }}"
+      TES_EMAIL_PASSORD="{{ email_password }}"
+      TES_HOSTNAME="{{ inventory_hostname }}"
+      TES_DOMAIN="{{ domain }}"
+      TES_SQL_PASSWORD="{{ docker_sql_password }}"
+      TES_TZ="{{ docker_tz }}"
+      TES_UID="{{ created_tesseract_user.uid }}"
+      TES_GID="{{ created_tesseract_user.group }}"
+      TES_DOCKER_USERNAME="{{ docker_default_username }}"
+      TES_DOCKER_PASSWORD="{{ docker_default_password }}"
+
+- name: Add extra docker environment variables.
+  no_log: true
+  with_items: "{{ docker_extra_vars | dict2items }}"
+  ansible.builtin.lineinfile:
+    path: "{{ files_path }}/docker/.env"
+    search_string: TES_{{ item.key | upper }}=
+    create: true
+    owner: root
+    group: root
+    mode: 0600
+    line: "TES_{{ item.key | upper }}=\"{{ item.value }}\""
+
+- name: Initialize an empty list for Docker compose files.
+  set_fact:
+    docker_compose_list: []
+
+- name: Generate list of Docker compose files.
+  ansible.builtin.set_fact:
+    docker_compose_list: "{{ docker_compose_list + [ 'docker-compose.' + item + '.yml' ] }}"
+  with_items: "{{ docker_apps }}"
+
+- name: Create and start Docker apps.
+  community.docker.docker_compose:
+    project_src: "{{ files_path }}/docker"
+    files: "{{ docker_compose_list }}" 
+    project_name: tesseract
+    remove_orphans: true
+  when: docker_apps | length > 0
