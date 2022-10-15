@@ -30,12 +30,16 @@
 
 # Homepage configuration
 
-title: "Ben's dashboard"
-subtitle: "Home"
-logo: "logo.png"
+title: "Ben's Dashboard"
+subtitle: "Homer"
+#logo: "logo.png"
 
 header: true
 footer: false
+
+defaults:
+  layout: columns
+  colorTheme: auto
 
 theme: default
 colors:
@@ -77,7 +81,7 @@ services:
 {% endfor %}
 
   - name: "Admin"
-    icon: "fas fa-cloud"
+    icon: "fa-solid fa-screwdriver-wrench"
     items:
 
 {% for admin_app in dashboard_admin_apps %}
