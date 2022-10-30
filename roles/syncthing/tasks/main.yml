@@ -23,7 +23,7 @@
     state: started
 
 - name: Open syncthing GUI to all.
-  nsible.builtin.lineinfile:
+  ansible.builtin.lineinfile:
     path: /home/{{ tesseract_username }}/.config/syncthing/config.xml
     search_string: <address>127.0.0.1:8384</address>
     line: "<address>0.0.0.0:{{syncthing_port }}</address>"
