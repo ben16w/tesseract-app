@@ -74,7 +74,7 @@
 
 - name: Put homer systemd file into place.
   notify: restart homer
-  template:
+  ansible.builtin.template:
     src: homer.service.j2
     dest: /etc/systemd/system/homer.service
     force: true

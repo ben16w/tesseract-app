@@ -18,9 +18,9 @@ email_host: ~
 email_port: ~
 email_password: ~
 docker_sql_password: ~
-#inventory_hostname: ""?
-#uid: ""?
-#gid?: ""?
+# inventory_hostname: ""?
+# uid: ""?
+# gid?: ""?
 
 docker_extra_vars: {}
   # example_name: "example_value"

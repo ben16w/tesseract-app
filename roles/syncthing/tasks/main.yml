@@ -1,6 +1,6 @@
 ---
 
-- name: Add an Apt signing key for syncthing. 
+- name: Add an Apt signing key for syncthing.
   ansible.builtin.apt_key:
     url: https://syncthing.net/release-key.gpg
     state: present
@@ -23,14 +23,14 @@
     state: started
 
 - name: Open syncthing GUI to all.
-  lineinfile:
+  nsible.builtin.lineinfile:
     path: /home/{{ tesseract_username }}/.config/syncthing/config.xml
     search_string: <address>127.0.0.1:8384</address>
     line: "<address>0.0.0.0:{{syncthing_port }}</address>"
     owner: "{{ tesseract_username }}"
     group: "{{ tesseract_username }}"
     mode: 0600
-  notify: restart syncthing 
+  notify: restart syncthing
 
 # after "<gui"
 #           <user>tesseract</user>

@@ -1,6 +1,11 @@
 ---
 
-- hosts: all
+- name: Run roles.
+  hosts: all
   become: true
   roles:
+      - {role: 'app_tweaks', tags: 'app_tweaks'}
       - {role: 'dashboard', tags: 'dashboard'}
+      - {role: 'docker', tags: 'docker'}
+      - {role: 'syncthing', tags: 'syncthing'}
+      - {role: 'vagrant', tags: 'vagrant'}

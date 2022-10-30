@@ -1,7 +1,7 @@
 ---
 
-- name: restart homer
+- name: Restart Homer.
+  listen: restart homer
   ansible.builtin.systemd:
     state: restarted
     name: homer
-    

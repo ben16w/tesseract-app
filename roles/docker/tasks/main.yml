@@ -101,7 +101,7 @@
     line: "TES_{{ item.key | upper }}=\"{{ item.value }}\""
 
 - name: Initialize an empty list for Docker compose files.
-  set_fact:
+  ansible.builtin.set_fact:
     docker_compose_list: []
 
 - name: Generate list of Docker compose files.
@@ -112,7 +112,7 @@
 - name: Create and start Docker apps.
   community.docker.docker_compose:
     project_src: "{{ files_path }}/docker"
-    files: "{{ docker_compose_list }}" 
+    files: "{{ docker_compose_list }}"
     project_name: tesseract
     remove_orphans: true
   when: docker_apps | length > 0
