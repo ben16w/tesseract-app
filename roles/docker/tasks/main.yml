@@ -62,6 +62,7 @@
     repo: "{{ docker_compose_repo }}"
     dest: "{{ files_path }}/docker"
     version: main
+    force: true
 
 - name: Set environment variables for docker.
   no_log: true
