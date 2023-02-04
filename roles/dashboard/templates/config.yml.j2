@@ -30,8 +30,8 @@
 
 # Homepage configuration
 
-title: "Ben's Dashboard"
-subtitle: "Homer"
+title: "{{ dashboard_title }}"
+subtitle: ""
 #logo: "logo.png"
 
 header: true
@@ -44,9 +44,9 @@ defaults:
 theme: default
 colors:
   light:
-    highlight-primary: "#3367d6"
-    highlight-secondary: "#3367d6"
-    highlight-hover: "#5a95f5"
+    highlight-primary: "{{ dashboard_highlight_colour }}"
+    highlight-secondary: "{{ dashboard_highlight_colour }}"
+    highlight-hover: "{{ dashboard_highlight_colour }}"
     background: "#f5f5f5"
     card-background: "#ffffff"
     text: "#363636"
@@ -54,12 +54,12 @@ colors:
     text-title: "#303030"
     text-subtitle: "#424242"
     card-shadow: rgba(0, 0, 0, 0.1)
-    link: "#3273dc"
+    link: "{{ dashboard_highlight_colour }}"
     link-hover: "#363636"
   dark:
-    highlight-primary: "#3367d6"
-    highlight-secondary: "#3367d6"
-    highlight-hover: "#5a95f5"
+    highlight-primary: "{{ dashboard_highlight_colour }}"
+    highlight-secondary: "{{ dashboard_highlight_colour }}"
+    highlight-hover: "{{ dashboard_highlight_colour }}"
     background: "#1a1a1a"
     card-background: "#2b2b2b"
     text: "#eaeaea"
@@ -67,7 +67,7 @@ colors:
     text-title: "#fafafa"
     text-subtitle: "#f5f5f5"
     card-shadow: rgba(0, 0, 0, 0.4)
-    link: "#3273dc"
+    link: "{{ dashboard_highlight_colour }}"
     link-hover: "#ffdd57"
 
 services:

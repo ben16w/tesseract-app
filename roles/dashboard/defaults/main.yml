@@ -5,3 +5,6 @@ dashboard_apps: ~
 dashboard_admin_apps: ~
 
 dashboard_port: 81
+
+dashboard_highlight_colour: "#3367d6"
+dashboard_title: "Dashboard"
