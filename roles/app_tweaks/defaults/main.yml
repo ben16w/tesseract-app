@@ -8,3 +8,4 @@ transmission_openvpn_download_url: ~
 transmission_openvpn_path: /media/appdata/transmission_openvpn_config
 transmission_config_path: /media/appdata/transmission_config
 podcast_tagger_search_path: /media/shares/Audio/Podcasts
+jenkins_config_path: /media/appdata/jenkins_config

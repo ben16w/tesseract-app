@@ -125,3 +125,28 @@
         mode: 0644
 
     # Change openvpn file permission so other users can't see it
+
+# Jenkins
+
+- name: Check if Transmission config path exists.
+  ansible.builtin.stat:
+    path: "{{ jenkins_config_path }}"
+  register: jenkins_exists
+
+- name: When Transmission config path exists.
+  when: jenkins_exists.stat.exists is true
+  block:
+
+    - name: Install common software.
+      ansible.builtin.apt:
+        pkg:
+          - default-jre
+
+    - name: Create a login user
+      ansible.builtin.user:
+        name: jenkins
+        generate_ssh_key: true
+        state: present
+        shell: /bin/bash
+        create_home: true
+        home: /home/jenkins
