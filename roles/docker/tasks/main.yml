@@ -3,12 +3,14 @@
 - name: Assert that all required inputs have been provided.
   ansible.builtin.assert:
     that:
-      - docker_domain is not none
-      - docker_email_username is not none
-      - docker_email_host is not none
-      - docker_email_port is not none
-      - docker_email_password is not none
+      - domain is not none
+      - docker_data_path is not none
+      - docker_appdata_path is not none
       - docker_sql_password is not none
+      - email_username is not none
+      - email_host is not none
+      - email_port is not none
+      - email_password is not none
 
 - name: Ensure tesseract user exists.
   register: created_tesseract_user
@@ -17,13 +19,13 @@
 
 - name: Make sure shares path exists.
   ansible.builtin.file:
-    path: "{{ shares_path }}"
+    path: "{{ docker_data_path }}"
     state: directory
     mode: 0755
 
 - name: Make sure appdata path exists.
   ansible.builtin.file:
-    path: "{{ appdata_path }}"
+    path: "{{ docker_appdata_path }}"
     state: directory
     mode: 0755
 
@@ -64,6 +66,7 @@
     version: main
     force: true
 
+# TES_SHARES_PATH needs changing to TES_DATA_PATH across all docker-compose files
 - name: Set environment variables for docker.
   no_log: true
   ansible.builtin.blockinfile:
@@ -73,8 +76,8 @@
     group: root
     mode: 0600
     block: |
-      TES_SHARES_PATH="{{ shares_path }}"
-      TES_APPDATA_PATH="{{ appdata_path }}"
+      TES_SHARES_PATH="{{ docker_data_path }}"
+      TES_APPDATA_PATH="{{ docker_appdata_path }}"
       TES_USERNAME="{{ tesseract_username }}"
       TES_EMAIL_USERNAME="{{ email_username }}"
       TES_EMAIL_HOST="{{ email_host }}"
@@ -107,7 +110,7 @@
 
 - name: Generate list of Docker compose files.
   ansible.builtin.set_fact:
-    docker_compose_list: "{{ docker_compose_list + [ 'docker-compose.' + item + '.yml' ] }}"
+    docker_compose_list: "{{ docker_compose_list + ['docker-compose.' + item + '.yml'] }}"
   with_items: "{{ docker_apps }}"
 
 - name: Create and start Docker apps.
