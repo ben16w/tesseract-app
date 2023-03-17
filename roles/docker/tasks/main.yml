@@ -66,7 +66,6 @@
     version: main
     force: true
 
-# TES_SHARES_PATH needs changing to TES_DATA_PATH across all docker-compose files
 - name: Set environment variables for docker.
   no_log: true
   ansible.builtin.blockinfile:
@@ -76,33 +75,33 @@
     group: root
     mode: 0600
     block: |
-      TES_SHARES_PATH="{{ docker_data_path }}"
-      TES_APPDATA_PATH="{{ docker_appdata_path }}"
-      TES_USERNAME="{{ tesseract_username }}"
-      TES_EMAIL_USERNAME="{{ email_username }}"
-      TES_EMAIL_HOST="{{ email_host }}"
-      TES_EMAIL_PORT="{{ email_port }}"
-      TES_EMAIL_PASSORD="{{ email_password }}"
-      TES_HOSTNAME="{{ inventory_hostname }}"
-      TES_DOMAIN="{{ domain }}"
-      TES_SQL_PASSWORD="{{ docker_sql_password }}"
-      TES_TZ="{{ docker_tz }}"
-      TES_UID="{{ created_tesseract_user.uid }}"
-      TES_GID="{{ created_tesseract_user.group }}"
-      TES_DOCKER_USERNAME="{{ docker_default_username }}"
-      TES_DOCKER_PASSWORD="{{ docker_default_password }}"
+      DOCKER_DATA_PATH="{{ docker_data_path }}"
+      DOCKER_APPDATA_PATH="{{ docker_appdata_path }}"
+      DOCKER_USERNAME="{{ tesseract_username }}"
+      DOCKER_EMAIL_USERNAME="{{ email_username }}"
+      DOCKER_EMAIL_HOST="{{ email_host }}"
+      DOCKER_EMAIL_PORT="{{ email_port }}"
+      DOCKER_EMAIL_PASSORD="{{ email_password }}"
+      DOCKER_HOSTNAME="{{ inventory_hostname }}"
+      DOCKER_DOMAIN="{{ domain }}"
+      DOCKER_SQL_PASSWORD="{{ docker_sql_password }}"
+      DOCKER_TZ="{{ docker_tz }}"
+      DOCKER_UID="{{ created_tesseract_user.uid }}"
+      DOCKER_GID="{{ created_tesseract_user.group }}"
+      DOCKER_DOCKER_USERNAME="{{ docker_default_username }}"
+      DOCKER_DOCKER_PASSWORD="{{ docker_default_password }}"
 
 - name: Add extra docker environment variables.
   no_log: true
   with_items: "{{ docker_extra_vars | dict2items }}"
   ansible.builtin.lineinfile:
     path: "{{ files_path }}/docker/.env"
-    search_string: TES_{{ item.key | upper }}=
+    search_string: DOCKER_{{ item.key | upper }}=
     create: true
     owner: root
     group: root
     mode: 0600
-    line: "TES_{{ item.key | upper }}=\"{{ item.value }}\""
+    line: "DOCKER_{{ item.key | upper }}=\"{{ item.value }}\""
 
 - name: Initialize an empty list for Docker compose files.
   ansible.builtin.set_fact:
