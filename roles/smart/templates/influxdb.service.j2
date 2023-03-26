@@ -1,0 +1,9 @@
+[Unit]
+Description=Systemd service to start a Influxed at boot.
+
+[Service]
+Type=simple
+ExecStart=/opt/influxdb/influxd --http-bind-address :{{ smart_influxdb_port }}
+
+[Install]
+WantedBy=multi-user.target

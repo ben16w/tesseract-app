@@ -1,0 +1,19 @@
+---
+version: 1
+
+web:
+  listen:
+    port: {{ smart_scrutiny_port }}
+    host: 0.0.0.0
+  database:
+    location: /opt/scrutiny/config/scrutiny.db
+  src:
+    frontend:
+      path: /opt/scrutiny/web
+  influxdb:
+    host: localhost
+    port: {{ smart_influxdb_port }}
+
+notify:
+  urls:
+    - "smtp://{{ email_username }}:{{ email_password }}@{{ email_host }}:{{ email_port }}/?fromAddress={{ email_username }}&toAddresses={{ email_username }}"

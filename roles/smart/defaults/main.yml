@@ -1,0 +1,12 @@
+---
+
+smart_scrutiny_port: 19998
+smart_influxdb_port: 19997
+
+smart_scrutiny_version: "0.4.8"
+smart_influxdb_version: "2.2.0"
+
+email_username: ~
+email_host: ~
+email_port: ~
+email_password: ~

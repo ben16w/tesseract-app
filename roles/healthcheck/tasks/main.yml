@@ -1,0 +1,15 @@
+---
+
+- name: When healthcheck is enabled.
+  when: healthcheck_disabled is false
+  block:
+    - name: Assert that all required inputs have been provided.
+      ansible.builtin.assert:
+        that:
+          - healthcheck_uuid is not none
+
+    - name: Add cronjob to ping Healthckecks.io.
+      ansible.builtin.cron:
+        name: "Healthckecks.io ping."
+        minute: "*/{{ healthcheck_minutes }}"
+        job: "curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/{{ healthcheck_uuid }}"

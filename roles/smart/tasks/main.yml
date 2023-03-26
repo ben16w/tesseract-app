@@ -1,0 +1,143 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - email_username is not none
+      - email_host is not none
+      - email_port is not none
+      - email_password is not none
+
+- name: Checking if architecture is amd64.
+  ansible.builtin.set_fact:
+    download_arch: "amd64"
+  when: '"x86_64" in ansible_architecture'
+
+- name: Checking if architecture is arm64
+  ansible.builtin.set_fact:
+    download_arch: "arm64"
+  when: '"armv" in ansible_architecture or "aarch" in ansible_architecture'
+
+- name: Setting architecture to armhf.
+  ansible.builtin.set_fact:
+    download_arch: "arm-7"
+  when: '"armv7l" in ansible_architecture'
+
+- name: Install common software.
+  ansible.builtin.apt:
+    pkg:
+      - smartmontools
+
+- name: Create influxdb directory if it does not exist.
+  ansible.builtin.file:
+    path: /opt/influxdb
+    state: directory
+    mode: 0755
+
+- name: Download influxdb.
+  ansible.builtin.get_url:
+    url: "https://dl.influxdata.com/influxdb/releases/influxdb2-{{ smart_influxdb_version }}-linux-{{ download_arch }}.tar.gz"
+    dest: /tmp/influxdb.tar.gz
+    mode: 0755
+
+- name: Unarchive influxdb from archive. # unarchive module didn't work
+  ansible.builtin.command:
+    cmd: tar xzf /tmp/influxdb.tar.gz --strip-components 1 -C /opt/influxdb/
+    creates: /opt/influxdb/influxd
+
+- name: Put influxdb service file into place.
+  ansible.builtin.template:
+    src: influxdb.service.j2
+    dest: /etc/systemd/system/influxdb.service
+    force: true
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Make sure influxdb service unit is running and enabled.
+  ansible.builtin.systemd:
+    state: started
+    name: influxdb
+    enabled: true
+
+- name: Create scrutiny config directory if it does not exist.
+  ansible.builtin.file:
+    path: /opt/scrutiny/config
+    state: directory
+    mode: 0755
+
+- name: Create scrutiny web directory if it does not exist.
+  ansible.builtin.file:
+    path: /opt/scrutiny/web
+    state: directory
+    mode: 0755
+
+- name: Create scrutiny bin directory if it does not exist.
+  ansible.builtin.file:
+    path: /opt/scrutiny/bin
+    state: directory
+    mode: 0755
+
+- name: Download scrutiny-web.
+  ansible.builtin.get_url:
+    url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ smart_scrutiny_version }}/scrutiny-web-linux-{{ download_arch }}"
+    dest: /opt/scrutiny/bin/scrutiny-web
+    mode: 0755
+
+- name: Download scrutiny-collector-metrics.
+  ansible.builtin.get_url:
+    url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ smart_scrutiny_version }}/scrutiny-collector-metrics-linux-{{ download_arch }}"
+    dest: /opt/scrutiny/bin/scrutiny-collector-metrics
+    mode: 0755
+
+- name: Download scrutiny-web-frontend.
+  ansible.builtin.get_url:
+    url: https://github.com/AnalogJ/scrutiny/releases/download/v{{ smart_scrutiny_version }}/scrutiny-web-frontend.tar.gz
+    dest: /tmp/scrutiny-web-frontend.tar.gz
+    mode: 0755
+
+
+- name: Unarchive scrutiny-web-frontend from archive. # unarchive module didn't work
+  ansible.builtin.command:
+    cmd: tar xzf /tmp/scrutiny-web-frontend.tar.gz --strip-components 1 -C /opt/scrutiny/web/
+    creates: /opt/scrutiny/web/index.html
+# - name: Unarchive scrutiny-web-frontend from archive.
+#   ansible.builtin.unarchive:
+#     src: /tmp/scrutiny-web-frontend.tar.gz
+#     dest: /opt/scrutiny/web
+#     remote_src: yes
+#     extra_opts:
+#       - --strip-components 1
+
+# Probably should run as scrutiny user
+- name: Put all scrutiny configuration into place.
+  ansible.builtin.template:
+    src: scrutiny.yaml.j2
+    dest: /opt/scrutiny/config/scrutiny.yaml
+    force: true
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Put scrutiny service file into place.
+  ansible.builtin.template:
+    src: scrutiny.service.j2
+    dest: /etc/systemd/system/scrutiny.service
+    force: true
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Make sure scrutiny service unit is running and enabled.
+  ansible.builtin.systemd:
+    state: started
+    name: scrutiny
+    enabled: true
+
+- name: Add cron job to schedule the scrutiny collector to run periodically.
+  ansible.builtin.cron:
+    name: "Run scrutiny collector."
+    minute: "30"
+    hour: "*/12"
+    weekday: "*"
+    job: "/opt/scrutiny/bin/scrutiny-collector-metrics run --api-endpoint 'http://localhost:{{ smart_scrutiny_port }}'"

@@ -1,0 +1,10 @@
+---
+
+monitoring_email_disabled: false
+
+email_host: ~
+email_port: ~
+email_username: ~
+email_password: ~
+
+netdata_port: 19999

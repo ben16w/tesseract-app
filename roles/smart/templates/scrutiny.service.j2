@@ -1,0 +1,9 @@
+[Unit]
+Description=Systemd service to start a Scrutiny app at boot.
+
+[Service]
+Type=simple
+ExecStart=/opt/scrutiny/bin/scrutiny-web start --config /opt/scrutiny/config/scrutiny.yaml
+
+[Install]
+WantedBy=multi-user.target
