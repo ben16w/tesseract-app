@@ -9,3 +9,6 @@
       - {role: 'docker', tags: 'docker'}
       - {role: 'syncthing', tags: 'syncthing'}
       - {role: 'vagrant', tags: 'vagrant'}
+      - {role: 'monitoring', tags: 'monitoring'}
+      - {role: 'healthcheck', tags: 'healthcheck'}
+      - {role: 'smart', tags: 'smart'}
