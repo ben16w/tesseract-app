@@ -1,5 +1,9 @@
 ---
 
 tesseract_username: tesseract
+tesseract_password: ~
 
 syncthing_port: 8384
+syncthing_key: https://syncthing.net/release-key.gpg
+syncthing_repo: deb https://apt.syncthing.net/ syncthing stable
+syncthing_config_dir: "/home/{{ tesseract_username }}/.config/syncthing"

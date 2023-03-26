@@ -1,13 +1,18 @@
 ---
 
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - tesseract_password is not none
+
 - name: Add an Apt signing key for syncthing.
   ansible.builtin.apt_key:
-    url: https://syncthing.net/release-key.gpg
+    url: "{{ syncthing_key }}"
     state: present
 
 - name: Add syncthing repository into sources list
   ansible.builtin.apt_repository:
-    repo: deb https://apt.syncthing.net/ syncthing stable
+    repo: "{{ syncthing_repo }}"
     state: present
     update_cache: true
 
@@ -16,22 +21,28 @@
     pkg:
       - syncthing
 
-- name: Start syncthing service.
-  ansible.builtin.service:
-    name: syncthing@{{ tesseract_username }}.service
-    enabled: true
-    state: started
+- name: Set GUI password.
+  ansible.builtin.command:
+    cmd: >
+      syncthing generate
+        --config="{{ syncthing_config_dir }}"
+        --gui-password="{{ tesseract_password }}"
+        --gui-user="{{ tesseract_username }}"
+    creates: "{{ syncthing_config_dir }}/config.xml"
+  notify: restart syncthing
 
 - name: Open syncthing GUI to all.
   ansible.builtin.lineinfile:
-    path: /home/{{ tesseract_username }}/.config/syncthing/config.xml
+    path: "{{ syncthing_config_dir }}/config.xml"
     search_string: <address>127.0.0.1:8384</address>
-    line: "<address>0.0.0.0:{{syncthing_port }}</address>"
+    line: "<address>0.0.0.0:{{ syncthing_port }}</address>"
     owner: "{{ tesseract_username }}"
     group: "{{ tesseract_username }}"
     mode: 0600
   notify: restart syncthing
 
-# after "<gui"
-#           <user>tesseract</user>
-#         <password>$2a$10$wV15kHDSY.b07cAlaWSy0uJJHiGXBW9e8Qh.GrNF4.LldK99.CxUC</password> # password is tesseract
+- name: Start syncthing service.
+  ansible.builtin.service:
+    name: syncthing@{{ tesseract_username }}.service
+    enabled: true
+    state: started
