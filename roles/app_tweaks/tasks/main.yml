@@ -1,5 +1,10 @@
 ---
 
+- name: Ensure tesseract user exists.
+  register: tesseract_user_details
+  ansible.builtin.user:
+    name: "{{ tesseract_username }}"
+
 # Booksonic
 
 - name: Check if Booksonic config path exists.
@@ -51,7 +56,7 @@
   ansible.builtin.cron:
     name: "Update Nextcloud system cron.php once every 10 minutes."
     minute: "*/30"
-    job: "docker exec -u {{ created_tesseract_user.uid }} nextcloud php cron.php"
+    job: "docker exec -u {{ tesseract_user_details.uid }} nextcloud php cron.php"
   when: nextcloud_exists.stat.exists
 
 # Transmission

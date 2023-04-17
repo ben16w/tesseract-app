@@ -13,7 +13,7 @@
       - email_password is not none
 
 - name: Ensure tesseract user exists.
-  register: created_tesseract_user
+  register: tesseract_user_details
   ansible.builtin.user:
     name: "{{ tesseract_username }}"
 
@@ -86,8 +86,8 @@
       DOCKER_DOMAIN="{{ domain }}"
       DOCKER_SQL_PASSWORD="{{ docker_sql_password }}"
       DOCKER_TZ="{{ docker_tz }}"
-      DOCKER_UID="{{ created_tesseract_user.uid }}"
-      DOCKER_GID="{{ created_tesseract_user.group }}"
+      DOCKER_UID="{{ tesseract_user_details.uid }}"
+      DOCKER_GID="{{ tesseract_user_details.group }}"
       DOCKER_DOCKER_USERNAME="{{ docker_default_username }}"
       DOCKER_DOCKER_PASSWORD="{{ docker_default_password }}"
 
