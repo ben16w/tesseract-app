@@ -146,6 +146,7 @@
       ansible.builtin.apt:
         pkg:
           - default-jre
+          - sshpass
 
     - name: Create a login user
       ansible.builtin.user:
