@@ -40,6 +40,18 @@
     cmd: bash /tmp/docker_install.sh
     creates: /usr/bin/docker
 
+- name: Disable docker service to stop autostart.
+  when: docker_autostart_disabled is not false
+  ansible.builtin.service:
+    name: docker.service
+    enabled: false
+
+- name: Disable docker socket to stop autostart.
+  when: docker_autostart_disabled is not false
+  ansible.builtin.service:
+    name: docker.socket
+    enabled: false
+
 - name: Ensure docker has started.
   ansible.builtin.service:
     name: docker

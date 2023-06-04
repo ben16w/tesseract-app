@@ -24,3 +24,5 @@ docker_sql_password: ~
 
 docker_extra_vars: {}
   # example_name: "example_value"
+
+docker_autostart_disabled: false
