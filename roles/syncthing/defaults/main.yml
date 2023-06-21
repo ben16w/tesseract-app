@@ -1,6 +1,6 @@
 ---
 
-tesseract_username: tesseract
+tesseract_username: ~
 tesseract_password: ~
 
 syncthing_port: 8384

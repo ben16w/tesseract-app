@@ -1,10 +1,10 @@
 ---
 
-docker_apps: []
-
-files_path: "/root"
+tesseract_files_path: "/root"
 tesseract_username: "tesseract"
-domain: ~
+tesseract_domain: ~
+
+docker_apps: []
 
 email_username: ~
 email_host: ~

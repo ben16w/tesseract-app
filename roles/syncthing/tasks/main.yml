@@ -3,6 +3,7 @@
 - name: Assert that all required inputs have been provided.
   ansible.builtin.assert:
     that:
+      - tesseract_username is not none
       - tesseract_password is not none
 
 - name: Add an Apt signing key for syncthing.

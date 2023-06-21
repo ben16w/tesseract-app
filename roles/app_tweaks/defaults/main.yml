@@ -1,7 +1,7 @@
 ---
 
-files_path: /root
-tesseract_username: "tesseract"
+tesseract_files_path: /root
+tesseract_username: ~
 
 booksonic_path: /media/appdata/booksonic_config
 nextcloud_path: /media/appdata/nextcloud_config

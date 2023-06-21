@@ -3,7 +3,8 @@
 - name: Assert that all required inputs have been provided.
   ansible.builtin.assert:
     that:
-      - domain is not none
+      - tesseract_username is not none
+      - tesseract_domain is not none
       - docker_data_path is not none
       - docker_appdata_path is not none
       - docker_sql_password is not none
@@ -64,7 +65,7 @@
 
 - name: Create docker directory if it does not exist.
   ansible.builtin.file:
-    path: "{{ files_path }}/docker"
+    path: "{{ tesseract_files_path }}/docker"
     state: directory
     owner: root
     group: root
@@ -74,14 +75,14 @@
 - name: Git checkout docker compose files to docker directory.
   ansible.builtin.git:
     repo: "{{ docker_compose_repo }}"
-    dest: "{{ files_path }}/docker"
+    dest: "{{ tesseract_files_path }}/docker"
     version: main
     force: true
 
 - name: Set environment variables for docker.
   no_log: true
   ansible.builtin.blockinfile:
-    path: "{{ files_path }}/docker/.env"
+    path: "{{ tesseract_files_path }}/docker/.env"
     create: true
     owner: root
     group: root
@@ -95,7 +96,7 @@
       DOCKER_EMAIL_PORT="{{ email_port }}"
       DOCKER_EMAIL_PASSORD="{{ email_password }}"
       DOCKER_HOSTNAME="{{ inventory_hostname }}"
-      DOCKER_DOMAIN="{{ domain }}"
+      DOCKER_DOMAIN="{{ tesseract_domain }}"
       DOCKER_SQL_PASSWORD="{{ docker_sql_password }}"
       DOCKER_TZ="{{ docker_tz }}"
       DOCKER_UID="{{ tesseract_user_details.uid }}"
@@ -107,7 +108,7 @@
   no_log: true
   with_items: "{{ docker_extra_vars | dict2items }}"
   ansible.builtin.lineinfile:
-    path: "{{ files_path }}/docker/.env"
+    path: "{{ tesseract_files_path }}/docker/.env"
     search_string: DOCKER_{{ item.key | upper }}=
     create: true
     owner: root
@@ -126,7 +127,7 @@
 
 - name: Create and start Docker apps.
   community.docker.docker_compose:
-    project_src: "{{ files_path }}/docker"
+    project_src: "{{ tesseract_files_path }}/docker"
     files: "{{ docker_compose_list }}"
     project_name: tesseract
     remove_orphans: true

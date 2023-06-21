@@ -1,5 +1,11 @@
 ---
 
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - tesseract_username is not none
+      - transmission_openvpn_download_url is not none
+
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
   ansible.builtin.user:
@@ -23,7 +29,7 @@
 
     - name: Create scripts directory if it does not exist.
       ansible.builtin.file:
-        path: "{{ files_path }}/scripts"
+        path: "{{ tesseract_files_path }}/scripts"
         state: directory
         owner: root
         group: root
@@ -32,7 +38,7 @@
     - name: Copy podcast_tagger.py.
       ansible.builtin.template:
         src: templates/podcast_tagger.py.j2
-        dest: "{{ files_path }}/scripts/podcast_tagger.py"
+        dest: "{{ tesseract_files_path }}/scripts/podcast_tagger.py"
         owner: root
         group: root
         mode: 0755
@@ -43,7 +49,7 @@
         minute: "0"
         hour: "0"
         weekday: "*"
-        job: "python3 {{ files_path }}/scripts/podcast_tagger.py"
+        job: "python3 {{ tesseract_files_path }}/scripts/podcast_tagger.py"
 
 # Nextcloud
 
