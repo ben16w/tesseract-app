@@ -106,3 +106,10 @@
         path: /etc/netdata/health_alarm_notify.conf
         search_string: DEFAULT_RECIPIENT_EMAIL=
         line: "DEFAULT_RECIPIENT_EMAIL='{{ email_username }}|critical'"
+
+- name: Claim netdata node.
+  when: netdata_token is not none and netdata_rooms is not none
+  ansible.builtin.command:
+    cmd: /usr/libexec/netdata/netdata-claim.sh -token={{ netdata_token }} -rooms={{ netdata_rooms }}
+    creates: /var/lib/netdata/cloud.d/claim.conf
+  notify: restart netdata
