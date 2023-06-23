@@ -17,7 +17,7 @@
   ansible.builtin.user:
     name: "{{ tesseract_username }}"
 
-- name: Make sure shares path exists.
+- name: Make sure data path exists.
   ansible.builtin.file:
     path: "{{ docker_data_path }}"
     state: directory
@@ -56,11 +56,6 @@
   ansible.builtin.service:
     name: docker
     state: started
-
-- name: Install docker-compose.
-  ansible.builtin.pip:
-    name:
-      - docker-compose
 
 - name: Create docker directory if it does not exist.
   ansible.builtin.file:
@@ -120,13 +115,11 @@
 
 - name: Generate list of Docker compose files.
   ansible.builtin.set_fact:
-    docker_compose_list: "{{ docker_compose_list + ['docker-compose.' + item + '.yml'] }}"
+    docker_compose_list: "{{ docker_compose_list + [ tesseract_files_path + '/docker/docker-compose.' + item + '.yml'] }}"
   with_items: "{{ docker_apps }}"
 
-- name: Create and start Docker apps.
-  community.docker.docker_compose:
-    project_src: "{{ tesseract_files_path }}/docker"
-    files: "{{ docker_compose_list }}"
-    project_name: tesseract
-    remove_orphans: true
+- name: Create and start Docker apps using cli.
+  ansible.builtin.command:
+    cmd: docker compose -f {{ docker_compose_list | join(' -f ') }} up -d --remove-orphans
+  with_items: "{{ docker_compose_list }}"
   when: docker_apps | length > 0
