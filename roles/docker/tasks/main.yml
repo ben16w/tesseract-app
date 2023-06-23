@@ -7,7 +7,6 @@
       - tesseract_domain is not none
       - docker_data_path is not none
       - docker_appdata_path is not none
-      - docker_sql_password is not none
       - email_username is not none
       - email_host is not none
       - email_port is not none
