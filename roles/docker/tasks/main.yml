@@ -97,7 +97,6 @@
       DOCKER_EMAIL_PASSORD="{{ email_password }}"
       DOCKER_HOSTNAME="{{ inventory_hostname }}"
       DOCKER_DOMAIN="{{ tesseract_domain }}"
-      DOCKER_SQL_PASSWORD="{{ docker_sql_password }}"
       DOCKER_TZ="{{ docker_tz }}"
       DOCKER_UID="{{ tesseract_user_details.uid }}"
       DOCKER_GID="{{ tesseract_user_details.group }}"
