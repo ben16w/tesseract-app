@@ -4,7 +4,6 @@
   ansible.builtin.assert:
     that:
       - tesseract_username is not none
-      - transmission_openvpn_download_url is not none
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
@@ -15,7 +14,7 @@
 
 - name: Check if Booksonic config path exists.
   ansible.builtin.stat:
-    path: "{{ booksonic_path }}"
+    path: "{{ app_tweaks_booksonic_path }}"
   register: booksonic_exists
 
 - name: When Booksonic config path exists.
@@ -55,7 +54,7 @@
 
 - name: Check if Nextcloud config path exists.
   ansible.builtin.stat:
-    path: "{{ nextcloud_path }}"
+    path: "{{ app_tweaks_nextcloud_path }}"
   register: nextcloud_exists
 
 - name: Add cron job to run Nextcloud system cron.php once every 10 minutes.
@@ -69,7 +68,7 @@
 
 - name: Check if Transmission config path exists.
   ansible.builtin.stat:
-    path: "{{ transmission_openvpn_path }}"
+    path: "{{ app_tweaks_openvpn_path }}"
   register: transmission_exists
 
 - name: When Transmission config path exists.
@@ -79,7 +78,9 @@
     - name: Assert that all required inputs have been provided.
       ansible.builtin.assert:
         that:
-          - transmission_openvpn_download_url is not none
+          - app_tweaks_openvpn_download_url is not none
+          - app_tweaks_transmission_username is not none
+          - app_tweaks_transmission_password is not none
 
     - name: Create scripts directory if it does not exist.
       ansible.builtin.file:
@@ -91,14 +92,14 @@
 
     - name: Unarchive a file that needs to be downloaded (added in 2.0)
       ansible.builtin.unarchive:
-        src: "{{ transmission_openvpn_download_url }}"
+        src: "{{ app_tweaks_openvpn_download_url }}"
         dest: /tmp/transmission_openvpn
         remote_src: true
 
     - name: Put all OpenVPN configuration into place.
       ansible.builtin.copy:
         src: "/tmp/transmission_openvpn/{{ item.src }}"
-        dest: "{{ transmission_openvpn_path }}/{{ item.dest }}"
+        dest: "{{ app_tweaks_openvpn_path }}/{{ item.dest }}"
         remote_src: true
         owner: root
         group: root
@@ -113,7 +114,7 @@
     # Templates would be better but directrly extracting from cyberghost zip into files directory would no longer be supported.
     - name: Edit openvpn config.
       ansible.builtin.lineinfile:
-        path: "{{ transmission_openvpn_path }}/default.ovpn"
+        path: "{{ app_tweaks_openvpn_path }}/default.ovpn"
         search_string: "{{ item.search }}"
         line: "{{ item.line }}"
         owner: root
@@ -127,10 +128,10 @@
 
     - name: Creating credentials file.
       ansible.builtin.copy:
-        dest: "{{ transmission_config_path }}/openvpn-credentials.txt"
+        dest: "{{ app_tweaks_transmission_config_path }}/openvpn-credentials.txt"
         content: |
-          {{ transmission_username }}
-          {{ transmission_password }}
+          {{ app_tweaks_transmission_username }}
+          {{ app_tweaks_transmission_password }}
         owner: root
         group: root
         mode: 0644
@@ -139,12 +140,12 @@
 
 # Jenkins
 
-- name: Check if Transmission config path exists.
+- name: Check if Jenkins config path exists.
   ansible.builtin.stat:
-    path: "{{ jenkins_config_path }}"
+    path: "{{ app_tweaks_jenkins_config_path }}"
   register: jenkins_exists
 
-- name: When Transmission config path exists.
+- name: When Jenkins config path exists.
   when: jenkins_exists.stat.exists is true
   block:
 

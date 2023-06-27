@@ -3,10 +3,12 @@
 tesseract_files_path: /root
 tesseract_username: ~
 
-booksonic_path: /media/appdata/booksonic_config
-nextcloud_path: /media/appdata/nextcloud_config
-transmission_openvpn_download_url: ~
-transmission_openvpn_path: /media/appdata/transmission_openvpn_config
-transmission_config_path: /media/appdata/transmission_config
-podcast_tagger_search_path: /media/shares/Audio/Podcasts
-jenkins_config_path: /media/appdata/jenkins_config
+app_tweaks_booksonic_path: /media/appdata/booksonic_config
+app_tweaks_nextcloud_path: /media/appdata/nextcloud_config
+app_tweaks_openvpn_download_url: ~
+app_tweaks_openvpn_path: /media/appdata/transmission_openvpn_config
+app_tweaks_transmission_config_path: /media/appdata/transmission_config
+app_tweaks_transmission_username: ~
+app_tweaks_transmission_password: ~
+app_tweaks_podcast_search_path: /media/shares/Audio/Podcasts
+app_tweaks_jenkins_config_path: /media/appdata/jenkins_config
