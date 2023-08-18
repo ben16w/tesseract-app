@@ -2,6 +2,8 @@
 
 tesseract_files_path: "/root"
 tesseract_username: "tesseract"
+
+tesseract_hostname: ~
 tesseract_domain: ~
 
 docker_apps: []
