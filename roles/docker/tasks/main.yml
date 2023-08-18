@@ -83,32 +83,32 @@
     group: root
     mode: 0600
     block: |
-      DOCKER_DATA_PATH="{{ docker_data_path }}"
-      DOCKER_APPDATA_PATH="{{ docker_appdata_path }}"
-      DOCKER_USERNAME="{{ tesseract_username }}"
-      DOCKER_EMAIL_USERNAME="{{ email_username }}"
-      DOCKER_EMAIL_HOST="{{ email_host }}"
-      DOCKER_EMAIL_PORT="{{ email_port }}"
-      DOCKER_EMAIL_PASSORD="{{ email_password }}"
-      DOCKER_HOSTNAME="{{ tesseract_hostname }}"
-      DOCKER_DOMAIN="{{ tesseract_domain }}"
-      DOCKER_TZ="{{ docker_tz }}"
-      DOCKER_UID="{{ tesseract_user_details.uid }}"
-      DOCKER_GID="{{ tesseract_user_details.group }}"
-      DOCKER_DOCKER_USERNAME="{{ docker_default_username }}"
-      DOCKER_DOCKER_PASSWORD="{{ docker_default_password }}"
+      TESSERACT_DATA_PATH="{{ docker_data_path }}"
+      TESSERACT_APPDATA_PATH="{{ docker_appdata_path }}"
+      TESSERACT_USERNAME="{{ tesseract_username }}"
+      TESSERACT_EMAIL_USERNAME="{{ email_username }}"
+      TESSERACT_EMAIL_HOST="{{ email_host }}"
+      TESSERACT_EMAIL_PORT="{{ email_port }}"
+      TESSERACT_EMAIL_PASSORD="{{ email_password }}"
+      TESSERACT_HOSTNAME="{{ tesseract_hostname }}"
+      TESSERACT_DOMAIN="{{ tesseract_domain }}"
+      TESSERACT_TZ="{{ docker_tz }}"
+      TESSERACT_UID="{{ tesseract_user_details.uid }}"
+      TESSERACT_GID="{{ tesseract_user_details.group }}"
+      TESSERACT_DOCKER_USERNAME="{{ docker_default_username }}"
+      TESSERACT_DOCKER_PASSWORD="{{ docker_default_password }}"
 
 - name: Add extra docker environment variables.
   no_log: true
   with_items: "{{ docker_extra_vars | dict2items }}"
   ansible.builtin.lineinfile:
     path: "{{ tesseract_files_path }}/docker/.env"
-    search_string: DOCKER_{{ item.key | upper }}=
+    search_string: TESSERACT_{{ item.key | upper }}=
     create: true
     owner: root
     group: root
     mode: 0600
-    line: "DOCKER_{{ item.key | upper }}=\"{{ item.value }}\""
+    line: "TESSERACT_{{ item.key | upper }}=\"{{ item.value }}\""
 
 - name: Initialize an empty list for Docker compose files.
   ansible.builtin.set_fact:
