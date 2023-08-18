@@ -22,7 +22,10 @@
     pkg:
       - syncthing
 
+# Looks to be a bug where the /home/tesseract/.config directory is owned by root.
+
 - name: Set GUI password.
+  become_user: "{{ tesseract_username }}"
   ansible.builtin.command:
     cmd: >
       syncthing generate
@@ -41,6 +44,14 @@
     group: "{{ tesseract_username }}"
     mode: 0600
   notify: restart syncthing
+
+- name: Make sure config directory is owned by tesseract. 
+  ansible.builtin.file:
+    path: "{{ syncthing_config_dir }}/"
+    recurse: true 
+    owner: "{{ tesseract_username }}"
+    group: "{{ tesseract_username }}"
+    mode: 0600
 
 - name: Start syncthing service.
   ansible.builtin.service:
