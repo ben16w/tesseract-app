@@ -22,6 +22,8 @@ docker_default_username: "ben"
 docker_default_password: "password"
 docker_tz: "Europe/London"
 
+docker_extra_compose_files: []
+
 docker_extra_vars: {}
   # example_name: "example_value"
 

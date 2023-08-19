@@ -119,6 +119,12 @@
     docker_compose_list: "{{ docker_compose_list + [ tesseract_files_path + '/docker/docker-compose.' + item + '.yml'] }}"
   with_items: "{{ docker_apps }}"
 
+- name: Add extra Docker compose files.
+  ansible.builtin.set_fact:
+    docker_compose_list: "{{ docker_compose_list + [ item ] }}"
+  with_items: "{{ docker_extra_compose_files }}"
+  when: docker_extra_compose_files | length > 0
+
 - name: Create and start Docker apps using cli.
   ansible.builtin.command:
     cmd: docker compose -f {{ docker_compose_list | join(' -f ') }} up -d --remove-orphans
