@@ -34,7 +34,7 @@
         group: root
         mode: 0775
 
-    - name: Copy podcast_tagger.py.
+    - name: Copy podcast_tagger script to scripts directory.
       ansible.builtin.template:
         src: templates/podcast_tagger.py.j2
         dest: "{{ tesseract_files_path }}/scripts/podcast_tagger.py"
@@ -90,13 +90,13 @@
         group: root
         mode: 0755
 
-    - name: Unarchive a file that needs to be downloaded (added in 2.0)
+    - name: Download and extract OpenVPN configuration.
       ansible.builtin.unarchive:
         src: "{{ app_tweaks_openvpn_download_url }}"
         dest: /tmp/transmission_openvpn
         remote_src: true
 
-    - name: Put all OpenVPN configuration into place.
+    - name: Copy OpenVPN configuration to correct location.
       ansible.builtin.copy:
         src: "/tmp/transmission_openvpn/{{ item.src }}"
         dest: "{{ app_tweaks_openvpn_path }}/{{ item.dest }}"
@@ -126,7 +126,7 @@
         - { search: cert, line: cert /etc/openvpn/custom/client.crt }
         - { search: key, line: key /etc/openvpn/custom/client.key }
 
-    - name: Creating credentials file.
+    - name: Create openvpn-credentials.txt file.
       ansible.builtin.copy:
         dest: "{{ app_tweaks_transmission_config_path }}/openvpn-credentials.txt"
         content: |
@@ -155,7 +155,7 @@
           - default-jre
           - sshpass
 
-    - name: Create a login user
+    - name: Create a jenkins user.
       ansible.builtin.user:
         name: jenkins
         generate_ssh_key: true

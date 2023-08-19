@@ -14,7 +14,7 @@
     owner: root
     group: root
 
-- name: Change file ownership, group and permissions
+- name: Create Homer directory if it does not exist.
   ansible.builtin.file:
     path: /opt/homer
     state: directory
@@ -22,7 +22,7 @@
     group: root
     mode: 0755
 
-- name: Change file ownership, group and permissions
+- name: Create Homer web directory if it does not exist.
   ansible.builtin.file:
     path: /opt/homer/web
     state: directory
@@ -37,7 +37,7 @@
     remote_src: true
     creates: /opt/homer/web/index.html
 
-- name: Template server.py.
+- name: Create Homer server.py file.
   notify: restart homer
   ansible.builtin.template:
     src: templates/server.py.j2
@@ -53,7 +53,7 @@
     dest: /tmp/dashboard-icons
     version: HEAD
 
-- name: Copy file with owner and permissions
+- name: Copy dashboard icons
   ansible.builtin.copy:
     src: /tmp/dashboard-icons/png/
     dest: /opt/homer/web/assets/tools
@@ -62,7 +62,7 @@
     group: root
     mode: 0644
 
-- name: Template a file to config.yml
+- name: Create Homer config.yml file.
   notify: restart homer
   ansible.builtin.template:
     src: templates/config.yml.j2
@@ -72,7 +72,7 @@
     group: root
     mode: 0644
 
-- name: Put homer systemd file into place.
+- name: Create Homer service unit file.
   notify: restart homer
   ansible.builtin.template:
     src: homer.service.j2
