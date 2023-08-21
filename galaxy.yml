@@ -2,6 +2,7 @@
 
 namespace: tesseract
 name: app
+version: 1.0.0
 readme: README.md
 authors:
 - ben16w
