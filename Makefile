@@ -13,7 +13,7 @@ test:
 # Run all tests for a roles which have been modified since the last commit using molecule.
 .PHONY: test-changed
 test-changed:
-	@for roledir in $$(git diff --name-only HEAD | grep molecule | cut -d '/' -f 2 | uniq); do \
+	@for roledir in $$(git diff --name-only HEAD HEAD~1 | grep roles | cut -d '/' -f 2 | uniq); do \
 		echo "Testing role: $${roledir}" ;\
 		pushd roles/$${roledir} ;\
 		molecule test ;\
