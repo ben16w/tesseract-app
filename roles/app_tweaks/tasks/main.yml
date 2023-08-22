@@ -163,3 +163,68 @@
         shell: /bin/bash
         create_home: true
         home: /home/jenkins
+
+# Drone CI
+
+- name: Check if Drone CI config path exists.
+  ansible.builtin.stat:
+    path: "{{ app_tweaks_drone_config_path }}"
+  register: drone_exists
+
+- name: When Drone CI config path exists.
+  when: drone_exists.stat.exists is true
+  block:
+
+    - name: Assert that all required inputs have been provided.
+      ansible.builtin.assert:
+        that:
+          - app_tweaks_drone_rpc_secret is not none
+
+    - name: Install common software.
+      ansible.builtin.package:
+        name:
+          - python3-pip
+
+    - name: Install Ansible and Molecule.
+      ansible.builtin.pip:
+        name:
+          - ansible
+          - molecule
+          - molecule-docker
+          - molecule-vagrant
+
+    - name: Download and extract Done Exec Runner.
+      ansible.builtin.unarchive:
+        src: "{{ app_tweaks_drone_exec_download_url }}"
+        dest: /tmp
+        remote_src: true
+
+    - name: Copy Drone Exec Runner to correct location.
+      ansible.builtin.copy:
+        src: /tmp/drone-runner-exec
+        dest: /usr/local/bin/drone-runner-exec
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Create config directory.
+      ansible.builtin.file:
+        path: /etc/drone-runner-exec/
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Create config file.
+      no_log: true
+      ansible.builtin.blockinfile:
+        path: /etc/drone-runner-exec/config
+        create: true
+        owner: root
+        group: root
+        mode: 0600
+        block: |
+          DRONE_RPC_PROTO=http
+          DRONE_RPC_HOST=drone.{{ tesseract_domain }}
+          DRONE_RPC_SECRET={{ app_tweaks_drone_rpc_secret }}
+          DRONE_LOG_FILE=/var/log/drone-runner-exec/log.txt

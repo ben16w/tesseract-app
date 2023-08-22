@@ -12,3 +12,7 @@ app_tweaks_transmission_username: ~
 app_tweaks_transmission_password: ~
 app_tweaks_podcast_search_path: /media/shares/Audio/Podcasts
 app_tweaks_jenkins_config_path: /media/appdata/jenkins_config
+
+app_tweaks_drone_config_path: /media/appdata/drone_data
+app_tweaks_drone_exec_download_url: "https://github.com/drone-runners/drone-runner-exec/releases/latest/download/drone_runner_exec_linux_amd64.tar.gz"
+app_tweaks_drone_rpc_secret: ~
