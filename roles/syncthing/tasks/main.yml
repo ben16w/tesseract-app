@@ -6,6 +6,12 @@
       - tesseract_username is not none
       - tesseract_password is not none
 
+- name: Install gpg-agent
+  ansible.builtin.apt:
+    name: gpg-agent
+    state: present
+    update_cache: yes
+
 - name: Add an Apt signing key for syncthing.
   ansible.builtin.apt_key:
     url: "{{ syncthing_key }}"

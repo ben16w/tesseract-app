@@ -1,9 +1,0 @@
----
-- name: Prepare
-  hosts: all
-  tasks:
-    - name: Install gpg-agent
-      ansible.builtin.apt:
-        name: gpg-agent
-        state: present
-        update_cache: yes
