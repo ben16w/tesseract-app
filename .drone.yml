@@ -8,6 +8,10 @@ platform:
   arch: amd64
 
 steps:
-- name: greeting
-  commands:
-  - make test
+  - name: lint
+    commands:
+      - yamllint .
+      - ansible-lint
+  - name: test
+    commands:
+      - make test
