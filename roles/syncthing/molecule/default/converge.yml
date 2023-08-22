@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    tesseract_username: root
+    tesseract_password: password
+  roles:
+    - role: syncthing
