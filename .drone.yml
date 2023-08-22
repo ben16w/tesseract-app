@@ -11,6 +11,6 @@ steps:
   - name: lint
     commands:
       - make lint
-  - name: test
+  - name: test-changed
     commands:
-      - make test
+      - make test-changed
