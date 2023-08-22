@@ -1,0 +1,11 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    tesseract_username: "root"
+    app_tweaks_enable_nextcloud: true
+    app_tweaks_enable_jenkins: true
+    app_tweaks_enable_drone: true
+    app_tweaks_drone_rpc_secret: "ABDC1234"
+  roles:
+    - role: app_tweaks
