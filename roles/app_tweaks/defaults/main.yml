@@ -16,3 +16,9 @@ app_tweaks_jenkins_config_path: /media/appdata/jenkins_config
 app_tweaks_drone_config_path: /media/appdata/drone_data
 app_tweaks_drone_exec_download_url: "https://github.com/drone-runners/drone-runner-exec/releases/latest/download/drone_runner_exec_linux_amd64.tar.gz"
 app_tweaks_drone_rpc_secret: ~
+
+app_tweaks_enable_booksonic: false
+app_tweaks_enable_nextcloud: false
+app_tweaks_enable_transmission: false
+app_tweaks_enable_jenkins: false
+app_tweaks_enable_drone: false

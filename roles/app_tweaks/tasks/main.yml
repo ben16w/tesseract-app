@@ -18,7 +18,7 @@
   register: booksonic_exists
 
 - name: When Booksonic config path exists.
-  when: booksonic_exists.stat.exists
+  when: booksonic_exists.stat.exists or app_tweaks_enable_booksonic is true
   block:
 
     - name: Install music-tag using pip.
@@ -62,7 +62,7 @@
     name: "Update Nextcloud system cron.php once every 10 minutes."
     minute: "*/30"
     job: "docker exec -u {{ tesseract_user_details.uid }} nextcloud php cron.php"
-  when: nextcloud_exists.stat.exists
+  when: nextcloud_exists.stat.exists or app_tweaks_enable_nextcloud is true
 
 # Transmission
 
@@ -72,7 +72,7 @@
   register: transmission_exists
 
 - name: When Transmission config path exists.
-  when: transmission_exists.stat.exists is true
+  when: transmission_exists.stat.exists or app_tweaks_enable_transmission is true
   block:
 
     - name: Assert that all required inputs have been provided.
@@ -146,14 +146,15 @@
   register: jenkins_exists
 
 - name: When Jenkins config path exists.
-  when: jenkins_exists.stat.exists is true
+  when: jenkins_exists.stat.exists or app_tweaks_enable_jenkins is true
   block:
 
     - name: Install common software.
-      ansible.builtin.apt:
+      ansible.builtin.package:
         pkg:
           - default-jre
           - sshpass
+        update_cache: yes
 
     - name: Create a jenkins user.
       ansible.builtin.user:
@@ -172,7 +173,7 @@
   register: drone_exists
 
 - name: When Drone CI config path exists.
-  when: drone_exists.stat.exists is true
+  when: drone_exists.stat.exists or app_tweaks_enable_drone is true
   block:
 
     - name: Assert that all required inputs have been provided.
