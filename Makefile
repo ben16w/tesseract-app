@@ -9,3 +9,9 @@ test:
 		molecule test ;\
 		popd ;\
 	done
+
+# Lint all roles in the repository using yamllint and ansible-lint.
+.PHONY: lint
+lint:
+	@yamllint . ;\
+	ansible-lint ;\

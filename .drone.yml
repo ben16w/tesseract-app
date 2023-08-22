@@ -10,8 +10,7 @@ platform:
 steps:
   - name: lint
     commands:
-      - yamllint .
-      - ansible-lint
+      - make lint
   - name: test
     commands:
       - make test
