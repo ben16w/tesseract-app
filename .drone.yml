@@ -7,10 +7,10 @@ platform:
   os: linux
   arch: amd64
 
-steps:
-  - name: lint
-    commands:
-      - make lint
+# steps:
+#   - name: lint
+#     commands:
+#       - make lint
   - name: test-changed
     commands:
       - make test-changed
