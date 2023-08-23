@@ -1,7 +1,7 @@
 ---
 kind: pipeline
 type: exec
-name: default
+name: test
 
 platform:
   os: linux
@@ -11,6 +11,6 @@ steps:
 #   - name: lint
 #     commands:
 #       - make lint
-  - name: test-changed
+  - name: test
     commands:
-      - make test-changed
+      - make test
