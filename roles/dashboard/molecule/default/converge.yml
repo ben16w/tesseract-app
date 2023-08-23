@@ -2,7 +2,7 @@
 - name: Converge
   hosts: all
   vars:
-  dashboard_apps: []
-  dashboard_admin_apps: []
+    dashboard_apps: []
+    dashboard_admin_apps: []
   roles:
     - role: dashboard
