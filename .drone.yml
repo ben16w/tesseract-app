@@ -7,7 +7,7 @@ platform:
   os: linux
   arch: amd64
 
-# steps:
+steps:
 #   - name: lint
 #     commands:
 #       - make lint
