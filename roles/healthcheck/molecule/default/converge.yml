@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    healthcheck_disabled: true
+  roles:
+    - role: healthcheck
