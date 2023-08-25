@@ -40,6 +40,8 @@
           password "{{ email_password }}"
 
 - name: Download netdata install script.
+  retries: 3
+  delay: 10
   ansible.builtin.get_url:
     url: https://my-netdata.io/kickstart.sh
     dest: /tmp/netdata_install.sh

@@ -7,6 +7,8 @@
       - dashboard_admin_apps is not none
 
 - name: Download Homer archive.
+  retries: 3
+  delay: 10
   ansible.builtin.get_url:
     url: https://github.com/bastienwirtz/homer/releases/latest/download/homer.zip
     dest: /tmp/homer.zip

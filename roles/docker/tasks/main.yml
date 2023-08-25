@@ -31,6 +31,8 @@
     mode: 0755
 
 - name: Download docker install script.
+  retries: 3
+  delay: 10
   ansible.builtin.get_url:
     url: https://get.docker.com
     dest: /tmp/docker_install.sh
