@@ -7,10 +7,14 @@ platform:
   os: linux
   arch: amd64
 
+trigger:
+  event:
+    - push
+
 steps:
-#   - name: lint
-#     commands:
-#       - make lint
+  - name: lint
+    commands:
+      - make lint
   - name: test
     commands:
       - make test
