@@ -2,6 +2,7 @@
 
 tesseract_files_path: /root
 tesseract_username: ~
+tesseract_domain: ~
 
 app_tweaks_booksonic_path: /media/appdata/booksonic_config
 app_tweaks_nextcloud_path: /media/appdata/nextcloud_config
@@ -11,6 +12,9 @@ app_tweaks_transmission_config_path: /media/appdata/transmission_config
 app_tweaks_transmission_username: ~
 app_tweaks_transmission_password: ~
 app_tweaks_podcast_search_path: /media/shares/Audio/Podcasts
+
+app_tweaks_build_username: build
+
 app_tweaks_jenkins_config_path: /media/appdata/jenkins_config
 
 app_tweaks_drone_config_path: /media/appdata/drone_data
