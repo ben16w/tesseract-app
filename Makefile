@@ -38,3 +38,16 @@ lint:
 	@set -e ;\
 	yamllint -d relaxed . ;\
 	ansible-lint --profile safety ;\
+
+# Overwrite all molecule.yml files in roles from the molecule.yml in the repository root.
+.PHONY: update-molecule
+update-molecule:
+	@set -e ;\
+	if [ ! -f molecule.yml ]; then \
+		echo "No molecule.yml found in repository root" ;\
+		exit 1 ;\
+	fi ;\
+	for roledir in roles/*/molecule; do \
+		echo "Updating molecule.yml for role: $${roledir}" ;\
+		cp molecule.yml $${roledir}/default/molecule.yml ;\
+	done
