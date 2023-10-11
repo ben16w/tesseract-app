@@ -1,0 +1,17 @@
+[Unit]
+Description=Drone Exec Runner
+ConditionFileIsExecutable=/usr/local/bin/drone-runner-exec
+
+[Service]
+User={{ app_tweaks_build_username }}
+Group={{ app_tweaks_build_username }}
+StartLimitInterval=5
+StartLimitBurst=10
+ExecStart=/usr/local/bin/drone-runner-exec "service" "run" "--config" "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/config"
+
+Restart=always
+RestartSec=120
+EnvironmentFile=-/etc/sysconfig/drone-runner-exec
+
+[Install]
+WantedBy=multi-user.target

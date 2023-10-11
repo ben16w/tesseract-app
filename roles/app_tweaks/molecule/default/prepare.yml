@@ -1,0 +1,11 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+    - name: Make sure /usr/share/man/man1/ exists, otherwise Java install will fail.
+      ansible.builtin.file:
+        path: /usr/share/man/man1/
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'

@@ -3,6 +3,7 @@
   hosts: all
   vars:
     tesseract_username: "root"
+    tesseract_domain: "example.com"
     app_tweaks_enable_nextcloud: true
     app_tweaks_enable_jenkins: true
     app_tweaks_enable_drone: true

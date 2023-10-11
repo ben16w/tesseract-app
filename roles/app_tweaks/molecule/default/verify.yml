@@ -4,3 +4,13 @@
   vars_files:
     - ../../defaults/main.yml
   tasks:
+    - name: Verify drone-runner-exec service is running.
+      ansible.builtin.service:
+        name: drone-runner-exec
+        state: started
+      register: service_status
+
+    - name: Fail if service was started.
+      ansible.builtin.fail:
+        msg: "Service drone-runner-exec was changed."
+      when: service_status.changed

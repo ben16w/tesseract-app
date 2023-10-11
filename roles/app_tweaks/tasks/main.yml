@@ -4,6 +4,7 @@
   ansible.builtin.assert:
     that:
       - tesseract_username is not none
+      - tesseract_domain is not none
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
@@ -82,7 +83,7 @@
           - app_tweaks_transmission_username is not none
           - app_tweaks_transmission_password is not none
 
-    - name: Create scripts directory if it does not exist.
+    - name: Create transmission_openvpn directory if it does not exist.
       ansible.builtin.file:
         path: /tmp/transmission_openvpn
         state: directory
@@ -149,21 +150,27 @@
   when: jenkins_exists.stat.exists or app_tweaks_enable_jenkins is true
   block:
 
-    - name: Install common software.
+    - name: Install Java.
       ansible.builtin.package:
         pkg:
           - default-jre
           - sshpass
         update_cache: yes
 
-    - name: Create a jenkins user.
+    - name: Ensure docker group exists.
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Create a build user.
       ansible.builtin.user:
-        name: jenkins
+        name: "{{ app_tweaks_build_username }}"
         generate_ssh_key: true
         state: present
         shell: /bin/bash
         create_home: true
-        home: /home/jenkins
+        home: "/home/{{ app_tweaks_build_username }}"
+        groups: docker
 
 # Drone CI
 
@@ -181,12 +188,31 @@
         that:
           - app_tweaks_drone_rpc_secret is not none
 
-    - name: Install common software.
+    - name: Install Python.
       ansible.builtin.package:
         name:
+          - python3
           - python3-pip
+          - openssh-client
+        update_cache: yes
+
+    - name: Ensure docker group exists.
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Create a build user.
+      ansible.builtin.user:
+        name: "{{ app_tweaks_build_username }}"
+        generate_ssh_key: true
+        state: present
+        shell: /bin/bash
+        create_home: true
+        home: "/home/{{ app_tweaks_build_username }}"
+        groups: docker
 
     - name: Install Ansible and Molecule.
+      become_user: "{{ app_tweaks_build_username }}"
       ansible.builtin.pip:
         name:
           - ansible
@@ -195,6 +221,15 @@
           - molecule
           - molecule-docker
           - molecule-vagrant
+
+    - name: Add .local/bin to build user path.
+      ansible.builtin.lineinfile:
+        path: "/home/{{ app_tweaks_build_username }}/.bashrc"
+        line: 'export PATH="$HOME/.local/bin:$PATH"'
+        owner: "{{ app_tweaks_build_username }}"
+        group: "{{ app_tweaks_build_username }}"
+        mode: 0644
+        create: true
 
     - name: Download and extract Done Exec Runner.
       ansible.builtin.unarchive:
@@ -209,25 +244,40 @@
         owner: root
         group: root
         mode: 0755
+        remote_src: true
 
     - name: Create config directory.
       ansible.builtin.file:
-        path: /etc/drone-runner-exec/
+        path: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec"
         state: directory
-        owner: root
-        group: root
+        owner: "{{ app_tweaks_build_username }}"
+        group: "{{ app_tweaks_build_username }}"
         mode: 0755
 
     - name: Create config file.
-      no_log: true
+      #no_log: true
       ansible.builtin.blockinfile:
-        path: /etc/drone-runner-exec/config
+        path: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/config"
         create: true
-        owner: root
-        group: root
+        owner: "{{ app_tweaks_build_username }}"
+        group: "{{ app_tweaks_build_username }}"
         mode: 0600
         block: |
           DRONE_RPC_PROTO=http
           DRONE_RPC_HOST=drone.{{ tesseract_domain }}
           DRONE_RPC_SECRET={{ app_tweaks_drone_rpc_secret }}
-          DRONE_LOG_FILE=/var/log/drone-runner-exec/log.txt
+          DRONE_LOG_FILE="/home/{{ app_tweaks_build_username }}/.drone-runner-exec/log.txt"
+
+    - name: Create systemd service file.
+      ansible.builtin.template:
+        src: templates/drone-runner-exec.service.j2
+        dest: /etc/systemd/system/drone-runner-exec.service
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Ensure drone-runner-exec service is enabled and running.
+      ansible.builtin.service:
+        name: drone-runner-exec
+        enabled: true
+        state: started
