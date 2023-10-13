@@ -10,6 +10,7 @@ platform:
 trigger:
   event:
     - push
+    - custom
 
 steps:
   - name: lint
