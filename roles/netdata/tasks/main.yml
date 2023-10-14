@@ -2,10 +2,12 @@
 
 # https://learn.netdata.cloud/guides/configure/performance
 
-- name: Install common software.
+- name: Install curl and msmtp.
   ansible.builtin.apt:
     pkg:
       - msmtp
+      - curl
+    update_cache: true
 
 - name: When monitoring_emails are disabled.
   when: monitoring_email_disabled is false
@@ -26,7 +28,7 @@
         create: true
         owner: root
         group: root
-        mode: 0644
+        mode: '0644'
         block: |
           account default
           tls on
@@ -47,7 +49,7 @@
     dest: /tmp/netdata_install.sh
     owner: root
     group: root
-    mode: 0744
+    mode: '0744'
     force: false
 
 - name: Install netdata using downloaded script.
@@ -82,7 +84,7 @@
     force: false
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: Set netdata to use msmtp for email.
   notify: restart netdata

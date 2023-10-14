@@ -6,13 +6,20 @@
       - dashboard_apps is not none
       - dashboard_admin_apps is not none
 
+- name: Install unzip and git for installing Homer.
+  ansible.builtin.package:
+    name:
+      - unzip
+      - git
+    update_cache: true
+
 - name: Download Homer archive.
   retries: 3
   delay: 10
   ansible.builtin.get_url:
     url: https://github.com/bastienwirtz/homer/releases/latest/download/homer.zip
     dest: /tmp/homer.zip
-    mode: 0744
+    mode: '0744'
     owner: root
     group: root
 
@@ -22,7 +29,7 @@
     state: directory
     owner: root
     group: root
-    mode: 0755
+    mode: '0755'
 
 - name: Create Homer web directory if it does not exist.
   ansible.builtin.file:
@@ -30,7 +37,7 @@
     state: directory
     owner: root
     group: root
-    mode: 0755
+    mode: '0755'
 
 - name: Extract Homer archive into /opt/homer/web.
   ansible.builtin.unarchive:
@@ -47,13 +54,13 @@
     force: true
     owner: root
     group: root
-    mode: 0755
+    mode: '0755'
 
 - name: Git checkout
   ansible.builtin.git:
     repo: https://github.com/WalkxCode/dashboard-icons
     dest: /tmp/dashboard-icons
-    version: HEAD
+    version: main
 
 - name: Copy dashboard icons
   ansible.builtin.copy:
@@ -62,7 +69,7 @@
     remote_src: true
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: Create Homer config.yml file.
   notify: restart homer
@@ -72,7 +79,7 @@
     force: true
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: Create Homer service unit file.
   notify: restart homer
@@ -82,7 +89,7 @@
     force: true
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: Make sure homer service unit is running and enabled.
   ansible.builtin.systemd:

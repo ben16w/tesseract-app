@@ -22,13 +22,13 @@
   ansible.builtin.file:
     path: "{{ docker_data_path }}"
     state: directory
-    mode: 0755
+    mode: '0755'
 
 - name: Make sure appdata path exists.
   ansible.builtin.file:
     path: "{{ docker_appdata_path }}"
     state: directory
-    mode: 0755
+    mode: '0755'
 
 - name: Download docker install script.
   retries: 3
@@ -36,7 +36,7 @@
   ansible.builtin.get_url:
     url: https://get.docker.com
     dest: /tmp/docker_install.sh
-    mode: 0744
+    mode: '0744'
 
 - name: Install docker. # Won't update
   ansible.builtin.command:
@@ -66,7 +66,7 @@
     state: directory
     owner: root
     group: root
-    mode: 0755
+    mode: '0755'
   when: docker_apps | length > 0
 
 - name: Git checkout docker compose files to docker directory.
@@ -83,7 +83,7 @@
     create: true
     owner: root
     group: root
-    mode: 0600
+    mode: '0600'
     block: |
       TESSERACT_DATA_PATH="{{ docker_data_path }}"
       TESSERACT_APPDATA_PATH="{{ docker_appdata_path }}"
@@ -109,7 +109,7 @@
     create: true
     owner: root
     group: root
-    mode: 0600
+    mode: '0600'
     line: "TESSERACT_{{ item.key | upper }}=\"{{ item.value }}\""
 
 - name: Initialize an empty list for Docker compose files.
@@ -118,12 +118,12 @@
 
 - name: Generate list of Docker compose files.
   ansible.builtin.set_fact:
-    docker_compose_list: "{{ docker_compose_list + [ tesseract_files_path + '/docker/docker-compose.' + item + '.yml'] }}"
+    docker_compose_list: "{{ docker_compose_list + [tesseract_files_path + '/docker/docker-compose.' + item + '.yml'] }}"
   with_items: "{{ docker_apps }}"
 
 - name: Add extra Docker compose files.
   ansible.builtin.set_fact:
-    docker_compose_list: "{{ docker_compose_list + [ item ] }}"
+    docker_compose_list: "{{ docker_compose_list + [item] }}"
   with_items: "{{ docker_extra_compose_files }}"
   when: docker_extra_compose_files | length > 0
 

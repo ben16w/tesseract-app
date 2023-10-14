@@ -5,9 +5,9 @@ name: app
 version: 1.0.0
 readme: README.md
 authors:
-- ben16w
-description: null
+  - ben16w
+description: ""
 license:
-- Unlicense
+  - Unlicense
 license_file: 'LICENSE'
 repository: https://github.com/ben16w/tesseract-app

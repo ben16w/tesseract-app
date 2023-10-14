@@ -33,7 +33,7 @@
         state: directory
         owner: root
         group: root
-        mode: 0775
+        mode: '0775'
 
     - name: Copy podcast_tagger script to scripts directory.
       ansible.builtin.template:
@@ -41,7 +41,7 @@
         dest: "{{ tesseract_files_path }}/scripts/podcast_tagger.py"
         owner: root
         group: root
-        mode: 0755
+        mode: '0755'
 
     - name: Add cron job for podcast_tagger script.
       ansible.builtin.cron:
@@ -89,7 +89,7 @@
         state: directory
         owner: root
         group: root
-        mode: 0755
+        mode: '0755'
 
     - name: Download and extract OpenVPN configuration.
       ansible.builtin.unarchive:
@@ -104,7 +104,7 @@
         remote_src: true
         owner: root
         group: root
-        mode: 0644
+        mode: '0644'
         force: true
       with_items:
         - { src: ca.crt, dest: ca.crt }
@@ -120,7 +120,7 @@
         line: "{{ item.line }}"
         owner: root
         group: root
-        mode: 0644
+        mode: '0644'
       with_items:
         - { search: auth-user-pass, line: auth-user-pass /etc/openvpn/custom/openvpn-credentials.txt }
         - { search: ca, line: ca /etc/openvpn/custom/ca.crt }
@@ -135,7 +135,7 @@
           {{ app_tweaks_transmission_password }}
         owner: root
         group: root
-        mode: 0644
+        mode: '0644'
 
     # Change openvpn file permission so other users can't see it
 
@@ -155,7 +155,7 @@
         pkg:
           - default-jre
           - sshpass
-        update_cache: yes
+        update_cache: true
 
     - name: Ensure docker group exists.
       ansible.builtin.group:
@@ -194,7 +194,8 @@
           - python3
           - python3-pip
           - openssh-client
-        update_cache: yes
+          - acl
+        update_cache: true
 
     - name: Ensure docker group exists.
       ansible.builtin.group:
@@ -212,6 +213,7 @@
         groups: docker
 
     - name: Install Ansible and Molecule.
+      become: true
       become_user: "{{ app_tweaks_build_username }}"
       ansible.builtin.pip:
         name:
@@ -228,7 +230,7 @@
         line: 'export PATH="$HOME/.local/bin:$PATH"'
         owner: "{{ app_tweaks_build_username }}"
         group: "{{ app_tweaks_build_username }}"
-        mode: 0644
+        mode: '0644'
         create: true
 
     - name: Download and extract Done Exec Runner.
@@ -243,7 +245,7 @@
         dest: /usr/local/bin/drone-runner-exec
         owner: root
         group: root
-        mode: 0755
+        mode: '0755'
         remote_src: true
 
     - name: Create config directory.
@@ -252,16 +254,16 @@
         state: directory
         owner: "{{ app_tweaks_build_username }}"
         group: "{{ app_tweaks_build_username }}"
-        mode: 0755
+        mode: '0755'
 
     - name: Create config file.
-      #no_log: true
+      no_log: true
       ansible.builtin.blockinfile:
         path: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/config"
         create: true
         owner: "{{ app_tweaks_build_username }}"
         group: "{{ app_tweaks_build_username }}"
-        mode: 0600
+        mode: '0600'
         block: |
           DRONE_RPC_PROTO=http
           DRONE_RPC_HOST=drone.{{ tesseract_domain }}
@@ -274,7 +276,7 @@
         dest: /etc/systemd/system/drone-runner-exec.service
         owner: root
         group: root
-        mode: 0644
+        mode: '0644'
 
     - name: Ensure drone-runner-exec service is enabled and running.
       ansible.builtin.service:

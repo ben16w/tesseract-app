@@ -1,5 +1,11 @@
 ---
 
+- name: Ensure gpg-agent is installed.
+  ansible.builtin.apt:
+    name: gpg-agent
+    state: present
+    update_cache: true
+
 - name: Add an Apt signing key for vagrant.
   ansible.builtin.apt_key:
     url: https://apt.releases.hashicorp.com/gpg
