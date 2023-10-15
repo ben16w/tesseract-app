@@ -25,7 +25,7 @@ test:
 		else \
 			echo "No molecule.yml found for role: $${roledir}" ;\
 		fi ;\
-	done
+	done ;\
 	echo "Success!"
 
 # Run all tests for a roles which have been modified since the last commit using molecule.
@@ -42,7 +42,7 @@ test-changed:
 		else \
 			echo "No molecule.yml found for role: $${roledir}" ;\
 		fi ;\
-	done
+	done ;\
 	echo "Success!"
 
 # Lint all roles in the repository using yamllint and ansible-lint.
@@ -51,6 +51,7 @@ lint:
 	@set -e ;\
 	yamllint -d relaxed . ;\
 	ansible-lint --profile safety -w var-naming[no-role-prefix] ;\
+	echo "Success!"
 
 # Overwrite all molecule.yml files in roles from the molecule.yml in the repository root.
 .PHONY: update-molecule
@@ -71,5 +72,5 @@ update-molecule:
 		else \
 			cp molecule.yml $${roledir}/default/molecule.yml ;\
 		fi ;\
-	done
+	done ;\
 	echo "Success!"
