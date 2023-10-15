@@ -69,7 +69,7 @@
 
 - name: Check if Transmission config path exists.
   ansible.builtin.stat:
-    path: "{{ app_tweaks_openvpn_path }}"
+    path: "{{ app_tweaks_transmission_config_path }}"
   register: transmission_exists
 
 - name: When Transmission config path exists.
