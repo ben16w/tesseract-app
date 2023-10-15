@@ -119,7 +119,7 @@
         owner: root
         group: root
         mode: '0644'
-        force: true
+        force: false
       with_items:
         - { src: ca.crt, dest: ca.crt }
         - { src: client.crt, dest: client.crt }
