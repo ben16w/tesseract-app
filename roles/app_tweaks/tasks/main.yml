@@ -83,6 +83,12 @@
           - app_tweaks_transmission_username is not none
           - app_tweaks_transmission_password is not none
 
+    - name: Install unzip.
+      ansible.builtin.package:
+        name:
+          - unzip
+        update_cache: true
+
     - name: Create transmission_openvpn directory if it does not exist.
       ansible.builtin.file:
         path: /tmp/transmission_openvpn
@@ -96,6 +102,14 @@
         src: "{{ app_tweaks_openvpn_download_url }}"
         dest: /tmp/transmission_openvpn
         remote_src: true
+
+    - name: Create openvpn directory if it does not exist.
+      ansible.builtin.file:
+        path: "{{ app_tweaks_openvpn_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
 
     - name: Copy OpenVPN configuration to correct location.
       ansible.builtin.copy:
@@ -126,6 +140,14 @@
         - { search: ca, line: ca /etc/openvpn/custom/ca.crt }
         - { search: cert, line: cert /etc/openvpn/custom/client.crt }
         - { search: key, line: key /etc/openvpn/custom/client.key }
+
+    - name: Create Transmission config directory if it does not exist.
+      ansible.builtin.file:
+        path: "{{ app_tweaks_transmission_config_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
 
     - name: Create openvpn-credentials.txt file.
       ansible.builtin.copy:
