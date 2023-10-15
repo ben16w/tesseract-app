@@ -11,20 +11,26 @@ help:
 	@echo "  lint         	Lint all roles in the repository using yamllint and ansible-lint."
 	@echo "  update-molecule Overwrite all molecule.yml files in roles from the molecule.yml in the repository root."
 
+# Define directive to run a molecule test for a role directory.
+define molecule-test
+	echo "Testing role: $${roledir}" ;\
+	if [ -f $${roledir}/default/molecule.yml ]; then \
+		echo "Found molecule.yml for role: $${roledir}" ;\
+		pushd $$(dirname $${roledir}) ;\
+		export INSTANCE_NAME=$$(echo "molecule-$$RANDOM") ;\
+		molecule test ;\
+		popd ;\
+	else \
+		echo "No molecule.yml found for role: $${roledir}" ;\
+	fi
+endef
+
 # Run all tests for all roles in the repository using molecule.
 .PHONY: test
 test:
 	@set -e ;\
 	for roledir in roles/*/molecule; do \
-		echo "Testing role: $${roledir}" ;\
-		if [ -f $${roledir}/default/molecule.yml ]; then \
-			echo "Found molecule.yml for role: $${roledir}" ;\
-			pushd $$(dirname $${roledir}) ;\
-			molecule test ;\
-			popd ;\
-		else \
-			echo "No molecule.yml found for role: $${roledir}" ;\
-		fi ;\
+		$(molecule-test) ;\
 	done ;\
 	echo "Success!"
 
@@ -33,15 +39,7 @@ test:
 test-changed:
 	@set -e ;\
 	for roledir in $$(git diff --name-only HEAD HEAD~1 | grep roles | cut -d '/' -f 2 | uniq); do \
-		echo "Testing role: $${roledir}" ;\
-		if [ -f $${roledir}/default/molecule.yml ]; then \
-			echo "Found molecule.yml for role: $${roledir}" ;\
-			pushd $$(dirname $${roledir}) ;\
-			molecule test ;\
-			popd ;\
-		else \
-			echo "No molecule.yml found for role: $${roledir}" ;\
-		fi ;\
+		$(molecule-test) ;\
 	done ;\
 	echo "Success!"
 
