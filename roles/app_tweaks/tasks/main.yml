@@ -292,6 +292,15 @@
           DRONE_RPC_SECRET={{ app_tweaks_drone_rpc_secret }}
           DRONE_LOG_FILE="/home/{{ app_tweaks_build_username }}/.drone-runner-exec/log.txt"
           DRONE_RUNNER_CAPACITY={{ app_tweaks_drone_runner_capacity }}
+          DRONE_RUNNER_ENVFILE="/home/build/.drone-runner-exec/drone.conf"
+
+    - name: Template drone.conf file.
+      ansible.builtin.template:
+        src: templates/drone.conf.j2
+        dest: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/drone.conf"
+        owner: "{{ app_tweaks_build_username }}"
+        group: "{{ app_tweaks_build_username }}"
+        mode: '0600'
 
     - name: Create systemd service file.
       ansible.builtin.template:
