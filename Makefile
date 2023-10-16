@@ -1,5 +1,8 @@
 SHELL := /bin/bash
 
+# Variable definitions.
+TESTING_DISTROS = "debian12 centos8 ubuntu2204 ubuntu2004"
+
 # Show help.
 .PHONY: help
 help:
@@ -13,15 +16,14 @@ help:
 
 # Define directive to run a molecule test for a role directory.
 define molecule-test
-	echo "Testing role: $${roledir}" ;\
 	if [ -f $${roledir}/default/molecule.yml ]; then \
-		echo "Found molecule.yml for role: $${roledir}" ;\
 		pushd $$(dirname $${roledir}) ;\
 		export INSTANCE_NAME=$$(echo "molecule-$$RANDOM") ;\
 		molecule test ;\
 		popd ;\
 	else \
 		echo "No molecule.yml found for role: $${roledir}" ;\
+		exit 1 ;\
 	fi
 endef
 
@@ -30,7 +32,21 @@ endef
 test:
 	@set -e ;\
 	for roledir in roles/*/molecule; do \
+		echo "Testing role: $${roledir}" ;\
 		$(molecule-test) ;\
+	done ;\
+	echo "Success!"
+
+# Run all tests for all roles in the repository using molecule on a specific distros.
+.PHONY: test-distros
+test-distros:
+	@set -e ;\
+	for roledir in roles/*/molecule; do \
+		for distro in $(shell echo $(TESTING_DISTROS)); do \
+			echo "Testing role: $${roledir} on $${distro}" ;\
+			export MOLECULE_DISTRO=$${distro} ;\
+			$(molecule-test) ;\
+		done ;\
 	done ;\
 	echo "Success!"
 
@@ -38,7 +54,8 @@ test:
 .PHONY: test-changed
 test-changed:
 	@set -e ;\
-	for roledir in $$(git diff --name-only HEAD HEAD~1 | grep roles | cut -d '/' -f 2 | uniq); do \
+	for roledir in $$(git diff --name-only HEAD HEAD~1 | grep "roles/.*/molecule" | cut -d '/' -f 1-3 | uniq); do \
+		echo "Testing role: $${roledir}" ;\
 		$(molecule-test) ;\
 	done ;\
 	echo "Success!"
