@@ -210,12 +210,13 @@
         that:
           - app_tweaks_drone_rpc_secret is not none
 
-    - name: Install Python.
+    - name: Install Python and other tools
       ansible.builtin.package:
         name:
           - python3
           - python3-pip
           - openssh-client
+          - shellcheck
           - acl
         update_cache: true
 
@@ -241,6 +242,7 @@
         name:
           - ansible
           - ansible-lint
+          - ansible-later
           - yamllint
           - molecule
           - molecule-docker
