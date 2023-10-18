@@ -1,8 +1,4 @@
 ---
-- name: Install Cockpit on various Linux distributions
-  hosts: all
-  become: yes
-  tasks:
 
   - name: Install EPEL repository for CentOS 7
     yum:
@@ -37,4 +33,3 @@
       name: cockpit
       state: started
       enabled: yes
-
