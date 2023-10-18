@@ -1,0 +1,40 @@
+---
+- name: Install Cockpit on various Linux distributions
+  hosts: all
+  become: yes
+  tasks:
+
+  - name: Install EPEL repository for CentOS 7
+    yum:
+      name: epel-release
+      state: present
+    when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+  - name: Install Cockpit for CentOS/RHEL 7/8
+    yum:
+      name:
+        - cockpit
+      state: present
+    when: (ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat')
+
+  - name: Install Cockpit for Fedora
+    dnf:
+      name:
+        - cockpit
+      state: present
+    when: ansible_distribution == 'Fedora'
+
+  - name: Install Cockpit for Debian/Ubuntu
+    apt:
+      name:
+        - cockpit
+      state: present
+      update_cache: yes
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+  - name: Ensure Cockpit service is started and enabled
+    service:
+      name: cockpit
+      state: started
+      enabled: yes
+
