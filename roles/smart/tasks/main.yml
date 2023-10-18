@@ -52,7 +52,6 @@
       - "--strip-components=1"
     creates: /opt/influxdb/influxd
 
-
 - name: Put influxdb service file into place.
   ansible.builtin.template:
     src: influxdb.service.j2
@@ -118,7 +117,6 @@
     extra_opts:
       - "--strip-components=1"
     creates: /opt/scrutiny/web/index.html
-
 
 # Probably should run as scrutiny user
 - name: Put all scrutiny configuration into place.
