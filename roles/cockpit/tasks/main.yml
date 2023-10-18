@@ -13,14 +13,6 @@
     state: present
   when: (ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat')
 
-- name: Install Cockpit for Fedora
-  dnf:
-    name:
-      - cockpit
-    state: present
-  when: ansible_distribution == 'Fedora'
-
-- name: Install Cockpit for Debian/Ubuntu
   apt:
     name:
       - cockpit
