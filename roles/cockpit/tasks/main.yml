@@ -13,6 +13,7 @@
     state: present
   when: (ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat')
 
+- name: Install Cockpit for Debian/Ubuntu
   apt:
     name:
       - cockpit
