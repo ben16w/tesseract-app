@@ -16,6 +16,10 @@ steps:
   - name: lint
     commands:
       - make lint
+
   - name: test
     commands:
       - make test
+    when:
+      branch:
+        - main
