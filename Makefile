@@ -16,14 +16,13 @@ help:
 
 # Define directive to run a molecule test for a role directory.
 define molecule-test
-	if [ -f $${roledir}/default/molecule.yml ]; then \
-		pushd $$(dirname $${roledir}) ;\
+	if [ -f $${moleculedir}/default/molecule.yml ]; then \
+		pushd $$(dirname $${moleculedir}) ;\
 		export INSTANCE_NAME=$$(echo "molecule-$$RANDOM") ;\
 		molecule test ;\
 		popd ;\
 	else \
-		echo "No molecule.yml found for role: $${roledir}" ;\
-		exit 1 ;\
+		echo "No molecule.yml found for role: $${moleculedir}" ;\
 	fi
 endef
 
@@ -31,8 +30,8 @@ endef
 .PHONY: test
 test:
 	@set -e ;\
-	for roledir in roles/*/molecule; do \
-		echo "Testing role: $${roledir}" ;\
+	for moleculedir in roles/*/molecule; do \
+		echo "Testing role: $${moleculedir}" ;\
 		$(molecule-test) ;\
 	done ;\
 	echo "Success!"
@@ -41,9 +40,9 @@ test:
 .PHONY: test-distros
 test-distros:
 	@set -e ;\
-	for roledir in roles/*/molecule; do \
+	for moleculedir in roles/*/molecule; do \
 		for distro in $(shell echo $(TESTING_DISTROS)); do \
-			echo "Testing role: $${roledir} on $${distro}" ;\
+			echo "Testing role: $${moleculedir} on $${distro}" ;\
 			export MOLECULE_DISTRO=$${distro} ;\
 			$(molecule-test) ;\
 		done ;\
@@ -54,8 +53,10 @@ test-distros:
 .PHONY: test-changed
 test-changed:
 	@set -e ;\
-	for roledir in $$(git diff --name-only HEAD HEAD~1 | grep "roles/.*/molecule" | cut -d '/' -f 1-3 | uniq); do \
-		echo "Testing role: $${roledir}" ;\
+	roles="$$((git diff --name-only $$(git merge-base HEAD origin/main); git diff --name-only;) | grep "roles/" | cut -d '/' -f 1-2 | sort -u )" ;\
+	for roledir in $${roles}; do \
+		moleculedir="$${roledir}/molecule" ;\
+		echo "Testing role: $${moleculedir}" ;\
 		$(molecule-test) ;\
 	done ;\
 	echo "Success!"
@@ -76,16 +77,16 @@ update-molecule:
 		echo "ERROR: No molecule.yml found in repository root" ;\
 		exit 1 ;\
 	fi ;\
-	for roledir in roles/*/molecule; do \
-		echo "Updating molecule.yml for role: $${roledir}" ;\
-		if [ ! -f $${roledir}/default/molecule.yml ]; then \
-			echo "ERROR: No molecule.yml found for role: $${roledir}" ;\
+	for moleculedir in roles/*/molecule; do \
+		echo "Updating molecule.yml for role: $${moleculedir}" ;\
+		if [ ! -f $${moleculedir}/default/molecule.yml ]; then \
+			echo "ERROR: No molecule.yml found for role: $${moleculedir}" ;\
 			exit 1 ;\
 		fi ;\
-		if cmp -s molecule.yml $${roledir}/default/molecule.yml; then \
-			echo "WARNING: $${roledir}/default/molecule.yml equals molecule.yml in repository root, skipping." ;\
+		if cmp -s molecule.yml $${moleculedir}/default/molecule.yml; then \
+			echo "WARNING: $${moleculedir}/default/molecule.yml equals molecule.yml in repository root, skipping." ;\
 		else \
-			cp molecule.yml $${roledir}/default/molecule.yml ;\
+			cp molecule.yml $${moleculedir}/default/molecule.yml ;\
 		fi ;\
 	done ;\
 	echo "Success!"
