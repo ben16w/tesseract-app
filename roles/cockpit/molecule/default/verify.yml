@@ -6,25 +6,25 @@
   tasks:
 
     - name: Check if port 9090 is responding
-      wait_for:
+      ansible.builtin.wait_for:
         host: "{{ ansible_host }}"
-        port: 9090
+        port: "{{ cockpit_port }}"
         state: started
         timeout: 10
       register: result
 
     - name: Fail if Cockpit is not running on port 9090
-      fail:
+      ansible.builtin.fail:
         msg: "Cockpit is not running on port 9090"
       when: result is failed
 
     - name: Check Cockpit Web UI
-      uri:
+      ansible.builtin.uri:
         url: "http://{{ ansible_host }}:9090"
         status_code: 200
       register: response
 
     - name: Fail if Cockpit Web UI is not accessible
-      fail:
+      ansible.builtin.fail:
         msg: "Cockpit Web UI is not accessible"
       when: response.status not in [200, 301, 302]
