@@ -21,6 +21,15 @@
     update_cache: true
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
+- name: Template the Cockpit configuration file
+  ansible.builtin.template:
+    src: templates/cockpit.conf.j2
+    dest: /etc/cockpit/cockpit.conf
+    user: root
+    group: root
+    mode: '0755'
+  notify: restart cockpit
+
 - name: Ensure Cockpit service is started and enabled
   ansible.builtin.service:
     name: cockpit

@@ -4,15 +4,27 @@
   vars_files:
     - ../../defaults/main.yml
   tasks:
-    - name: Check if Cockpit UI is running on port 9090
-      ansible.builtin.wait_for:
-        host: localhost
+
+    - name: Check if port 9090 is responding
+      wait_for:
+        host: "{{ ansible_host }}"
         port: 9090
         state: started
         timeout: 10
       register: result
 
-    - name: Fail if Cockpit UI is not running on port 9090
-      ansible.builtin.fail:
-        msg: "Cockpit UI is not running on port 9090"
-      when: not result.is_failed
+    - name: Fail if Cockpit is not running on port 9090
+      fail:
+        msg: "Cockpit is not running on port 9090"
+      when: result is failed
+
+    - name: Check Cockpit Web UI
+      uri:
+        url: "http://{{ ansible_host }}:9090"
+        status_code: 200
+      register: response
+
+    - name: Fail if Cockpit Web UI is not accessible
+      fail:
+        msg: "Cockpit Web UI is not accessible"
+      when: response.status not in [200, 301, 302]
