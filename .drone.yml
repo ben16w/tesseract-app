@@ -28,8 +28,7 @@ steps:
 
   - name: test-distros
     commands:
-      - export DISTRO_LIST="debian12 ubuntu2004 ubuntu2204"
-      - make test-distros
+      - DISTRO_LIST="debian12 ubuntu2004 ubuntu2204" make test-distros
     when:
       branch:
         - main
