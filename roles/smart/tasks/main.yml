@@ -23,10 +23,11 @@
     download_arch: "arm-7"
   when: '"armv7l" in ansible_architecture'
 
-- name: Install smartmontools.
+- name: Install smartmontools and cron.
   ansible.builtin.apt:
     pkg:
       - smartmontools
+      - cron
     update_cache: true
 
 - name: Create influxdb directory if it does not exist.

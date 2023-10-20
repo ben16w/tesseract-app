@@ -26,9 +26,10 @@ steps:
         exclude:
           - main
 
-  - name: test
+  - name: test-distros
     commands:
-      - make test
+      - export DISTRO_LIST="debian12 ubuntu2004 ubuntu2204"
+      - make test-distros
     when:
       branch:
         - main

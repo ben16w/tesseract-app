@@ -58,12 +58,21 @@
     path: "{{ app_tweaks_nextcloud_path }}"
   register: nextcloud_exists
 
-- name: Add cron job to run Nextcloud system cron.php once every 10 minutes.
-  ansible.builtin.cron:
-    name: "Update Nextcloud system cron.php once every 10 minutes."
-    minute: "*/30"
-    job: "docker exec -u {{ tesseract_user_details.uid }} nextcloud php cron.php"
+- name: When Nextcloud config path exists.
   when: nextcloud_exists.stat.exists or app_tweaks_enable_nextcloud is true
+  block:
+
+    - name: Ensure cron is installed.
+      ansible.builtin.package:
+        name:
+          - cron
+        update_cache: true
+
+    - name: Add cron job to run Nextcloud system cron.php once every 10 minutes.
+      ansible.builtin.cron:
+        name: "Update Nextcloud system cron.php once every 10 minutes."
+        minute: "*/30"
+        job: "docker exec -u {{ tesseract_user_details.uid }} nextcloud php cron.php"
 
 # Transmission
 
