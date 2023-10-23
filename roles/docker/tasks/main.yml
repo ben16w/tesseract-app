@@ -6,12 +6,13 @@
       - tesseract_username is not none
       - tesseract_hostname is not none
       - tesseract_domain is not none
-      - docker_data_path is not none
-      - docker_appdata_path is not none
       - email_username is not none
       - email_host is not none
       - email_port is not none
       - email_password is not none
+      - docker_data_path is not none
+      - docker_appdata_path is not none
+      - docker_compose_repo is not none
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
@@ -73,7 +74,7 @@
   ansible.builtin.git:
     repo: "{{ docker_compose_repo }}"
     dest: "{{ tesseract_files_path }}/docker"
-    version: main
+    version: "{{ docker_compose_repo_version }}"
     force: true
 
 - name: Set environment variables for docker.
