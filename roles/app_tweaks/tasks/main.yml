@@ -13,13 +13,8 @@
 
 # Booksonic
 
-- name: Check if Booksonic config path exists.
-  ansible.builtin.stat:
-    path: "{{ app_tweaks_booksonic_path }}"
-  register: booksonic_exists
-
 - name: When Booksonic config path exists.
-  when: booksonic_exists.stat.exists or app_tweaks_enable_booksonic is true
+  when: app_tweaks_enable_booksonic is true
   block:
 
     - name: Install music-tag using pip.
@@ -53,13 +48,8 @@
 
 # Nextcloud
 
-- name: Check if Nextcloud config path exists.
-  ansible.builtin.stat:
-    path: "{{ app_tweaks_nextcloud_path }}"
-  register: nextcloud_exists
-
 - name: When Nextcloud config path exists.
-  when: nextcloud_exists.stat.exists or app_tweaks_enable_nextcloud is true
+  when: app_tweaks_enable_nextcloud is true
   block:
 
     - name: Ensure cron is installed.
@@ -76,13 +66,8 @@
 
 # Transmission
 
-- name: Check if Transmission config path exists.
-  ansible.builtin.stat:
-    path: "{{ app_tweaks_transmission_config_path }}"
-  register: transmission_exists
-
 - name: When Transmission config path exists.
-  when: transmission_exists.stat.exists or app_tweaks_enable_transmission is true
+  when: app_tweaks_enable_transmission is true
   block:
 
     - name: Assert that all required inputs have been provided.
@@ -172,13 +157,8 @@
 
 # Jenkins
 
-- name: Check if Jenkins config path exists.
-  ansible.builtin.stat:
-    path: "{{ app_tweaks_jenkins_config_path }}"
-  register: jenkins_exists
-
 - name: When Jenkins config path exists.
-  when: jenkins_exists.stat.exists or app_tweaks_enable_jenkins is true
+  when: app_tweaks_enable_jenkins is true
   block:
 
     - name: Install Java.
@@ -205,13 +185,8 @@
 
 # Drone CI
 
-- name: Check if Drone CI config path exists.
-  ansible.builtin.stat:
-    path: "{{ app_tweaks_drone_config_path }}"
-  register: drone_exists
-
 - name: When Drone CI config path exists.
-  when: drone_exists.stat.exists or app_tweaks_enable_drone is true
+  when: app_tweaks_enable_drone is true
   block:
 
     - name: Assert that all required inputs have been provided.
