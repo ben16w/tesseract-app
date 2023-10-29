@@ -19,6 +19,7 @@ docker_appdata_path: ~
 docker_compose_repo: ~
 docker_compose_repo_version: main
 
+docker_project_name: "tesseract"
 
 docker_default_username: "ben"
 docker_default_password: "password"

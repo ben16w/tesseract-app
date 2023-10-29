@@ -86,6 +86,7 @@
     group: root
     mode: '0600'
     block: |
+      COMPOSE_PROJECT_NAME="{{ docker_project_name }}"
       TESSERACT_DATA_PATH="{{ docker_data_path }}"
       TESSERACT_APPDATA_PATH="{{ docker_appdata_path }}"
       TESSERACT_USERNAME="{{ tesseract_username }}"
