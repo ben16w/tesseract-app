@@ -6,9 +6,11 @@
       - tesseract_username is not none
       - tesseract_password is not none
 
-- name: Ensure gpg-agent is installed.
+- name: Ensure gpg-agent and acl are installed.
   ansible.builtin.apt:
-    name: gpg-agent
+    name:
+      - gpg-agent
+      - acl
     state: present
     update_cache: true
 
