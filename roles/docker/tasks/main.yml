@@ -6,12 +6,13 @@
       - tesseract_username is not none
       - tesseract_hostname is not none
       - tesseract_domain is not none
-      - docker_data_path is not none
-      - docker_appdata_path is not none
       - email_username is not none
       - email_host is not none
       - email_port is not none
       - email_password is not none
+      - docker_data_path is not none
+      - docker_appdata_path is not none
+      - docker_compose_repo is not none
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
@@ -73,7 +74,7 @@
   ansible.builtin.git:
     repo: "{{ docker_compose_repo }}"
     dest: "{{ tesseract_files_path }}/docker"
-    version: main
+    version: "{{ docker_compose_repo_version }}"
     force: true
 
 - name: Set environment variables for docker.
@@ -85,6 +86,7 @@
     group: root
     mode: '0600'
     block: |
+      COMPOSE_PROJECT_NAME="{{ docker_project_name }}"
       TESSERACT_DATA_PATH="{{ docker_data_path }}"
       TESSERACT_APPDATA_PATH="{{ docker_appdata_path }}"
       TESSERACT_USERNAME="{{ tesseract_username }}"
@@ -130,5 +132,5 @@
 - name: Create and start Docker apps using cli.
   ansible.builtin.command:
     cmd: docker compose -f {{ docker_compose_list | join(' -f ') }} up -d --remove-orphans
-  with_items: "{{ docker_compose_list }}"
+    chdir: "{{ tesseract_files_path }}/docker"
   when: docker_apps | length > 0

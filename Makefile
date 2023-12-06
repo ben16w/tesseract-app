@@ -1,8 +1,5 @@
 SHELL := /bin/bash
 
-# Variable definitions.
-TESTING_DISTROS = "debian12 centos8 ubuntu2204 ubuntu2004"
-
 # Show help.
 .PHONY: help
 help:
@@ -39,9 +36,13 @@ test:
 # Run all tests for all roles in the repository using molecule on a specific distros.
 .PHONY: test-distros
 test-distros:
+	@if [ -z "$$DISTRO_LIST" ]; then \
+		echo "ERROR: DISTRO_LIST environment variable is not defined." ;\
+		exit 1 ;\
+	fi
 	@set -e ;\
 	for moleculedir in roles/*/molecule; do \
-		for distro in $(shell echo $(TESTING_DISTROS)); do \
+		for distro in $(shell echo $$DISTRO_LIST); do \
 			echo "Testing role: $${moleculedir} on $${distro}" ;\
 			export MOLECULE_DISTRO=$${distro} ;\
 			$(molecule-test) ;\
