@@ -13,7 +13,7 @@
 
 # Booksonic
 
-- name: When Booksonic config path exists.
+- name: When Booksonic is enabled.
   when: app_tweaks_enable_booksonic is true
   block:
 
@@ -48,7 +48,7 @@
 
 # Nextcloud
 
-- name: When Nextcloud config path exists.
+- name: When Nextcloud is enabled.
   when: app_tweaks_enable_nextcloud is true
   block:
 
@@ -64,9 +64,29 @@
         minute: "*/30"
         job: "docker exec -u {{ tesseract_user_details.uid }} nextcloud php cron.php"
 
+
+# Steam
+
+- name: When Steam is enabled.
+  when: app_tweaks_enable_steam is true
+  block:
+
+    - name: Ensure cron is installed.
+      ansible.builtin.package:
+        name:
+          - cron
+        update_cache: true
+
+    - name: Add cron job to configure Steam display at 4am every day.
+      ansible.builtin.cron:
+        name: "Configure Steam display at 4am every day"
+        minute: "0"
+        hour: "4"
+        job: "docker exec -u root steam xrandr --auto"
+
 # Transmission
 
-- name: When Transmission config path exists.
+- name: When Transmission is enabled.
   when: app_tweaks_enable_transmission is true
   block:
 
@@ -157,7 +177,7 @@
 
 # Jenkins
 
-- name: When Jenkins config path exists.
+- name: When Jenkins is enabled.
   when: app_tweaks_enable_jenkins is true
   block:
 
@@ -185,7 +205,7 @@
 
 # Drone CI
 
-- name: When Drone CI config path exists.
+- name: When Drone CI is enabled.
   when: app_tweaks_enable_drone is true
   block:
 

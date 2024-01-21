@@ -6,6 +6,7 @@ tesseract_domain: ~
 
 app_tweaks_enable_booksonic: false
 app_tweaks_enable_nextcloud: false
+app_tweaks_enable_steam: false
 app_tweaks_enable_transmission: false
 app_tweaks_enable_jenkins: false
 app_tweaks_enable_drone: false
