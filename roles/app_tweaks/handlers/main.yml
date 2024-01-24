@@ -1,0 +1,7 @@
+---
+
+- name: Restart drone-runner-exec service.
+  ansible.builtin.service:
+    name: drone-runner-exec
+    state: restarted
+  listen: restart drone-runner-exec

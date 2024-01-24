@@ -286,6 +286,7 @@
 
     - name: Create config file.
       no_log: true
+      notify: restart drone-runner-exec
       ansible.builtin.blockinfile:
         path: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/config"
         create: true
@@ -301,6 +302,7 @@
           DRONE_RUNNER_ENVFILE="/home/build/.drone-runner-exec/drone.conf"
 
     - name: Template drone.conf file.
+      notify: restart drone-runner-exec
       ansible.builtin.template:
         src: templates/drone.conf.j2
         dest: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/drone.conf"
@@ -309,6 +311,7 @@
         mode: '0600'
 
     - name: Create systemd service file.
+      notify: restart drone-runner-exec
       ansible.builtin.template:
         src: templates/drone-runner-exec.service.j2
         dest: /etc/systemd/system/drone-runner-exec.service
