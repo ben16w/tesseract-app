@@ -40,7 +40,7 @@
   retries: 3
   delay: 10
   ansible.builtin.get_url:
-    url: "https://dl.influxdata.com/influxdb/releases/influxdb2-{{ smart_influxdb_version }}-linux-{{ download_arch }}.tar.gz"
+    url: "https://dl.influxdata.com/influxdb/releases/influxdb2-{{ scrutiny_influxdb_version }}-linux-{{ download_arch }}.tar.gz"
     dest: /tmp/influxdb.tar.gz
     mode: '0755'
 
@@ -90,7 +90,7 @@
   retries: 3
   delay: 10
   ansible.builtin.get_url:
-    url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ smart_scrutiny_version }}/scrutiny-web-linux-{{ download_arch }}"
+    url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ scrutiny_version }}/scrutiny-web-linux-{{ download_arch }}"
     dest: /opt/scrutiny/bin/scrutiny-web
     mode: '0755'
 
@@ -98,7 +98,7 @@
   retries: 3
   delay: 10
   ansible.builtin.get_url:
-    url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ smart_scrutiny_version }}/scrutiny-collector-metrics-linux-{{ download_arch }}"
+    url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ scrutiny_version }}/scrutiny-collector-metrics-linux-{{ download_arch }}"
     dest: /opt/scrutiny/bin/scrutiny-collector-metrics
     mode: '0755'
 
@@ -106,7 +106,7 @@
   retries: 3
   delay: 10
   ansible.builtin.get_url:
-    url: https://github.com/AnalogJ/scrutiny/releases/download/v{{ smart_scrutiny_version }}/scrutiny-web-frontend.tar.gz
+    url: https://github.com/AnalogJ/scrutiny/releases/download/v{{ scrutiny_version }}/scrutiny-web-frontend.tar.gz
     dest: /tmp/scrutiny-web-frontend.tar.gz
     mode: '0755'
 
@@ -150,4 +150,4 @@
     minute: "30"
     hour: "*/12"
     weekday: "*"
-    job: "/opt/scrutiny/bin/scrutiny-collector-metrics run --api-endpoint 'http://localhost:{{ smart_scrutiny_port }}'"
+    job: "/opt/scrutiny/bin/scrutiny-collector-metrics run --api-endpoint 'http://localhost:{{ scrutiny_ui_port }}'"

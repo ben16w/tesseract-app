@@ -1,0 +1,12 @@
+---
+
+scrutiny_ui_port: 19998
+scrutiny_influxdb_port: 19997
+
+scrutiny_version: "0.7.2"
+scrutiny_influxdb_version: "2.2.0"
+
+email_username: ~
+email_host: ~
+email_port: ~
+email_password: ~

@@ -3,7 +3,7 @@ version: 1
 
 web:
   listen:
-    port: {{ smart_scrutiny_port }}
+    port: {{ scrutiny_ui_port }}
     host: 0.0.0.0
   database:
     location: /opt/scrutiny/config/scrutiny.db
@@ -12,7 +12,7 @@ web:
       path: /opt/scrutiny/web
   influxdb:
     host: localhost
-    port: {{ smart_influxdb_port }}
+    port: {{ scrutiny_influxdb_port }}
 
 notify:
   urls:
