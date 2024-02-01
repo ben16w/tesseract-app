@@ -84,6 +84,41 @@
         hour: "4"
         job: "docker exec -u root steam xrandr --auto"
 
+- name: When Steam C-state limit is enabled.
+  when: app_tweaks_enable_steam_cstates is true
+  block:
+
+    - name: Install cron and linux-tools for the current kernel.
+      ansible.builtin.package:
+        name:
+          - cron
+          - linux-tools-common
+          - linux-tools-generic
+          - "linux-tools-{{ ansible_kernel }}"
+        update_cache: true
+
+    - name: Create scripts directory if it does not exist.
+      ansible.builtin.file:
+        path: "{{ tesseract_files_path }}/scripts"
+        state: directory
+        owner: root
+        group: root
+        mode: '0775'
+
+    - name: Template cstate-limit.sh script to scripts directory.
+      ansible.builtin.template:
+        src: templates/cstate-limit.sh.j2
+        dest: "{{ tesseract_files_path }}/scripts/cstate-limit.sh"
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create cron job to limit C-states for Steam.
+      ansible.builtin.cron:
+        name: "Limit C-states for Steam."
+        special_time: reboot
+        job: "bash {{ tesseract_files_path }}/scripts/cstate-limit.sh"
+
 # Transmission
 
 - name: When Transmission is enabled.

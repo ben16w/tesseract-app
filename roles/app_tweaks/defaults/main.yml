@@ -5,22 +5,24 @@ tesseract_username: ~
 tesseract_domain: ~
 
 app_tweaks_enable_booksonic: false
-app_tweaks_enable_nextcloud: false
-app_tweaks_enable_steam: false
-app_tweaks_enable_transmission: false
-app_tweaks_enable_jenkins: false
-app_tweaks_enable_drone: false
-
 app_tweaks_podcast_search_path: /media/shares/Audio/Podcasts
 
+app_tweaks_enable_nextcloud: false
+
+app_tweaks_enable_steam: false
+app_tweaks_enable_steam_cstates: false
+app_tweaks_enable_steam_cstates_limit: 2
+
+app_tweaks_enable_transmission: false
 app_tweaks_openvpn_download_url: ~
 app_tweaks_openvpn_path: /media/appdata/transmission_openvpn_config
 app_tweaks_transmission_config_path: /media/appdata/transmission_config
 app_tweaks_transmission_username: ~
 app_tweaks_transmission_password: ~
 
-app_tweaks_build_username: build
-
+app_tweaks_enable_jenkins: false
+app_tweaks_enable_drone: false
 app_tweaks_drone_exec_download_url: "https://github.com/drone-runners/drone-runner-exec/releases/latest/download/drone_runner_exec_linux_amd64.tar.gz"
 app_tweaks_drone_rpc_secret: ~
 app_tweaks_drone_runner_capacity: 1
+app_tweaks_build_username: build
