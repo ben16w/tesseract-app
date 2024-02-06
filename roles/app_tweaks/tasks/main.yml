@@ -88,7 +88,15 @@
   when: app_tweaks_enable_steam_cstates is true
   block:
 
-    - name: Install cron and linux-tools for the current kernel.
+    - name: Install cron and linux-cpupower.
+      ansible.builtin.package:
+        name:
+          - cron
+          - linux-cpupower
+        update_cache: true
+      when: ansible_distribution != 'Ubuntu'
+
+    - name: Install cron and linux-tools for the current kernel (Ubuntu only).
       ansible.builtin.package:
         name:
           - cron
@@ -96,6 +104,7 @@
           - linux-tools-generic
           - "linux-tools-{{ ansible_kernel }}"
         update_cache: true
+      when: ansible_distribution == 'Ubuntu'
 
     - name: Create scripts directory if it does not exist.
       ansible.builtin.file:
