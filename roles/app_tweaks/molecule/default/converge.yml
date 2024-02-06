@@ -5,12 +5,15 @@
     tesseract_username: "root"
     tesseract_domain: "example.com"
     app_tweaks_enable_transmission: true
+    app_tweaks_enable_nextcloud: true
+    app_tweaks_enable_steam: true
+    app_tweaks_enable_steam_cstates: true
+    app_tweaks_enable_jenkins: true
+    app_tweaks_enable_drone: true
+
     app_tweaks_openvpn_download_url: "https://docs.ben16w.site/s/8o5f5kDGyqj84YY/download/tesseract_openvpn.zip"
     app_tweaks_transmission_username: "user"
     app_tweaks_transmission_password: "password"
-    app_tweaks_enable_nextcloud: true
-    app_tweaks_enable_jenkins: true
-    app_tweaks_enable_drone: true
     app_tweaks_drone_rpc_secret: "ABDC1234"
   roles:
     - role: app_tweaks

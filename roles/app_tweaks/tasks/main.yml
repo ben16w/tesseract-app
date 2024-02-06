@@ -13,7 +13,7 @@
 
 # Booksonic
 
-- name: When Booksonic config path exists.
+- name: When Booksonic is enabled.
   when: app_tweaks_enable_booksonic is true
   block:
 
@@ -48,7 +48,7 @@
 
 # Nextcloud
 
-- name: When Nextcloud config path exists.
+- name: When Nextcloud is enabled.
   when: app_tweaks_enable_nextcloud is true
   block:
 
@@ -64,9 +64,73 @@
         minute: "*/30"
         job: "docker exec -u {{ tesseract_user_details.uid }} nextcloud php cron.php"
 
+
+# Steam
+
+- name: When Steam is enabled.
+  when: app_tweaks_enable_steam is true
+  block:
+
+    - name: Ensure cron is installed.
+      ansible.builtin.package:
+        name:
+          - cron
+        update_cache: true
+
+    - name: Add cron job to configure Steam display at 4am every day.
+      ansible.builtin.cron:
+        name: "Configure Steam display at 4am every day"
+        minute: "0"
+        hour: "4"
+        job: "docker exec -u root steam xrandr --auto"
+
+- name: When Steam C-state limit is enabled.
+  when: app_tweaks_enable_steam_cstates is true
+  block:
+
+    - name: Install cron and linux-cpupower.
+      ansible.builtin.package:
+        name:
+          - cron
+          - linux-cpupower
+        update_cache: true
+      when: ansible_distribution != 'Ubuntu'
+
+    - name: Install cron and linux-tools for the current kernel (Ubuntu only).
+      ansible.builtin.package:
+        name:
+          - cron
+          - linux-tools-common
+          - linux-tools-generic
+          - "linux-tools-{{ ansible_kernel }}"
+        update_cache: true
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Create scripts directory if it does not exist.
+      ansible.builtin.file:
+        path: "{{ tesseract_files_path }}/scripts"
+        state: directory
+        owner: root
+        group: root
+        mode: '0775'
+
+    - name: Template cstate-limit.sh script to scripts directory.
+      ansible.builtin.template:
+        src: templates/cstate-limit.sh.j2
+        dest: "{{ tesseract_files_path }}/scripts/cstate-limit.sh"
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create cron job to limit C-states for Steam.
+      ansible.builtin.cron:
+        name: "Limit C-states for Steam."
+        special_time: reboot
+        job: "bash {{ tesseract_files_path }}/scripts/cstate-limit.sh"
+
 # Transmission
 
-- name: When Transmission config path exists.
+- name: When Transmission is enabled.
   when: app_tweaks_enable_transmission is true
   block:
 
@@ -157,7 +221,7 @@
 
 # Jenkins
 
-- name: When Jenkins config path exists.
+- name: When Jenkins is enabled.
   when: app_tweaks_enable_jenkins is true
   block:
 
@@ -185,7 +249,7 @@
 
 # Drone CI
 
-- name: When Drone CI config path exists.
+- name: When Drone CI is enabled.
   when: app_tweaks_enable_drone is true
   block:
 
@@ -266,6 +330,7 @@
 
     - name: Create config file.
       no_log: true
+      notify: restart drone-runner-exec
       ansible.builtin.blockinfile:
         path: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/config"
         create: true
@@ -281,6 +346,7 @@
           DRONE_RUNNER_ENVFILE="/home/build/.drone-runner-exec/drone.conf"
 
     - name: Template drone.conf file.
+      notify: restart drone-runner-exec
       ansible.builtin.template:
         src: templates/drone.conf.j2
         dest: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/drone.conf"
@@ -289,6 +355,7 @@
         mode: '0600'
 
     - name: Create systemd service file.
+      notify: restart drone-runner-exec
       ansible.builtin.template:
         src: templates/drone-runner-exec.service.j2
         dest: /etc/systemd/system/drone-runner-exec.service

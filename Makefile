@@ -6,8 +6,10 @@ help:
 	@echo "Usage: make <target>"
 	@echo ""
 	@echo "Targets:"
-	@echo "  test         	un all tests for all roles in the repository using molecule."
+	@echo "  help         	Show this help."
+	@echo "  test         	Run all tests for all roles in the repository using molecule."
 	@echo "  test-changed 	Run all tests for a roles which have been modified since the last commit using molecule."
+	@echo "  test-distros 	Run all tests for all roles in the repository using molecule on multiple distros."
 	@echo "  lint         	Lint all roles in the repository using yamllint and ansible-lint."
 	@echo "  update-molecule Overwrite all molecule.yml files in roles from the molecule.yml in the repository root."
 
@@ -33,6 +35,18 @@ test:
 	done ;\
 	echo "Success!"
 
+# Run all tests for a roles which have been modified since the last commit using molecule.
+.PHONY: test-changed
+test-changed:
+	@set -e ;\
+	roles="$$((git diff --name-only $$(git merge-base HEAD origin/main); git diff --name-only;) | grep "roles/" | cut -d '/' -f 1-2 | sort -u )" ;\
+	for roledir in $${roles}; do \
+		moleculedir="$${roledir}/molecule" ;\
+		echo "Testing role: $${moleculedir}" ;\
+		$(molecule-test) ;\
+	done ;\
+	echo "Success!"
+
 # Run all tests for all roles in the repository using molecule on a specific distros.
 .PHONY: test-distros
 test-distros:
@@ -47,18 +61,6 @@ test-distros:
 			export MOLECULE_DISTRO=$${distro} ;\
 			$(molecule-test) ;\
 		done ;\
-	done ;\
-	echo "Success!"
-
-# Run all tests for a roles which have been modified since the last commit using molecule.
-.PHONY: test-changed
-test-changed:
-	@set -e ;\
-	roles="$$((git diff --name-only $$(git merge-base HEAD origin/main); git diff --name-only;) | grep "roles/" | cut -d '/' -f 1-2 | sort -u )" ;\
-	for roledir in $${roles}; do \
-		moleculedir="$${roledir}/molecule" ;\
-		echo "Testing role: $${moleculedir}" ;\
-		$(molecule-test) ;\
 	done ;\
 	echo "Success!"
 

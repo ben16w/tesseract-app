@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+
+####  CONFIGURATION  ####
+LOG_FILE="/var/log/tesseract.log"
+CSTATES_LIMIT="{{ app_tweaks_enable_steam_cstates_limit }}"
+DRY_RUN="false"
+
+function usage()
+{
+    echo "Usage: $(basename "$0") <LIMIT>"
+    echo
+    echo "Options:"
+    echo "  -h, --help         Show this help message and exit"
+    echo "  -d, --dry         Dry run, do not apply any changes"
+    echo "  -r --reset         Reset all C-states to enabled"
+    echo
+    echo "Arguments:"
+    echo "  LIMIT           The maximum C-state to enable"
+    echo
+    echo "Description:"
+    echo "  This script disables all C-states above the limit provided."
+    echo "  The limit must be a number between 1 and the maximum number of C-states supported by the CPU."
+    echo "  The maximum number of C-states supported by the CPU can be found by running the command 'cpupower idle-info'."
+    echo "  The changes are applied immediately and are not persistent across reboots."
+    echo
+    exit 0
+}
+
+# Function to exit the script with an error message.
+function error_exit()
+{
+    echo "ERROR: ${1:-"Unknown Error"}"
+    log "ERROR: ${1:-"Unknown Error"}"
+    exit 1
+}
+
+# Function to print an informational message.
+function info()
+{
+    echo "INFO: ${1}"
+    log "INFO: ${1}"
+}
+
+function log()
+{
+    if [ "${LOG_FILE}" != "" ]; then
+        echo "$(date '+%F %T.%3N') ${1}" >> "$LOG_FILE"
+    fi
+}
+
+# Check if script is running as root
+if [[ $EUID -ne 0 ]]; then
+    error_exit "Script $0 must be run as root" 
+fi
+
+# Display usage information if -h or --help option is provided
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+    usage
+fi
+
+
+####  MAIN CODE  ####
+
+# Check if -d or --dry option is provided
+if [ "$1" == "-d" ] || [ "$1" == "--dry" ]; then
+    DRY_RUN="true"
+    shift
+    info "Dry run enabled"
+fi
+
+# Check if -r or --reset option is provided
+if [ "$1" == "-r" ] || [ "$1" == "--reset" ]; then
+    cpupower idle-set -E
+    info "C-states reset successfully"
+    exit 0
+fi
+
+# Check if CSTATES_LIMIT is provided as an argument
+if [ "$1" != "" ]; then
+    CSTATES_LIMIT="$1"
+fi
+
+# Check if CSTATES_LIMIT is a number
+if ! [[ "$CSTATES_LIMIT" =~ ^[0-9]+$ ]]; then
+    error_exit "LIMIT must be a number"
+fi
+
+# Check if cpupower is installed
+if ! command -v cpupower &> /dev/null; then
+    error_exit "Tool cpupower could not be found"
+fi
+
+# Get the number of C-states supported by the CPU
+CSTATES_MAX=$(cpupower idle-info | grep "Number of idle states" | cut -d ":" -f 2 | tr -d ' ')
+
+info "C-states required limit: $CSTATES_LIMIT"
+info "C-states max supported: $CSTATES_MAX"
+
+# Check if dry run is not enabled
+if [ "$DRY_RUN" == "false" ]; then
+    # Disable all C-states above the limit
+    for ((i=CSTATES_LIMIT; i < CSTATES_MAX; i++)); do
+        cpupower idle-set -d "$i"
+    done
+fi
+
+# Check if the changes were applied
+CSTATES_DISABLED_CURRENT=$(cpupower idle-info | grep -c "DISABLED")
+CSTATES_DISABLED_TARGET=$((CSTATES_MAX - CSTATES_LIMIT))
+if [ "$CSTATES_DISABLED_CURRENT" -eq "$CSTATES_DISABLED_TARGET" ]; then
+    info "C-states disabled successfully"
+else
+    info "WARNING: $CSTATES_DISABLED_TARGET C-states disabled out of $CSTATES_DISABLED_CURRENT."
+fi

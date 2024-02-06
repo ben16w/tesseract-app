@@ -7,4 +7,4 @@
     email_port: "465"
     email_password: "password"
   roles:
-    - role: smart
+    - role: scrutiny
