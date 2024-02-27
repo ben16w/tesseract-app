@@ -147,7 +147,6 @@
 - name: Add cron job to schedule the scrutiny collector to run periodically.
   ansible.builtin.cron:
     name: "Run scrutiny collector."
-    minute: "30"
-    hour: "*/12"
-    weekday: "*"
-    job: "/opt/scrutiny/bin/scrutiny-collector-metrics run --api-endpoint 'http://localhost:{{ scrutiny_ui_port }}'"
+    hour: "{{ scrutiny_cron_hour }}"
+    minute: "{{ scrutiny_cron_minute }}"
+    job: ". /etc/profile; /opt/scrutiny/bin/scrutiny-collector-metrics run --api-endpoint 'http://localhost:{{ scrutiny_ui_port }}'"

@@ -6,6 +6,9 @@ scrutiny_influxdb_port: 19997
 scrutiny_version: "0.7.2"
 scrutiny_influxdb_version: "2.2.0"
 
+scrutiny_cron_hour: "*/12"
+scrutiny_cron_minute: "30"
+
 email_username: ~
 email_host: ~
 email_port: ~
