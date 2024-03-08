@@ -2,6 +2,6 @@
 - name: Converge
   hosts: all
   vars:
-    netdata_email_disabled: true
+    netdata_emails_disabled: true
   roles:
     - role: netdata

@@ -4,7 +4,7 @@ email_port: ~
 email_username: ~
 email_password: ~
 
-netdata_email_disabled: false
+netdata_emails_disabled: false
 netdata_port: 19999
 netdata_token: ~
 netdata_rooms: ~

@@ -9,8 +9,8 @@
       - curl
     update_cache: true
 
-- name: When monitoring_emails are disabled.
-  when: monitoring_email_disabled is false
+- name: When emails are not disabled.
+  when: netdata_emails_disabled is false
   block:
 
     - name: Assert that all required inputs have been provided.
@@ -93,8 +93,8 @@
     search_string: sendmail=
     line: "sendmail='/usr/bin/msmtp'"
 
-- name: When monitoring_emails are disabled.
-  when: monitoring_email_disabled is false
+- name: When emails are not disabled.
+  when: netdata_emails_disabled is false
   block:
 
     - name: Set netdata email sender.
