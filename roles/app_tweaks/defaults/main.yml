@@ -24,5 +24,7 @@ app_tweaks_enable_jenkins: false
 app_tweaks_enable_drone: false
 app_tweaks_drone_exec_download_url: "https://github.com/drone-runners/drone-runner-exec/releases/latest/download/drone_runner_exec_linux_amd64.tar.gz"
 app_tweaks_drone_rpc_secret: ~
+app_tweaks_drone_rpc_subdomain: "drone"
+app_tweaks_drone_rpc_proto: "https"
 app_tweaks_drone_runner_capacity: 1
 app_tweaks_build_username: build

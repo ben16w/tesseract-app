@@ -338,8 +338,8 @@
         group: "{{ app_tweaks_build_username }}"
         mode: '0600'
         block: |
-          DRONE_RPC_PROTO=http
-          DRONE_RPC_HOST=drone.{{ tesseract_domain }}
+          DRONE_RPC_PROTO={{ app_tweaks_drone_rpc_proto }}
+          DRONE_RPC_HOST={{ app_tweaks_drone_rpc_subdomain }}.{{ tesseract_domain }}
           DRONE_RPC_SECRET={{ app_tweaks_drone_rpc_secret }}
           DRONE_LOG_FILE="/home/{{ app_tweaks_build_username }}/.drone-runner-exec/log.txt"
           DRONE_RUNNER_CAPACITY={{ app_tweaks_drone_runner_capacity }}
