@@ -104,7 +104,7 @@
 
 - name: Add extra docker environment variables.
   no_log: true
-  with_items: "{{ docker_extra_vars | dict2items }}"
+  loop: "{{ docker_extra_vars | dict2items }}"
   ansible.builtin.lineinfile:
     path: "{{ tesseract_files_path }}/docker/.env"
     search_string: TESSERACT_{{ item.key | upper }}=
@@ -121,12 +121,12 @@
 - name: Generate list of Docker compose files.
   ansible.builtin.set_fact:
     docker_compose_list: "{{ docker_compose_list + [tesseract_files_path + '/docker/docker-compose.' + item + '.yml'] }}"
-  with_items: "{{ docker_apps }}"
+  loop: "{{ docker_apps }}"
 
 - name: Add extra Docker compose files.
   ansible.builtin.set_fact:
     docker_compose_list: "{{ docker_compose_list + [item] }}"
-  with_items: "{{ docker_extra_compose_files }}"
+  loop: "{{ docker_extra_compose_files }}"
   when: docker_extra_compose_files | length > 0
 
 - name: Create and start Docker apps using cli.

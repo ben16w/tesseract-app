@@ -178,7 +178,7 @@
         group: root
         mode: '0644'
         force: false
-      with_items:
+      loop:
         - { src: ca.crt, dest: ca.crt }
         - { src: client.crt, dest: client.crt }
         - { src: client.key, dest: client.key }
@@ -193,7 +193,7 @@
         owner: root
         group: root
         mode: '0644'
-      with_items:
+      loop:
         - { search: auth-user-pass, line: auth-user-pass /etc/openvpn/custom/openvpn-credentials.txt }
         - { search: ca, line: ca /etc/openvpn/custom/ca.crt }
         - { search: cert, line: cert /etc/openvpn/custom/client.crt }
