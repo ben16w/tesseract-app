@@ -13,7 +13,7 @@ email_host: ~
 email_port: ~
 email_password: ~
 
-docker_data_path: ~
+docker_data_paths: []
 docker_appdata_path: ~
 
 docker_compose_repo: ~

@@ -6,24 +6,29 @@
       - tesseract_username is not none
       - tesseract_hostname is not none
       - tesseract_domain is not none
+
       - email_username is not none
       - email_host is not none
       - email_port is not none
       - email_password is not none
-      - docker_data_path is not none
-      - docker_appdata_path is not none
+
       - docker_compose_repo is not none
+
+      - docker_data_paths is iterable
+      - docker_data_paths | length > 0
+      - docker_appdata_path is not none
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
   ansible.builtin.user:
     name: "{{ tesseract_username }}"
 
-- name: Make sure data path exists.
+- name: Make sure data paths exist.
   ansible.builtin.file:
-    path: "{{ docker_data_path }}"
+    path: "{{ item }}"
     state: directory
     mode: '0755'
+  loop: "{{ docker_data_paths }}"
 
 - name: Make sure appdata path exists.
   ansible.builtin.file:
@@ -87,7 +92,6 @@
     mode: '0600'
     block: |
       COMPOSE_PROJECT_NAME="{{ docker_project_name }}"
-      TESSERACT_DATA_PATH="{{ docker_data_path }}"
       TESSERACT_APPDATA_PATH="{{ docker_appdata_path }}"
       TESSERACT_USERNAME="{{ tesseract_username }}"
       TESSERACT_EMAIL_USERNAME="{{ email_username }}"
@@ -101,6 +105,17 @@
       TESSERACT_GID="{{ tesseract_user_details.group }}"
       TESSERACT_DOCKER_USERNAME="{{ docker_default_username }}"
       TESSERACT_DOCKER_PASSWORD="{{ docker_default_password }}"
+
+- name: Add data paths to docker environment variables.
+  loop: "{{ docker_data_paths }}"
+  ansible.builtin.lineinfile:
+    path: "{{ tesseract_files_path }}/docker/.env"
+    search_string: TESSERACT_{{ item.key | upper }}_PATH=
+    create: true
+    owner: root
+    group: root
+    mode: '0600'
+    line: "TESSERACT_{{ item.key | upper }}_PATH=\"{{ item.value }}\""
 
 - name: Add extra docker environment variables.
   no_log: true
