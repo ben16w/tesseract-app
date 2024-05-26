@@ -110,12 +110,12 @@
   loop: "{{ docker_data_paths }}"
   ansible.builtin.lineinfile:
     path: "{{ tesseract_files_path }}/docker/.env"
-    search_string: TESSERACT_{{ item.key | upper }}_PATH=
+    search_string: TESSERACT_{{ item | basename | upper }}_PATH=
     create: true
     owner: root
     group: root
     mode: '0600'
-    line: "TESSERACT_{{ item.key | upper }}_PATH=\"{{ item.value }}\""
+    line: "TESSERACT_{{ item | basename | upper }}_PATH=\"{{ item }}\""
 
 - name: Add extra docker environment variables.
   no_log: true
