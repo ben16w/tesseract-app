@@ -14,6 +14,8 @@ email_port: ~
 email_password: ~
 
 docker_data_paths: []
+  # - name: example
+  #   path: /mnt/example
 docker_appdata_path: ~
 
 docker_compose_repo: ~

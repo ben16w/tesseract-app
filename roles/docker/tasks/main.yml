@@ -25,7 +25,7 @@
 
 - name: Make sure data paths exist.
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: directory
     mode: '0755'
   loop: "{{ docker_data_paths }}"
@@ -110,12 +110,12 @@
   loop: "{{ docker_data_paths }}"
   ansible.builtin.lineinfile:
     path: "{{ tesseract_files_path }}/docker/.env"
-    search_string: TESSERACT_{{ item | basename | upper }}_PATH=
+    search_string: TESSERACT_{{ item.name | upper }}_PATH=
     create: true
     owner: root
     group: root
     mode: '0600'
-    line: "TESSERACT_{{ item | basename | upper }}_PATH=\"{{ item }}\""
+    line: "TESSERACT_{{ item.name | upper }}_PATH=\"{{ item.path }}\""
 
 - name: Add extra docker environment variables.
   no_log: true
