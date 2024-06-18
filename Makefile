@@ -29,7 +29,7 @@ endef
 # Install Python packages using pip.
 .PHONY: install-pip
 install-pip:
-	@pip install -U -r requirements.txt
+	@pip install --user --break-system-packages --upgrade -r requirements.txt
 
 # Run all tests for all roles in the repository using molecule.
 .PHONY: test
