@@ -7,6 +7,7 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  help         	Show this help."
+	@echo "  install-pip  	Install Python packages using pip."
 	@echo "  test         	Run all tests for all roles in the repository using molecule."
 	@echo "  test-changed 	Run all tests for a roles which have been modified since the last commit using molecule."
 	@echo "  test-distros 	Run all tests for all roles in the repository using molecule on multiple distros."
@@ -24,6 +25,11 @@ define molecule-test
 		echo "No molecule.yml found for role: $${moleculedir}" ;\
 	fi
 endef
+
+# Install Python packages using pip.
+.PHONY: install-pip
+install-pip:
+	@pip install -U -r requirements.txt
 
 # Run all tests for all roles in the repository using molecule.
 .PHONY: test

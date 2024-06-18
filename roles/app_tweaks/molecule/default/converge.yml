@@ -11,7 +11,7 @@
     app_tweaks_enable_jenkins: true
     app_tweaks_enable_drone: true
 
-    app_tweaks_openvpn_download_url: "https://docs.ben16w.site/s/8o5f5kDGyqj84YY/download/tesseract_openvpn.zip"
+    app_tweaks_openvpn_download_url: https://docs.ben16w.site/s/3KfWjizpp6tRHam/download/tesseract_openvpn.zip
     app_tweaks_transmission_username: "user"
     app_tweaks_transmission_password: "password"
     app_tweaks_drone_rpc_secret: "ABDC1234"
