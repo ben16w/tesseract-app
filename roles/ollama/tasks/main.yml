@@ -1,0 +1,87 @@
+---
+
+- name: Ensure tesseract user exists.
+  register: tesseract_user_details
+  ansible.builtin.user:
+    name: "{{ tesseract_username }}"
+
+- name: Install AMD ROCm.
+  when: ollama_install_rocm is true
+  block:
+
+    - name: Assert that all required inputs have been provided.
+      ansible.builtin.assert:
+        that:
+          - ollama_rocm_version_short is not none
+          - ollama_rocm_version_long is not none
+
+    - name: Check if the distribution is Ubuntu.
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == 'Ubuntu'
+
+    - name: Install necessary Linux headers and modules.
+      ansible.builtin.apt:
+        name:
+          - "linux-headers-{{ ansible_kernel }}"
+          - "linux-modules-extra-{{ ansible_kernel }}"
+        state: present
+        update_cache: true
+
+    - name: Add the tesseract user to the render and video groups.
+      ansible.builtin.user:
+        name: "{{ tesseract_username }}"
+        groups:
+          - render
+          - video
+        append: true
+
+    - name: Download the AMDGPU driver package.
+      ansible.builtin.get_url:
+        url: "https://repo.radeon.com/amdgpu-install/\
+          {{ ollama_rocm_version_short }}/ubuntu/\
+          {{ ansible_distribution_release }}/amdgpu-install_\
+          {{ ollama_rocm_version_long }}_all.deb"
+        dest: /tmp/amdgpu-install.deb
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Install the AMDGPU driver package.
+      ansible.builtin.apt:
+        deb: /tmp/amdgpu-install.deb
+
+    - name: Install AMDGPU DKMS and ROCm.
+      ansible.builtin.apt:
+        name:
+          - amdgpu-dkms
+          - rocm
+        state: present
+        update_cache: true
+
+- name: Download Ollama binary.
+  ansible.builtin.get_url:
+    url: https://ollama.com/download/ollama-linux-amd64
+    dest: /usr/bin/ollama
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy ollama.service template to /etc/systemd/system.
+  ansible.builtin.template:
+    src: templates/ollama.service.j2
+    dest: /etc/systemd/system/ollama.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Start and enable ollama service.
+  ansible.builtin.service:
+    name: ollama
+    state: started
+    enabled: true
+
+- name: Load the Ollama models.
+  include_tasks: build_model.yml
+  loop: "{{ ollama_models }}"
+  when: ollama_models | length > 0

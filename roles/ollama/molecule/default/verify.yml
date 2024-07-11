@@ -1,0 +1,30 @@
+---
+- name: Verify
+  hosts: all
+  vars_files:
+    - ../../defaults/main.yml
+  vars:
+    ollama_test_port: 8080
+    ollama_test_model: "TinyLlama"
+  tasks:
+
+    - name: Check if the model exists.
+      ansible.builtin.shell:
+        cmd: "set -o pipefail && ollama list | grep {{ ollama_test_model }}"
+        executable: /bin/bash
+      environment:
+        OLLAMA_HOST: "127.0.0.1:{{ ollama_test_port }}"
+      register: ollama_list
+      failed_when: ollama_list.rc != 0
+
+    - name: Generate a response from the model.
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ ollama_test_port }}/api/generate"
+        method: POST
+        body_format: json
+        body:
+          model: "{{ ollama_test_model }}"
+          prompt: "Why is the sky blue?"
+          stream: false
+      register: generate_response
+      failed_when: generate_response.status != 200

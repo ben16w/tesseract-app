@@ -1,0 +1,48 @@
+---
+
+- name: Check if the model already exists in Ollama.
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && ollama list | grep {{ item.name }}"
+    executable: /bin/bash
+  environment:
+    OLLAMA_HOST: "127.0.0.1:{{ ollama_port }}"
+  register: ollama_list
+  changed_when: false
+  failed_when: ollama_list.rc == 2
+
+- name: If the model does not exist, download and create the model.
+  when: ollama_list.rc == 1
+  block:
+
+    - name: Assert that the model file is a gguf file.
+      ansible.builtin.assert:
+        that:
+          - item.url | regex_search('.*\.gguf$')
+
+    - name: Download the model file to /tmp directory.
+      ansible.builtin.get_url:
+        url: "{{ item.url }}"
+        dest: "/tmp/{{ item.name }}.gguf"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Create the Modelfile containing the model path.
+      ansible.builtin.template:
+        src: templates/Modelfile.j2
+        dest: "/tmp/Modelfile.{{ item.name }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Build the Ollama model.
+      ansible.builtin.command:
+        cmd: "ollama create {{ item.name }} -f /tmp/Modelfile.{{ item.name }}"
+      environment:
+        OLLAMA_HOST: "127.0.0.1:{{ ollama_port }}"
+      register: ollama_create
+
+    - name: Delete the downloaded model file.
+      ansible.builtin.file:
+        path: "/tmp/{{ item.name }}.gguf"
+        state: absent

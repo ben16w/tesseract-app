@@ -1,0 +1,26 @@
+[Unit]
+Description=Ollama Service
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/ollama serve
+User={{ tesseract_username }}
+Group={{ tesseract_username }}
+Restart=always
+RestartSec=3
+Environment="OLLAMA_HOST=0.0.0.0:{{ ollama_port }}"
+
+{% if ollama_install_rocm is true and ollama_rocm_gfx_version is not none %}
+Environment="HSA_OVERRIDE_GFX_VERSION={{ ollama_rocm_gfx_version }}"
+{% endif %}
+
+{% if ollama_max_models is not none %}
+Environment="OLLAMA_MAX_LOADED_MODELS={{ ollama_max_models }}"
+{% endif %}
+
+{% if ollama_num_parallel is not none %}
+Environment="OLLAMA_NUM_PARALLEL={{ ollama_num_parallel }}"
+{% endif %}
+
+[Install]
+WantedBy=default.target
