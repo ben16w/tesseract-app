@@ -10,8 +10,8 @@
   changed_when: false
   failed_when: ollama_list.rc == 2
 
-- name: If the model does not exist, download and create the model.
-  when: ollama_list.rc == 1
+- name: If the model does not exist and url is provided, download and create the model.
+  when: ollama_list.rc == 1 and item.url is defined
   block:
 
     - name: Assert that the model file is a gguf file.
@@ -46,3 +46,10 @@
       ansible.builtin.file:
         path: "/tmp/{{ item.name }}.gguf"
         state: absent
+
+- name: If the model does not exist and url is not provided then pull the model.
+  when: ollama_list.rc == 1 and item.url is not defined
+  ansible.builtin.command:
+    cmd: "ollama pull {{ item.name }}"
+  environment:
+    OLLAMA_HOST: "127.0.0.1:{{ ollama_port }}"

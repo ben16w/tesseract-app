@@ -5,7 +5,7 @@
     - ../../defaults/main.yml
   vars:
     ollama_test_port: 8080
-    ollama_test_model: "TinyLlama"
+    ollama_test_model: TinyLlama
   tasks:
 
     - name: Check if the model exists.
