@@ -66,6 +66,7 @@
     owner: root
     group: root
     mode: '0755'
+  notify: restart ollama
 
 - name: Copy ollama.service template to /etc/systemd/system.
   ansible.builtin.template:
@@ -74,6 +75,7 @@
     owner: root
     group: root
     mode: '0644'
+  notify: restart ollama
 
 - name: Start and enable ollama service.
   ansible.builtin.service:

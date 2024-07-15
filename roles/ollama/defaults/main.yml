@@ -10,6 +10,7 @@ ollama_models: []
 #       resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
 ollama_max_models: ~
 ollama_num_parallel: ~
+ollama_keep_alive: 5m
 ollama_port: 11434
 
 ollama_install_rocm: false
