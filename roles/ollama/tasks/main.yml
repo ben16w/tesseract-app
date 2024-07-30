@@ -5,10 +5,11 @@
   ansible.builtin.user:
     name: "{{ tesseract_username }}"
 
-- name: Ensure curl is installed.
+- name: Ensure curl and cron are installed.
   ansible.builtin.package:
     name:
       - curl
+      - cron
     update_cache: true
 
 - name: Install AMD ROCm.
