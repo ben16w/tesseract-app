@@ -5,6 +5,12 @@
   ansible.builtin.user:
     name: "{{ tesseract_username }}"
 
+- name: Ensure curl is installed.
+  ansible.builtin.package:
+    name:
+      - curl
+    update_cache: true
+
 - name: Install AMD ROCm.
   when: ollama_install_rocm is true
   block:
@@ -82,6 +88,26 @@
     name: ollama
     state: started
     enabled: true
+
+- name: Ensure /opt/ollama/bin directory exists.
+  ansible.builtin.file:
+    path: /opt/ollama/bin
+    state: directory
+    mode: '0755'
+
+- name: Template the unload_models.sh script.
+  ansible.builtin.template:
+    src: templates/unload_models.sh.j2
+    dest: /opt/ollama/bin/unload_models.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create cron job to periodically unload models.
+  ansible.builtin.cron:
+    name: "Unload Ollama models"
+    job: /bin/bash /opt/ollama/bin/unload_models.sh
+    hour: "{{ ollama_unload_models_cron }}"
 
 - name: Load the Ollama models.
   include_tasks: build_model.yml

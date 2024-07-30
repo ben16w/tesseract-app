@@ -22,6 +22,7 @@
         url: "http://127.0.0.1:{{ ollama_test_port }}/api/generate"
         method: POST
         body_format: json
+        timeout: 120
         body:
           model: "{{ ollama_test_model }}"
           prompt: "Why is the sky blue?"
