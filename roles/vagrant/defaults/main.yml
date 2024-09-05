@@ -1,0 +1,5 @@
+---
+
+vagrant_virtualbox_version: ~
+# Example:
+# vagrant_virtualbox_version: 7.0

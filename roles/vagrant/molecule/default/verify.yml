@@ -3,4 +3,22 @@
   hosts: all
   vars_files:
     - ../../defaults/main.yml
+  vars:
+    check_virtualbox_version: "6.1"
   tasks:
+    - name: Run virtualbox and get the version.
+      ansible.builtin.command:
+        cmd: vboxmanage --version
+      changed_when: false
+      register: current_virtualbox_version
+      failed_when: "check_virtualbox_version not in current_virtualbox_version.stdout"
+
+    - name: Run vagrant and get the version.
+      ansible.builtin.command:
+        cmd: vagrant --version
+      changed_when: false
+
+    - name: Run vagrant init.
+      ansible.builtin.command:
+        cmd: vagrant init
+      changed_when: false
