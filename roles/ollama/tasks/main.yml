@@ -12,6 +12,10 @@
       - cron
     update_cache: true
 
+- name: Set architecture variable.
+  ansible.builtin.set_fact:
+    arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+
 - name: Install AMD ROCm.
   when: ollama_install_rocm is true
   block:
@@ -66,10 +70,43 @@
         state: present
         update_cache: true
 
-- name: Download Ollama binary.
+    - name: Check if ROCm package is already installed.
+      ansible.builtin.stat:
+        path: /usr/lib/ollama
+      register: rocm_package_installed
+
+    - name: Download the ROCm package to /tmp.
+      ansible.builtin.get_url:
+        url: "https://ollama.com/download/ollama-linux-{{ arch }}-rocm.tgz"
+        dest: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
+        owner: root
+        group: root
+        mode: '0644'
+      when: not rocm_package_installed.stat.exists
+
+    - name: Extract ROCm package to /usr.
+      ansible.builtin.unarchive:
+        src: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
+        dest: /usr
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0755'
+      when: not rocm_package_installed.stat.exists
+
+- name: Download the Ollama package to /tmp.
   ansible.builtin.get_url:
-    url: https://ollama.com/download/ollama-linux-amd64
-    dest: /usr/bin/ollama
+    url: "https://ollama.com/download/ollama-linux-{{ arch }}.tgz"
+    dest: "/tmp/ollama-linux-{{ arch }}.tgz"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Extract the Ollama package to /usr.
+  ansible.builtin.unarchive:
+    src: "/tmp/ollama-linux-{{ arch }}.tgz"
+    dest: /usr
+    remote_src: true
     owner: root
     group: root
     mode: '0755'
@@ -111,6 +148,7 @@
     hour: "{{ ollama_unload_models_cron }}"
 
 - name: Load the Ollama models.
-  include_tasks: build_model.yml
+  ansible.builtin.include_tasks:
+    file: build_model.yml
   loop: "{{ ollama_models }}"
   when: ollama_models | length > 0
