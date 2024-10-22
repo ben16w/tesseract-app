@@ -1,0 +1,117 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - app_tweaks_drone_rpc_secret is not none
+
+- name: Install Python and other tools
+  ansible.builtin.package:
+    name:
+      - python3
+      - python3-pip
+      - openssh-client
+      - shellcheck
+      - acl
+    update_cache: true
+
+- name: Ensure docker group exists.
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Create a build user.
+  ansible.builtin.user:
+    name: "{{ app_tweaks_build_username }}"
+    generate_ssh_key: true
+    state: present
+    shell: /bin/bash
+    create_home: true
+    home: "/home/{{ app_tweaks_build_username }}"
+    groups: docker
+
+- name: Install Ansible and Molecule.
+  become: true
+  become_user: "{{ app_tweaks_build_username }}"
+  ansible.builtin.pip:
+    name:
+      - ansible
+      - ansible-lint
+      - ansible-later
+      - yamllint
+      - molecule
+      - molecule-docker
+      - molecule-vagrant
+
+- name: Add .local/bin to build user path.
+  ansible.builtin.lineinfile:
+    path: "/home/{{ app_tweaks_build_username }}/.bashrc"
+    line: 'export PATH="$HOME/.local/bin:$PATH"'
+    owner: "{{ app_tweaks_build_username }}"
+    group: "{{ app_tweaks_build_username }}"
+    mode: '0644'
+    create: true
+
+- name: Download and extract Done Exec Runner.
+  ansible.builtin.unarchive:
+    src: "{{ app_tweaks_drone_exec_download_url }}"
+    dest: /tmp
+    remote_src: true
+
+- name: Copy Drone Exec Runner to correct location.
+  ansible.builtin.copy:
+    src: /tmp/drone-runner-exec
+    dest: /usr/local/bin/drone-runner-exec
+    owner: root
+    group: root
+    mode: '0755'
+    remote_src: true
+
+- name: Create config directory.
+  ansible.builtin.file:
+    path: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec"
+    state: directory
+    owner: "{{ app_tweaks_build_username }}"
+    group: "{{ app_tweaks_build_username }}"
+    mode: '0755'
+
+- name: Create config file.
+  no_log: true
+  notify: restart drone-runner-exec
+  ansible.builtin.blockinfile:
+    path: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/config"
+    create: true
+    owner: "{{ app_tweaks_build_username }}"
+    group: "{{ app_tweaks_build_username }}"
+    mode: '0600'
+    block: |
+      DRONE_RPC_PROTO={{ app_tweaks_drone_rpc_proto }}
+      DRONE_RPC_HOST={{ app_tweaks_drone_rpc_subdomain }}.{{ tesseract_domain }}
+      DRONE_RPC_SECRET={{ app_tweaks_drone_rpc_secret }}
+      DRONE_LOG_FILE="/home/{{ app_tweaks_build_username }}/.drone-runner-exec/log.txt"
+      DRONE_RUNNER_CAPACITY={{ app_tweaks_drone_runner_capacity }}
+      DRONE_RUNNER_ENVFILE="/home/build/.drone-runner-exec/drone.conf"
+
+- name: Template drone.conf file.
+  notify: restart drone-runner-exec
+  ansible.builtin.template:
+    src: templates/drone.conf.j2
+    dest: "/home/{{ app_tweaks_build_username }}/.drone-runner-exec/drone.conf"
+    owner: "{{ app_tweaks_build_username }}"
+    group: "{{ app_tweaks_build_username }}"
+    mode: '0600'
+
+- name: Create systemd service file.
+  notify: restart drone-runner-exec
+  ansible.builtin.template:
+    src: templates/drone-runner-exec.service.j2
+    dest: /etc/systemd/system/drone-runner-exec.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure drone-runner-exec service is enabled and running.
+  ansible.builtin.service:
+    name: drone-runner-exec
+    enabled: true
+    state: started
