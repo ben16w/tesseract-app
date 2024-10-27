@@ -1,0 +1,14 @@
+---
+
+
+- name: Ensure cron is installed.
+  ansible.builtin.package:
+    name:
+      - cron
+    update_cache: true
+
+- name: Add cron job to run Nextcloud system cron.php once every 10 minutes.
+  ansible.builtin.cron:
+    name: "Update Nextcloud system cron.php once every 10 minutes."
+    minute: "*/30"
+    job: "docker exec -u {{ tesseract_user_details.uid }} nextcloud php cron.php"

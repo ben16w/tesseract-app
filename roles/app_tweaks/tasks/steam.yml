@@ -1,0 +1,14 @@
+---
+
+- name: Ensure cron is installed.
+  ansible.builtin.package:
+    name:
+      - cron
+    update_cache: true
+
+- name: Add cron job to configure Steam display at 4am every day.
+  ansible.builtin.cron:
+    name: "Configure Steam display at 4am every day"
+    minute: "0"
+    hour: "4"
+    job: "docker exec -u root steam xrandr --auto"

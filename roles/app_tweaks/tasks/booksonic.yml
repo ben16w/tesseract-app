@@ -1,0 +1,30 @@
+---
+
+- name: Install music-tag using pip.
+  ansible.builtin.pip:
+    name:
+      - music-tag
+
+- name: Create scripts directory if it does not exist.
+  ansible.builtin.file:
+    path: "{{ tesseract_files_path }}/scripts"
+    state: directory
+    owner: root
+    group: root
+    mode: '0775'
+
+- name: Copy podcast_tagger script to scripts directory.
+  ansible.builtin.template:
+    src: templates/podcast_tagger.py.j2
+    dest: "{{ tesseract_files_path }}/scripts/podcast_tagger.py"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Add cron job for podcast_tagger script.
+  ansible.builtin.cron:
+    name: "Podcast tagger."
+    minute: "0"
+    hour: "0"
+    weekday: "*"
+    job: "python3 {{ tesseract_files_path }}/scripts/podcast_tagger.py"

@@ -4,6 +4,7 @@
 LOG_FILE="/var/log/tesseract.log"
 CSTATES_LIMIT="{{ app_tweaks_enable_steam_cstates_limit }}"
 DRY_RUN="false"
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 function usage()
 {
@@ -51,6 +52,11 @@ function log()
 # Check if script is running as root
 if [[ $EUID -ne 0 ]]; then
     error_exit "Script $0 must be run as root" 
+fi
+
+# Source environment variables from the .env file if it exists
+if [ -f "$SCRIPT_DIR"/.env ]; then
+    source "$SCRIPT_DIR"/.env || exit 1
 fi
 
 # Display usage information if -h or --help option is provided

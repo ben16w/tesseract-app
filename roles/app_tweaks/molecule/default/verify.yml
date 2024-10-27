@@ -4,14 +4,15 @@
   vars_files:
     - ../../defaults/main.yml
   tasks:
-    - name: Run cstate-limit.sh script on host and check if there's any errors.
+    - name: Run cstates-limit.sh script on host and check if there's any errors.
       ansible.builtin.command:
-        cmd: "bash {{ tesseract_files_path }}/scripts/cstate-limit.sh -d"
+        cmd: "bash {{ tesseract_files_path }}/scripts/cstates-limit.sh -d"
       register: cstate_limit
+      changed_when: false
 
-    - name: Fail if cstate-limit.sh script returned any errors.
+    - name: Fail if cstates-limit.sh script returned any errors.
       ansible.builtin.fail:
-        msg: "cstate-limit.sh script returned errors."
+        msg: "cstates-limit.sh script returned errors."
       when: cstate_limit.rc != 0
 
     - name: Verify drone-runner-exec service is running.

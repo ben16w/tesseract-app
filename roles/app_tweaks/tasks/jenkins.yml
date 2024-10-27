@@ -1,0 +1,23 @@
+---
+
+- name: Install Java.
+  ansible.builtin.package:
+    pkg:
+      - default-jre
+      - sshpass
+    update_cache: true
+
+- name: Ensure docker group exists.
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Create a build user.
+  ansible.builtin.user:
+    name: "{{ app_tweaks_build_username }}"
+    generate_ssh_key: true
+    state: present
+    shell: /bin/bash
+    create_home: true
+    home: "/home/{{ app_tweaks_build_username }}"
+    groups: docker

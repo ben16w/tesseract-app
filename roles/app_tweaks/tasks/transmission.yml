@@ -1,0 +1,84 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - app_tweaks_openvpn_download_url is not none
+      - app_tweaks_transmission_username is not none
+      - app_tweaks_transmission_password is not none
+
+- name: Install unzip.
+  ansible.builtin.package:
+    name:
+      - unzip
+    update_cache: true
+
+- name: Create transmission_openvpn directory if it does not exist.
+  ansible.builtin.file:
+    path: /tmp/transmission_openvpn
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Download and extract OpenVPN configuration.
+  ansible.builtin.unarchive:
+    src: "{{ app_tweaks_openvpn_download_url }}"
+    dest: /tmp/transmission_openvpn
+    remote_src: true
+
+- name: Create openvpn directory if it does not exist.
+  ansible.builtin.file:
+    path: "{{ app_tweaks_openvpn_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy OpenVPN configuration to correct location.
+  ansible.builtin.copy:
+    src: "/tmp/transmission_openvpn/{{ item.src }}"
+    dest: "{{ app_tweaks_openvpn_path }}/{{ item.dest }}"
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0644'
+    force: false
+  loop:
+    - { src: ca.crt, dest: ca.crt }
+    - { src: client.crt, dest: client.crt }
+    - { src: client.key, dest: client.key }
+    - { src: openvpn.ovpn, dest: default.ovpn }
+
+# Templates would be better but directrly extracting from cyberghost zip into files directory would no longer be supported.
+- name: Edit openvpn config.
+  ansible.builtin.lineinfile:
+    path: "{{ app_tweaks_openvpn_path }}/default.ovpn"
+    search_string: "{{ item.search }}"
+    line: "{{ item.line }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - { search: auth-user-pass, line: auth-user-pass /etc/openvpn/custom/openvpn-credentials.txt }
+    - { search: ca, line: ca /etc/openvpn/custom/ca.crt }
+    - { search: cert, line: cert /etc/openvpn/custom/client.crt }
+    - { search: key, line: key /etc/openvpn/custom/client.key }
+
+- name: Create Transmission config directory if it does not exist.
+  ansible.builtin.file:
+    path: "{{ app_tweaks_transmission_config_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create openvpn-credentials.txt file.
+  ansible.builtin.copy:
+    dest: "{{ app_tweaks_transmission_config_path }}/openvpn-credentials.txt"
+    content: |
+      {{ app_tweaks_transmission_username }}
+      {{ app_tweaks_transmission_password }}
+    owner: root
+    group: root
+    mode: '0644'
