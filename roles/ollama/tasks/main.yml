@@ -145,6 +145,7 @@
   ansible.builtin.cron:
     name: "Unload Ollama models"
     job: /bin/bash /opt/ollama/bin/unload_models.sh
+    minute: "0"
     hour: "{{ ollama_unload_models_cron }}"
 
 - name: Load the Ollama models.
