@@ -148,6 +148,13 @@
     minute: "0"
     hour: "{{ ollama_unload_models_cron }}"
 
+- name: Create cron job to restart ollama service.
+  ansible.builtin.cron:
+    name: "Restart Ollama service"
+    job: /bin/systemctl restart ollama.service
+    minute: "30"
+    hour: "{{ ollama_restart_hour_cron }}"
+
 - name: Load the Ollama models.
   ansible.builtin.include_tasks:
     file: build_model.yml

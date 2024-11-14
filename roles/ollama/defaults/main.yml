@@ -22,3 +22,4 @@ ollama_rocm_gfx_version: ~
 # Example: ollama_rocm_gfx_version: 10.3.0
 
 ollama_unload_models_cron: "*/3"
+ollama_restart_hour_cron: "3"
