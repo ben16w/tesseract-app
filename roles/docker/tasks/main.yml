@@ -149,3 +149,5 @@
     cmd: docker compose -f {{ docker_compose_list | join(' -f ') }} up -d --remove-orphans
     chdir: "{{ tesseract_files_path }}/docker"
   when: docker_apps | length > 0
+  register: docker_compose_result
+  changed_when: docker_compose_result.stdout.find('Creating') != -1

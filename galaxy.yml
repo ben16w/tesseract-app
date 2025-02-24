@@ -5,9 +5,16 @@ name: app
 version: 1.0.0
 readme: README.md
 authors:
-  - ben16w
-description: ""
+  - Ben Wadsworth
+description: Ansible roles for managing application configurations and services for tesseract.
 license:
   - Unlicense
 license_file: 'LICENSE'
 repository: https://github.com/ben16w/tesseract-app
+dependencies: {}
+build_ignore:
+  - .ansible
+  - .venv
+  - .drone.yml
+  - .gitignore
+  - requirements.txt

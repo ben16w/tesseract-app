@@ -21,24 +21,16 @@ services:
         path: /var/run
 
 steps:
-  - name: lint
-    image: python:3
-    commands:
-      - make install-pip
-      - export PATH="$$HOME/.local/bin:$$PATH"
-      - make lint
-
   - name: test-changed
     image: docker:dind
     volumes:
       - name: dockersock
         path: /var/run
     commands:
-      - git fetch origin
       - apk update
       - apk add bash make python3 py3-pip
-      - make install-pip
-      - export PATH="$$HOME/.local/bin:$$PATH"
+      - make install-venv
+      - make lint
       - make test-changed
     when:
       branch:
@@ -53,9 +45,9 @@ steps:
     commands:
       - apk update
       - apk add bash make python3 py3-pip
-      - make install-pip
-      - export PATH="$$HOME/.local/bin:$$PATH"
-      - DISTRO_LIST="debian12 ubuntu2004 ubuntu2204" make test-distros
+      - make install-venv
+      - make lint
+      - DISTRO_LIST="debian12 ubuntu2004 ubuntu2204" make test-all-distros
     when:
       branch:
         - main

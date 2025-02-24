@@ -41,11 +41,13 @@
       environment:
         OLLAMA_HOST: "127.0.0.1:{{ ollama_port }}"
       register: ollama_create
+      changed_when: true
 
     - name: Delete the downloaded model file.
       ansible.builtin.file:
         path: "/tmp/{{ item.name }}.gguf"
         state: absent
+      changed_when: true
 
 - name: If the model does not exist and url is not provided then pull the model.
   when: ollama_list.rc == 1 and item.url is not defined
@@ -53,3 +55,4 @@
     cmd: "ollama pull {{ item.name }}"
   environment:
     OLLAMA_HOST: "127.0.0.1:{{ ollama_port }}"
+  changed_when: true

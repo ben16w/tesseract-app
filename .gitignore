@@ -1,11 +1,14 @@
-host_vars
+### tesseract ###
 appdata
-.vault_pass
-
-.vagrant
 
 ### Ansible ###
 *.retry
+.ansible
+.vault_pass
+ansible_collections
+
+## Vagrant ###
+.vagrant
 
 ### Linux ###
 *~

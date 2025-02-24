@@ -20,8 +20,4 @@
         name: drone-runner-exec
         state: started
       register: service_status
-
-    - name: Fail if service was started.
-      ansible.builtin.fail:
-        msg: "Service drone-runner-exec was changed."
-      when: service_status.changed
+      failed_when: service_status.changed

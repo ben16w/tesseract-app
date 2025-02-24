@@ -53,6 +53,8 @@
     create: true
 
 - name: Download and extract Done Exec Runner.
+  retries: 3
+  delay: 10
   ansible.builtin.unarchive:
     src: "{{ app_tweaks_drone_exec_download_url }}"
     dest: /tmp
