@@ -6,11 +6,10 @@
       - tesseract_username is not none
       - tesseract_password is not none
 
-- name: Ensure gpg-agent and acl are installed.
+- name: Ensure gpg-agent is installed.
   ansible.builtin.apt:
     name:
       - gpg-agent
-      - acl
     state: present
     update_cache: true
 
@@ -29,8 +28,6 @@
   ansible.builtin.apt:
     pkg:
       - syncthing
-
-# Looks to be a bug where the /home/tesseract/.config directory is owned by root.
 
 - name: Set GUI password.
   become: true
@@ -53,14 +50,6 @@
     group: "{{ tesseract_username }}"
     mode: '0600'
   notify: restart syncthing
-
-- name: Make sure config directory is owned by tesseract.
-  ansible.builtin.file:
-    path: "{{ syncthing_config_dir }}/"
-    recurse: true
-    owner: "{{ tesseract_username }}"
-    group: "{{ tesseract_username }}"
-    mode: '0600'
 
 - name: Start syncthing service.
   ansible.builtin.service:

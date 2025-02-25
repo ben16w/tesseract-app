@@ -1,0 +1,16 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    tesseract_username: tesseract
+    tesseract_password: password
+  tasks:
+    - name: Create a new user
+      ansible.builtin.user:
+        name: "{{ tesseract_username }}"
+        password: "{{ tesseract_password | password_hash('sha512') }}"
+        shell: /bin/bash
+        home: /home/{{ tesseract_username }}
+        state: present
+        createhome: true
+        update_password: on_create
