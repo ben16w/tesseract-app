@@ -14,3 +14,10 @@
       ansible.builtin.uri:
         url: "http://localhost:{{ scrutiny_ui_port }}"
         status_code: 200
+
+    - name: Verify the Scrutiny collector runs successfully.
+      ansible.builtin.command:
+        cmd: "/opt/scrutiny/bin/scrutiny-collector-metrics run --api-endpoint 'http://localhost:{{ scrutiny_ui_port }}'"
+      register: scrutiny_collector_output
+      failed_when: scrutiny_collector_output.rc != 0
+      changed_when: false

@@ -1,9 +1,14 @@
 [Unit]
 Description=Systemd service to start a Scrutiny app at boot.
+After=influxdb.service
+Requires=influxdb.service
 
 [Service]
 Type=simple
+ExecStartPre=/bin/bash -c 'while ! nc -z localhost {{ scrutiny_influxdb_port }}; do sleep 2; done'
 ExecStart=/opt/scrutiny/bin/scrutiny-web start --config /opt/scrutiny/config/scrutiny.yaml
+Restart=always
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target

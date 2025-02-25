@@ -1,9 +1,11 @@
 ---
 
+tesseract_username: tesseract
+
 scrutiny_ui_port: 19998
 scrutiny_influxdb_port: 19997
 
-scrutiny_version: "0.7.2"
+scrutiny_version: ~ # e.g. "0.8.1"
 scrutiny_influxdb_version: "2.2.0"
 
 scrutiny_cron_hour: "*/12"

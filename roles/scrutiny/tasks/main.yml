@@ -7,6 +7,7 @@
       - email_host is not none
       - email_port is not none
       - email_password is not none
+      - scrutiny_version is not none
 
 - name: Checking if architecture is amd64.
   ansible.builtin.set_fact:
@@ -23,11 +24,12 @@
     download_arch: "arm-7"
   when: '"armv7l" in ansible_architecture'
 
-- name: Install smartmontools and cron.
+- name: Install smartmontools, cron and netcat.
   ansible.builtin.apt:
     pkg:
       - smartmontools
       - cron
+      - netcat-openbsd
     update_cache: true
 
 - name: Create influxdb directory if it does not exist.
@@ -119,7 +121,6 @@
       - "--strip-components=1"
     creates: /opt/scrutiny/web/index.html
 
-# Probably should run as scrutiny user
 - name: Put all scrutiny configuration into place.
   ansible.builtin.template:
     src: scrutiny.yaml.j2
@@ -128,6 +129,7 @@
     owner: root
     group: root
     mode: '0755'
+  notify: restart scrutiny
 
 - name: Put scrutiny service file into place.
   ansible.builtin.template:

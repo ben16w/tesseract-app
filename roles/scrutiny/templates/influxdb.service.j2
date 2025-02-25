@@ -2,8 +2,12 @@
 Description=Systemd service to start a Influxed at boot.
 
 [Service]
+User={{ tesseract_username }}
+Group={{ tesseract_username }}
 Type=simple
 ExecStart=/opt/influxdb/influxd --http-bind-address :{{ scrutiny_influxdb_port }}
+Restart=always
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target

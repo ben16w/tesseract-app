@@ -1,0 +1,7 @@
+---
+
+- name: Restart scrutiny service.
+  ansible.builtin.service:
+    name: scrutiny.service
+    state: restarted
+  listen: restart scrutiny

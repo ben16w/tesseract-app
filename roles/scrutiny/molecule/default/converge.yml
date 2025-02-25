@@ -6,5 +6,6 @@
     email_host: "email.com"
     email_port: "465"
     email_password: "password"
+    scrutiny_version: "0.8.1"
   roles:
     - role: scrutiny
