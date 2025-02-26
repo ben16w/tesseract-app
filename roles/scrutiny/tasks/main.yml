@@ -39,12 +39,14 @@
     mode: '0755'
 
 - name: Download influxdb.
-  retries: 3
-  delay: 10
   ansible.builtin.get_url:
     url: "https://dl.influxdata.com/influxdb/releases/influxdb2-{{ scrutiny_influxdb_version }}-linux-{{ download_arch }}.tar.gz"
     dest: /tmp/influxdb.tar.gz
     mode: '0755'
+  register: download_influxdb
+  retries: 5
+  delay: 10
+  until: download_influxdb is succeeded
 
 - name: Unarchive influxdb from archive.
   ansible.builtin.unarchive:
@@ -89,28 +91,34 @@
     mode: '0755'
 
 - name: Download scrutiny-web.
-  retries: 3
-  delay: 10
   ansible.builtin.get_url:
     url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ scrutiny_version }}/scrutiny-web-linux-{{ download_arch }}"
     dest: /opt/scrutiny/bin/scrutiny-web
     mode: '0755'
+  register: download_scrutiny_web
+  retries: 5
+  delay: 10
+  until: download_scrutiny_web is succeeded
 
 - name: Download scrutiny-collector-metrics.
-  retries: 3
-  delay: 10
   ansible.builtin.get_url:
     url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ scrutiny_version }}/scrutiny-collector-metrics-linux-{{ download_arch }}"
     dest: /opt/scrutiny/bin/scrutiny-collector-metrics
     mode: '0755'
+  register: download_scrutiny_collector_metrics
+  retries: 5
+  delay: 10
+  until: download_scrutiny_collector_metrics is succeeded
 
 - name: Download scrutiny-web-frontend.
-  retries: 3
-  delay: 10
   ansible.builtin.get_url:
     url: https://github.com/AnalogJ/scrutiny/releases/download/v{{ scrutiny_version }}/scrutiny-web-frontend.tar.gz
     dest: /tmp/scrutiny-web-frontend.tar.gz
     mode: '0755'
+  register: download_scrutiny_web_frontend
+  retries: 5
+  delay: 10
+  until: download_scrutiny_web_frontend is succeeded
 
 - name: Unarchive scrutiny-web-frontend from archive.
   ansible.builtin.unarchive:

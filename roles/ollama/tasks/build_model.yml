@@ -26,6 +26,10 @@
         owner: root
         group: root
         mode: '0644'
+      register: download_model
+      retries: 5
+      delay: 10
+      until: download_model is succeeded
 
     - name: Create the Modelfile containing the model path.
       ansible.builtin.template:

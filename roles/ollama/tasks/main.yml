@@ -57,6 +57,10 @@
         owner: root
         group: root
         mode: '0644'
+      register: download_driver
+      retries: 5
+      delay: 10
+      until: download_driver is succeeded
 
     - name: Install the AMDGPU driver package.
       ansible.builtin.apt:
@@ -82,6 +86,10 @@
         owner: root
         group: root
         mode: '0644'
+      register: download_rocm
+      retries: 5
+      delay: 10
+      until: download_rocm is succeeded
       when: not rocm_package_installed.stat.exists
 
     - name: Extract ROCm package to /usr.
@@ -101,6 +109,10 @@
     owner: root
     group: root
     mode: '0644'
+  register: download_ollama
+  retries: 5
+  delay: 10
+  until: download_ollama is succeeded
 
 - name: Extract the Ollama package to /usr.
   ansible.builtin.unarchive:

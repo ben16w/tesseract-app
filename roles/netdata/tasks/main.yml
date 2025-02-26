@@ -42,8 +42,6 @@
           password "{{ email_password }}"
 
 - name: Download netdata install script.
-  retries: 3
-  delay: 10
   ansible.builtin.get_url:
     url: https://my-netdata.io/kickstart.sh
     dest: /tmp/netdata_install.sh
@@ -51,6 +49,10 @@
     group: root
     mode: '0744'
     force: false
+  register: download_netdata
+  retries: 5
+  delay: 10
+  until: download_netdata is succeeded
 
 - name: Install netdata using downloaded script.
   notify: restart netdata

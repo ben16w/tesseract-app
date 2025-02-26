@@ -14,14 +14,16 @@
     update_cache: true
 
 - name: Download Homer archive.
-  retries: 3
-  delay: 10
   ansible.builtin.get_url:
     url: https://github.com/bastienwirtz/homer/releases/latest/download/homer.zip
     dest: /tmp/homer.zip
     mode: '0744'
     owner: root
     group: root
+  register: download_homer
+  retries: 5
+  delay: 10
+  until: download_homer is succeeded
 
 - name: Create Homer directory if it does not exist.
   ansible.builtin.file:
@@ -61,6 +63,10 @@
     repo: https://github.com/WalkxCode/dashboard-icons
     dest: /tmp/dashboard-icons
     version: main
+  register: download_dashboard_icons
+  retries: 5
+  delay: 10
+  until: download_dashboard_icons is succeeded
 
 - name: Copy dashboard icons
   ansible.builtin.copy:

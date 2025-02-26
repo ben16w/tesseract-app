@@ -35,12 +35,14 @@
     groups: docker
 
 - name: Download and extract Done Exec Runner.
-  retries: 3
-  delay: 10
   ansible.builtin.unarchive:
     src: "{{ app_tweaks_drone_exec_download_url }}"
     dest: /tmp
     remote_src: true
+  register: download_drone_exec
+  retries: 5
+  delay: 10
+  until: download_drone_exec is succeeded
 
 - name: Copy Drone Exec Runner to correct location.
   ansible.builtin.copy:

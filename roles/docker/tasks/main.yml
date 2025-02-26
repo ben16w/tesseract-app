@@ -37,12 +37,14 @@
     mode: '0755'
 
 - name: Download docker install script.
-  retries: 3
-  delay: 10
   ansible.builtin.get_url:
     url: https://get.docker.com
     dest: /tmp/docker_install.sh
     mode: '0744'
+  register: download_docker
+  retries: 5
+  delay: 10
+  until: download_docker is succeeded
 
 - name: Install docker. # Won't update
   ansible.builtin.command:
@@ -81,6 +83,10 @@
     dest: "{{ tesseract_files_path }}/docker"
     version: "{{ docker_compose_repo_version }}"
     force: true
+  register: download_docker_compose
+  retries: 5
+  delay: 10
+  until: download_docker_compose is succeeded
 
 - name: Set environment variables for docker.
   no_log: true

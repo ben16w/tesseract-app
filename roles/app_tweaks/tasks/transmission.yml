@@ -26,6 +26,10 @@
     src: "{{ app_tweaks_openvpn_download_url }}"
     dest: /tmp/transmission_openvpn
     remote_src: true
+  register: download_openvpn
+  retries: 5
+  delay: 10
+  until: download_openvpn is succeeded
 
 - name: Create openvpn directory if it does not exist.
   ansible.builtin.file:
