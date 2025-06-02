@@ -12,6 +12,9 @@ license:
 license_file: 'LICENSE'
 repository: https://github.com/ben16w/tesseract-app
 dependencies: {}
+tags:
+  - linux
+  - infrastructure
 build_ignore:
   - .ansible
   - .venv
