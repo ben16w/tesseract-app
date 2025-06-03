@@ -64,10 +64,16 @@
     group: root
     mode: '0644'
   loop:
-    - { search: auth-user-pass, line: auth-user-pass /etc/openvpn/custom/openvpn-credentials.txt }
+    - { search: auth-user-pass, line: auth-user-pass /config/openvpn-credentials.txt }
     - { search: ca, line: ca /etc/openvpn/custom/ca.crt }
     - { search: cert, line: cert /etc/openvpn/custom/client.crt }
     - { search: key, line: key /etc/openvpn/custom/client.key }
+
+- name: Remove ncp-disable line from openvpn config.
+  ansible.builtin.lineinfile:
+    path: "{{ app_tweaks_openvpn_path }}/default.ovpn"
+    search_string: 'ncp-disable'
+    state: absent
 
 - name: Create Transmission config directory if it does not exist.
   ansible.builtin.file:
