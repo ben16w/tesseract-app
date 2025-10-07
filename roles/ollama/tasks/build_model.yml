@@ -14,10 +14,12 @@
   when: ollama_list.rc == 1 and item.url is defined
   block:
 
-    - name: Assert that the model file is a gguf file.
+    - name: Assert that the URL is valid and points to a gguf file.
       ansible.builtin.assert:
         that:
-          - item.url | regex_search('.*\.gguf$')
+          - item.url | regex_search('^https?://') is not none
+          - item.url | regex_search('.*\.gguf$') is not none
+        fail_msg: "URL must be a valid HTTP/HTTPS URL ending with .gguf"
 
     - name: Download the model file to /tmp directory.
       ansible.builtin.get_url:

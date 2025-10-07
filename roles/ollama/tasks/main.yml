@@ -167,7 +167,7 @@
     minute: "30"
     hour: "{{ ollama_restart_hour_cron }}"
 
-- name: Load the Ollama models.
+- name: Ensure the Ollama models are downloaded.
   ansible.builtin.include_tasks:
     file: build_model.yml
   loop: "{{ ollama_models }}"

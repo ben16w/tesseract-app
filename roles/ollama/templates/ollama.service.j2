@@ -10,6 +10,7 @@ Restart=always
 RestartSec=3
 Environment="OLLAMA_HOST=0.0.0.0:{{ ollama_port }}"
 Environment="OLLAMA_KEEP_ALIVE={{ ollama_keep_alive }}"
+Environment="OLLAMA_CONTEXT_LENGTH={{ ollama_context_length }}"
 
 {% if ollama_install_rocm is true and ollama_rocm_gfx_version is not none %}
 Environment="HSA_OVERRIDE_GFX_VERSION={{ ollama_rocm_gfx_version }}"
