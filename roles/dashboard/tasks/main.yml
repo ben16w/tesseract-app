@@ -75,7 +75,7 @@
     remote_src: true
     owner: root
     group: root
-    mode: '0644'
+    mode: '0755'
 
 - name: Create Homer config.yml file.
   notify: restart homer
