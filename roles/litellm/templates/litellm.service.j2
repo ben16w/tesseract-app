@@ -9,6 +9,10 @@ Group={{ tesseract_username }}
 Restart=always
 RestartSec=3
 Environment="PATH=/opt/litellm/venv/bin:{{ ansible_env.PATH }}"
+Environment="HOST={{ litellm_host }}"
+Environment="PORT={{ litellm_port }}"
+Environment="NO_DOCS=True"
+Environment="NO_REDOC=True"
 
 [Install]
 WantedBy=default.target
