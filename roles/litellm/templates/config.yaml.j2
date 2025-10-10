@@ -1,0 +1,8 @@
+model_list:
+{% for model in litellm_models %}
+  - model_name: {{ model.model_name }}
+    litellm_params:
+{% for key, value in model.litellm_params.items() %}
+      {{ key }}: {{ value }}
+{% endfor %}
+{% endfor %}

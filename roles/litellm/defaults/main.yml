@@ -1,0 +1,13 @@
+---
+
+tesseract_username: "tesseract"
+
+litellm_port: 4000
+
+litellm_models:
+  - model_name: azure-gpt-4o
+    litellm_params:
+      model: azure/your-azure-model-deployment
+      api_base: "{{ lookup('env', 'AZURE_API_BASE') }}"
+      api_key: "{{ lookup('env', 'AZURE_API_KEY') }}"
+      api_version: "2025-01-01-preview"
