@@ -1,10 +1,9 @@
 ---
-- name: Ensure litellm user exists
+
+- name: Ensure tesseract user exists.
+  register: tesseract_user_details
   ansible.builtin.user:
-    name: "{{ litellm_proxy_user }}"
-    group: "{{ litellm_proxy_group }}"
-    system: true
-    create_home: false
+    name: "{{ tesseract_username }}"
 
 - name: Ensure python3 and venv are installed
   ansible.builtin.package:
@@ -37,14 +36,14 @@
 - name: Install LiteLLM[proxy] in venv
   ansible.builtin.command:
     cmd: "/opt/litellm/venv/bin/pip install 'litellm[proxy]'"
+    creates: "/opt/litellm/venv/bin/litellm"
   environment:
     VIRTUAL_ENV: "/opt/litellm/venv"
     PATH: "/opt/litellm/venv/bin:{{ ansible_env.PATH }}"
-  creates: "/opt/litellm/venv/bin/litellm"
 
 - name: Template the LiteLLM config file
   ansible.builtin.template:
-    src: config.yaml.j2
+    src: templates/config.yaml.j2
     dest: "/opt/litellm/config.yaml"
     owner: root
     group: root
@@ -52,12 +51,12 @@
 
 - name: Deploy systemd service
   ansible.builtin.template:
-    src: litellm-proxy.service.j2
+    src: templates/litellm.service.j2
     dest: "/etc/systemd/system/litellm.service"
     owner: root
     group: root
     mode: '0755'
-  notify: Restart litellm proxy
+  notify: restart litellm
 
 - name: Enable and start litellm proxy
   ansible.builtin.systemd:

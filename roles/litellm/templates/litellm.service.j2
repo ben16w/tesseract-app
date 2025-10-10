@@ -3,7 +3,7 @@ Description=LiteLLM Proxy Service
 After=network-online.target
 
 [Service]
-ExecStart=/opt/litellm/venv/bin/litellm --config {{ litellm_config_path }}
+ExecStart=/opt/litellm/venv/bin/litellm --config /opt/litellm/config.yaml
 User={{ tesseract_username }}
 Group={{ tesseract_username }}
 Restart=always

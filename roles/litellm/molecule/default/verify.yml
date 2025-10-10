@@ -14,6 +14,6 @@
 
     - name: Check litellm binary exists in venv
       ansible.builtin.stat:
-        path: /opt/litellm/bin/litellm
+        path: /opt/litellm/venv/bin
       register: litellm_bin
       failed_when: not litellm_bin.stat.exists
