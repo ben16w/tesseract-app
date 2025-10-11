@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# List of desired model names (from Ansible variable)
+OLLAMA_MODEL_NAMES="{% for m in ollama_models %}{{ m.name }} {% endfor %}"
+
+# Get installed models (skip header)
+INSTALLED_MODELS=$(ollama list | awk 'NR>1 {print $1}')
+
+for model in $INSTALLED_MODELS; do
+  if ! echo "$OLLAMA_MODEL_NAMES" | grep -qw "$model"; then
+    echo "Pruning model: $model"
+    ollama rm "$model"
+  fi
+done

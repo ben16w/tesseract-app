@@ -8,7 +8,7 @@ User={{ tesseract_username }}
 Group={{ tesseract_username }}
 Restart=always
 RestartSec=3
-Environment="OLLAMA_HOST=0.0.0.0:{{ ollama_port }}"
+Environment="OLLAMA_HOST={{ ollama_listen_host }}:{{ ollama_port }}"
 Environment="OLLAMA_KEEP_ALIVE={{ ollama_keep_alive }}"
 Environment="OLLAMA_CONTEXT_LENGTH={{ ollama_context_length }}"
 

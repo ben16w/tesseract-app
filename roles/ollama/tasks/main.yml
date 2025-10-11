@@ -167,6 +167,25 @@
     minute: "30"
     hour: "{{ ollama_restart_hour_cron }}"
 
+- name: Prune Ollama models if enabled.
+  when: ollama_prune_models
+  block:
+
+    - name: Template the prune_models.sh script.
+      ansible.builtin.template:
+        src: templates/prune_models.sh.j2
+        dest: /opt/ollama/bin/prune_models.sh
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create cron job to periodically prune models.
+      ansible.builtin.cron:
+        name: "Prune Ollama models"
+        job: /bin/bash /opt/ollama/bin/prune_models.sh
+        minute: "15"
+        hour: "{{ ollama_prune_models_cron }}"
+
 - name: Ensure the Ollama models are downloaded.
   ansible.builtin.include_tasks:
     file: build_model.yml
