@@ -6,3 +6,8 @@ model_list:
       {{ key }}: {{ value }}
 {%   endfor %}
 {% endfor %}
+
+general_settings:
+{% if litellm_master_key is not none %}
+  master_key: "{{ litellm_master_key }}"
+{% endif %}
