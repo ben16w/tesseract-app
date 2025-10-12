@@ -1,0 +1,18 @@
+[Unit]
+Description=LiteLLM Proxy Service
+After=network-online.target
+
+[Service]
+ExecStart=/opt/litellm/venv/bin/litellm --config /opt/litellm/config.yaml
+User={{ tesseract_username }}
+Group={{ tesseract_username }}
+Restart=always
+RestartSec=3
+Environment="PATH=/opt/litellm/venv/bin:{{ ansible_env.PATH }}"
+Environment="HOST={{ litellm_listen_host }}"
+Environment="PORT={{ litellm_port }}"
+Environment="NO_DOCS=True"
+Environment="NO_REDOC=True"
+
+[Install]
+WantedBy=default.target

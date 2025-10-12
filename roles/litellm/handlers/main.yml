@@ -1,0 +1,8 @@
+---
+
+- name: Reload systemd daemon and restart litellm service.
+  ansible.builtin.systemd:
+    name: litellm
+    state: restarted
+    daemon_reload: true
+  listen: "restart litellm"

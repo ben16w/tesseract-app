@@ -1,0 +1,20 @@
+---
+
+tesseract_username: "tesseract"
+
+litellm_port: 4000
+litellm_listen_host: "0.0.0.0"
+
+litellm_master_key: ~
+
+litellm_models: []
+# Example:
+# litellm_models:
+#   - model_name: github_copilot/gpt-4
+#     litellm_params:
+#       model: github_copilot/gpt-4
+#       extra_headers: {"Editor-Version": "vscode/1.105.0", "Copilot-Integration-Id": "vscode-chat"}
+#   - model_name: llama3.1
+#     litellm_params:
+#       model: ollama_chat/llama3.1
+#       api_base: "https://ai.welney.net"

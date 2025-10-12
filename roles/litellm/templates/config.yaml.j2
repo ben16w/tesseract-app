@@ -1,0 +1,18 @@
+model_list:
+{% for model in litellm_models %}
+  - model_name: {{ model.model_name }}
+    litellm_params:
+{%   for key, value in model.litellm_params.items() %}
+      {{ key }}: {{ value }}
+{%   endfor %}
+{% endfor %}
+
+general_settings:
+{% if litellm_master_key is not none %}
+  master_key: "{{ litellm_master_key }}"
+{% endif %}
+
+litellm_settings:
+  cache: True
+  cache_params:
+    type: local

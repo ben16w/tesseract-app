@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    litellm_port: 3000
+  roles:
+    - role: litellm

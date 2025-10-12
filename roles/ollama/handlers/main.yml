@@ -1,12 +1,8 @@
 ---
 
-- name: Reload systemd daemon
+- name: Reload systemd daemon and restart ollama service
   ansible.builtin.systemd:
-    daemon_reload: true
-  listen: "restart ollama"
-
-- name: Restart ollama service
-  ansible.builtin.service:
     name: ollama
     state: restarted
+    daemon_reload: true
   listen: "restart ollama"

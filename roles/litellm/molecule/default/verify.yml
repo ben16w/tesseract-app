@@ -1,0 +1,19 @@
+---
+- name: Verify
+  hosts: all
+  vars_files:
+    - ../../defaults/main.yml
+  tasks:
+
+    - name: Check litellm binary exists in venv
+      ansible.builtin.stat:
+        path: /opt/litellm/venv/bin
+      register: litellm_bin
+      failed_when: not litellm_bin.stat.exists
+
+    - name: Check litellm service is running
+      ansible.builtin.service:
+        name: litellm
+        state: started
+      register: service_status
+      failed_when: not service_status.state == 'started'
