@@ -17,3 +17,31 @@
         state: started
       register: service_status
       failed_when: not service_status.state == 'started'
+
+    - name: Check litellm is listening on the correct port
+      ansible.builtin.wait_for:
+        port: "{{ litellm_port }}"
+        state: started
+        timeout: 10
+      register: port_check
+      failed_when: not port_check.elapsed < 10
+
+    # make a request to the litellm server to list models
+    - name: List litellm models (expect failure without API key)
+      ansible.builtin.uri:
+        url: "http://localhost:{{ litellm_port }}/models"
+        method: GET
+        return_content: true
+      register: model_list_response
+      failed_when: model_list_response.status == 200
+
+    # make a request to the litellm server to list models with master key
+    - name: List litellm models with master key
+      ansible.builtin.uri:
+        url: "http://localhost:{{ litellm_port }}/models"
+        method: GET
+        return_content: true
+        headers:
+          Authorization: "Bearer {{ litellm_master_key }}"
+      register: model_list_response_key
+      failed_when: model_list_response_key.status != 200

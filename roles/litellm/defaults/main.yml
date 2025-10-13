@@ -7,6 +7,8 @@ litellm_listen_host: "0.0.0.0"
 
 litellm_master_key: ~
 
+litellm_timeout: 1800 # 30 minutes
+
 litellm_models: []
 # Example:
 # litellm_models:

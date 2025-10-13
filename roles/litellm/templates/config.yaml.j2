@@ -7,12 +7,13 @@ model_list:
 {%   endfor %}
 {% endfor %}
 
-general_settings:
-{% if litellm_master_key is not none %}
-  master_key: "{{ litellm_master_key }}"
-{% endif %}
-
 litellm_settings:
   cache: True
   cache_params:
     type: local
+
+general_settings:
+{% if litellm_master_key is not none %}
+  master_key: "os.environ/MASTER_KEY"
+{% endif %}
+  timeout: {{ litellm_timeout }}
