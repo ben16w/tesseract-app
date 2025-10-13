@@ -1,24 +1,29 @@
 ---
 - name: Verify
   hosts: all
-  vars_files:
-    - ../../defaults/main.yml
+  vars:
+    litellm_port: 3000
+    litellm_master_key: "sk-1234"
+    litellm_models:
+      - model_name: mock
+        litellm_params:
+          model: mock/model
   tasks:
 
-    - name: Check litellm binary exists in venv
+    - name: Check binary exists in venv.
       ansible.builtin.stat:
         path: /opt/litellm/venv/bin
       register: litellm_bin
       failed_when: not litellm_bin.stat.exists
 
-    - name: Check litellm service is running
+    - name: Check service is running.
       ansible.builtin.service:
         name: litellm
         state: started
       register: service_status
       failed_when: not service_status.state == 'started'
 
-    - name: Check litellm is listening on the correct port
+    - name: Check LiteLLM is listening on the correct port.
       ansible.builtin.wait_for:
         port: "{{ litellm_port }}"
         state: started
@@ -26,8 +31,7 @@
       register: port_check
       failed_when: not port_check.elapsed < 10
 
-    # make a request to the litellm server to list models
-    - name: List litellm models (expect failure without API key)
+    - name: List models expecting failure without API key.
       ansible.builtin.uri:
         url: "http://localhost:{{ litellm_port }}/models"
         method: GET
@@ -35,8 +39,7 @@
       register: model_list_response
       failed_when: model_list_response.status == 200
 
-    # make a request to the litellm server to list models with master key
-    - name: List litellm models with master key
+    - name: List models with master key.
       ansible.builtin.uri:
         url: "http://localhost:{{ litellm_port }}/models"
         method: GET
