@@ -6,6 +6,7 @@ litellm_port: 4000
 litellm_listen_host: "0.0.0.0"
 
 litellm_master_key: ~
+litellm_cache: true
 
 litellm_models: []
 # Example:
@@ -18,3 +19,15 @@ litellm_models: []
 #     litellm_params:
 #       model: ollama_chat/llama3.1
 #       api_base: "https://ai.welney.net"
+
+litellm_aliases: {}
+# Example:
+# litellm_aliases:
+#   gpt-4: github_copilot/gpt-4
+#   llama3: llama3.1
+
+litellm_fallbacks: []
+# Example:
+# litellm_fallbacks:
+#   - "copilot/gpt-4.1"
+#   - "gpt-3.5-turbo"

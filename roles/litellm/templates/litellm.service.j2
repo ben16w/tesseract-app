@@ -13,6 +13,9 @@ Environment="HOST={{ litellm_listen_host }}"
 Environment="PORT={{ litellm_port }}"
 Environment="NO_DOCS=True"
 Environment="NO_REDOC=True"
+{% if litellm_master_key is not none %}
+Environment="LITELLM_MASTER_KEY={{ litellm_master_key }}"
+{% endif %}
 
 [Install]
 WantedBy=default.target

@@ -9,10 +9,25 @@ model_list:
 
 general_settings:
 {% if litellm_master_key is not none %}
-  master_key: "{{ litellm_master_key }}"
+  master_key: "os.environ/LITELLM_MASTER_KEY"
+{% endif %}
+
+router_settings:
+{% if litellm_aliases %}
+  model_group_alias:
+{%   for alias, model in litellm_aliases.items() %}
+    "{{ alias }}":
+      model: "{{ model }}"
+      hidden: true
+{%   endfor %}
 {% endif %}
 
 litellm_settings:
+{% if litellm_cache %}
   cache: True
   cache_params:
     type: local
+{% endif %}
+{% if litellm_fallbacks %}
+  default_fallbacks: {{ litellm_fallbacks | to_json }}
+{% endif %}
