@@ -16,6 +16,9 @@ Environment="NO_REDOC=True"
 {% if litellm_master_key is not none %}
 Environment="LITELLM_MASTER_KEY={{ litellm_master_key }}"
 {% endif %}
+{% if litellm_debug_enabled %}
+Environment="LITELLM_LOG=DEBUG"
+{% endif %}
 
 [Install]
 WantedBy=default.target

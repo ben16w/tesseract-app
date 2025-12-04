@@ -1,19 +1,68 @@
 ---
 - name: Verify
   hosts: all
-  vars_files:
-    - ../../defaults/main.yml
+  vars:
+    litellm_port: 3000
+    litellm_master_key: "sk-1234"
   tasks:
 
-    - name: Check litellm binary exists in venv
+    - name: Check binary exists in venv.
       ansible.builtin.stat:
         path: /opt/litellm/venv/bin
       register: litellm_bin
       failed_when: not litellm_bin.stat.exists
 
-    - name: Check litellm service is running
+    - name: Check service is running.
       ansible.builtin.service:
         name: litellm
         state: started
       register: service_status
       failed_when: not service_status.state == 'started'
+
+    - name: Check LiteLLM is listening on the correct port.
+      ansible.builtin.wait_for:
+        port: "{{ litellm_port }}"
+        state: started
+        timeout: 10
+      register: port_check
+      failed_when: not port_check.elapsed < 10
+
+    - name: List models expecting failure without API key.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ litellm_port }}/models"
+        method: GET
+        return_content: true
+      register: model_list_response
+      failed_when: model_list_response.status == 200
+
+    - name: List models with master key.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ litellm_port }}/models"
+        method: GET
+        return_content: true
+        headers:
+          Authorization: "Bearer {{ litellm_master_key }}"
+      register: model_list_response_key
+      failed_when: model_list_response_key.status != 200
+
+    - name: Send chat completion request to mock-llm.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ litellm_port }}/chat/completions"
+        method: POST
+        body_format: json
+        status_code: 200
+        headers:
+          Authorization: "Bearer {{ litellm_master_key }}"
+          Content-Type: "application/json"
+        body:
+          model: "mock-llm"
+          messages:
+            - role: "user"
+              content: "Hello, mock-llm!"
+      register: mock_llm_response
+
+    - name: Assert mock-llm returned expected reply.
+      ansible.builtin.assert:
+        that:
+          - mock_llm_response.json is defined
+          - mock_llm_response.json.choices[0].message.content == "I don't know the answer to that. This is a mock response."

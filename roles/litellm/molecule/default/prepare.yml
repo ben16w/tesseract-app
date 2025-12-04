@@ -1,0 +1,28 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+    - name: Ensure python3 and pip are installed.
+      ansible.builtin.package:
+        name:
+          - python3
+          - python3-pip
+        state: present
+
+    - name: Install mockllm package.
+      ansible.builtin.pip:
+        name: mockllm
+        state: present
+
+    - name: Download example responses file.
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/StacklokLabs/mockllm/main/example.responses.yml
+        dest: /tmp/responses.yml
+        mode: '0644'
+
+    - name: Start mockllm server.
+      ansible.builtin.shell: >
+        mockllm start
+        --responses /tmp/responses.yml
+        --port 8000 &
+      changed_when: false

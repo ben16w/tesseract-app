@@ -11,6 +11,7 @@ general_settings:
 {% if litellm_master_key is not none %}
   master_key: "os.environ/LITELLM_MASTER_KEY"
 {% endif %}
+  timeout: {{ litellm_timeout }}
 
 router_settings:
 {% if litellm_aliases %}

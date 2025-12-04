@@ -8,6 +8,10 @@ litellm_listen_host: "0.0.0.0"
 litellm_master_key: ~
 litellm_cache: true
 
+litellm_timeout: 1800 # 30 minutes
+
+litellm_debug_enabled: false
+
 litellm_models: []
 # Example:
 # litellm_models:
