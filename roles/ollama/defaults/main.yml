@@ -2,6 +2,8 @@
 
 tesseract_username: "tesseract"
 
+ollama_version: ~ # e.g. "0.12.11"
+
 ollama_models: []
 # Example:
 # ollama_models:

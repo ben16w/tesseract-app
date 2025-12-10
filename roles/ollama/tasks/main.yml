@@ -1,5 +1,10 @@
 ---
 
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - ollama_version is not none
+
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
   ansible.builtin.user:
@@ -81,7 +86,7 @@
 
     - name: Download the ROCm package to /tmp.
       ansible.builtin.get_url:
-        url: "https://ollama.com/download/ollama-linux-{{ arch }}-rocm.tgz"
+        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}-rocm.tgz"
         dest: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
         owner: root
         group: root
@@ -104,7 +109,7 @@
 
 - name: Download the Ollama package to /tmp.
   ansible.builtin.get_url:
-    url: "https://ollama.com/download/ollama-linux-{{ arch }}.tgz"
+    url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}.tgz"
     dest: "/tmp/ollama-linux-{{ arch }}.tgz"
     owner: root
     group: root
