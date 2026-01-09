@@ -49,7 +49,8 @@
 - name: Run amdgpu-install script to finalize installation.
   ansible.builtin.command:
     cmd: "amdgpu-install --usecase=graphics,rocm --accept-eula -y"
-  changed_when: true
+  register: amdgpu_install_result
+  changed_when: "'Installing' in amdgpu_install_result.stdout or 'installed' in amdgpu_install_result.stdout"
 
 - name: Get current Ollama version.
   ansible.builtin.command: ollama --version
@@ -76,8 +77,8 @@
     - name: Extract ROCm package to /usr.
       ansible.builtin.unarchive:
         src: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
-        dest: /usr
-        remote_src: true
+        remote_src: true true
         owner: root
         group: root
-        mode: '0755'
+        mode: '0755'        mode: '0755'
+
