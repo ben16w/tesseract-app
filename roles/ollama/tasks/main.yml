@@ -22,112 +22,41 @@
     arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
 
 - name: Install AMD ROCm.
+  ansible.builtin.include_tasks:
+    file: install_rocm.yml
   when: ollama_install_rocm is true
+
+- name: Get current Ollama version.
+  ansible.builtin.command: ollama --version
+  register: ollama_current_version
+  failed_when: false
+  changed_when: false
+
+- name: Download and install Ollama if required.
+  when: ollama_version not in ollama_current_version.stdout
+  notify: restart ollama
   block:
-
-    - name: Assert that all required inputs have been provided.
-      ansible.builtin.assert:
-        that:
-          - ollama_rocm_version_short is not none
-          - ollama_rocm_version_long is not none
-
-    - name: Check if the distribution is Ubuntu.
-      ansible.builtin.assert:
-        that:
-          - ansible_distribution == 'Ubuntu'
-
-    - name: Install necessary Linux headers and modules.
-      ansible.builtin.apt:
-        name:
-          - "linux-headers-{{ ansible_kernel }}"
-          - "linux-modules-extra-{{ ansible_kernel }}"
-        state: present
-        update_cache: true
-
-    - name: Add the tesseract user to the render and video groups.
-      ansible.builtin.user:
-        name: "{{ tesseract_username }}"
-        groups:
-          - render
-          - video
-        append: true
-
-    - name: Download the AMDGPU driver package.
+    - name: Download the Ollama package to /tmp.
       ansible.builtin.get_url:
-        url: "https://repo.radeon.com/amdgpu-install/\
-          {{ ollama_rocm_version_short }}/ubuntu/\
-          {{ ansible_distribution_release }}/amdgpu-install_\
-          {{ ollama_rocm_version_long }}_all.deb"
-        dest: /tmp/amdgpu-install.deb
+        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}.tgz"
+        dest: "/tmp/ollama-linux-{{ arch }}.tgz"
         owner: root
         group: root
         mode: '0644'
-      register: download_driver
+      register: download_ollama
       retries: 5
       delay: 10
-      until: download_driver is succeeded
+      until: download_ollama is succeeded
 
-    - name: Install the AMDGPU driver package.
-      ansible.builtin.apt:
-        deb: /tmp/amdgpu-install.deb
-
-    - name: Install AMDGPU DKMS and ROCm.
-      ansible.builtin.apt:
-        name:
-          - amdgpu-dkms
-          - rocm
-        state: present
-        update_cache: true
-
-    - name: Check if ROCm package is already installed.
-      ansible.builtin.stat:
-        path: /usr/lib/ollama
-      register: rocm_package_installed
-
-    - name: Download the ROCm package to /tmp.
-      ansible.builtin.get_url:
-        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}-rocm.tgz"
-        dest: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
-        owner: root
-        group: root
-        mode: '0644'
-      register: download_rocm
-      retries: 5
-      delay: 10
-      until: download_rocm is succeeded
-      when: not rocm_package_installed.stat.exists
-
-    - name: Extract ROCm package to /usr.
+    - name: Extract the Ollama package to /usr.
       ansible.builtin.unarchive:
-        src: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
+        src: "/tmp/ollama-linux-{{ arch }}.tgz"
         dest: /usr
         remote_src: true
         owner: root
         group: root
         mode: '0755'
-      when: not rocm_package_installed.stat.exists
-
-- name: Download the Ollama package to /tmp.
-  ansible.builtin.get_url:
-    url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}.tgz"
-    dest: "/tmp/ollama-linux-{{ arch }}.tgz"
-    owner: root
-    group: root
-    mode: '0644'
-  register: download_ollama
-  retries: 5
-  delay: 10
-  until: download_ollama is succeeded
-
-- name: Extract the Ollama package to /usr.
-  ansible.builtin.unarchive:
-    src: "/tmp/ollama-linux-{{ arch }}.tgz"
-    dest: /usr
-    remote_src: true
-    owner: root
-    group: root
-    mode: '0755'
-  notify: restart ollama
+      notify: restart ollama
 
 - name: Copy ollama.service template to /etc/systemd/system.
   ansible.builtin.template:
