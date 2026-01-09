@@ -25,5 +25,5 @@ ollama_rocm_version_long: ~
 ollama_rocm_gfx_version: ~
 # Example: ollama_rocm_gfx_version: 10.3.0
 
-ollama_unload_models_cron: "*/2"
+ollama_keep_alive_cron: ~ # "*/2"
 ollama_restart_hour_cron: "3"
