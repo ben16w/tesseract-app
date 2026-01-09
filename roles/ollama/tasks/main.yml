@@ -21,10 +21,15 @@
   ansible.builtin.set_fact:
     arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
 
-- name: Install AMD ROCm.
+- name: Install AMD ROCm support.
   ansible.builtin.include_tasks:
     file: install_rocm.yml
   when: ollama_install_rocm is true
+
+- name: Install Vulkan support.
+  ansible.builtin.include_tasks:
+    file: install_vulkan.yml
+  when: ollama_install_vulkan is true
 
 - name: Get current Ollama version.
   ansible.builtin.command: ollama --version

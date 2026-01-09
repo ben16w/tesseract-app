@@ -11,13 +11,14 @@
     that:
       - ansible_distribution == 'Ubuntu'
 
-- name: Install necessary Linux headers and modules.
-  ansible.builtin.apt:
-    name:
-      - "linux-headers-{{ ansible_kernel }}"
-      - "linux-modules-extra-{{ ansible_kernel }}"
+- name: Ensure render and video groups exist.
+  ansible.builtin.group:
+    name: "{{ item }}"
     state: present
-    update_cache: true
+    system: true
+  loop:
+    - render
+    - video
 
 - name: Add the tesseract user to the render and video groups.
   ansible.builtin.user:
@@ -26,6 +27,14 @@
       - render
       - video
     append: true
+
+- name: Install necessary Linux headers and modules.
+  ansible.builtin.apt:
+    name:
+      - "linux-headers-{{ ansible_kernel }}"
+      - "linux-modules-extra-{{ ansible_kernel }}"
+    state: present
+    update_cache: true
 
 - name: Download the AMDGPU driver package.
   ansible.builtin.get_url:

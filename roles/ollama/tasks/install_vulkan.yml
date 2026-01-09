@@ -1,0 +1,44 @@
+---
+
+- name: Check if the distribution is Ubuntu.
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == 'Ubuntu'
+
+- name: Install dirmngr for GPG key management.
+  ansible.builtin.apt:
+    name: dirmngr
+    state: present
+    update_cache: true
+
+- name: Ensure render and video groups exist.
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+    system: true
+  loop:
+    - render
+    - video
+
+- name: Add the tesseract user to the render and video groups.
+  ansible.builtin.user:
+    name: "{{ tesseract_username }}"
+    groups:
+      - render
+      - video
+    append: true
+
+- name: Add the kisak-mesa PPA repository.
+  ansible.builtin.apt_repository:
+    repo: ppa:kisak/kisak-mesa
+    state: present
+    update_cache: true
+
+- name: Install Mesa Vulkan drivers and related packages.
+  ansible.builtin.apt:
+    name:
+      - mesa-vulkan-drivers
+      - vulkan-tools
+      - mesa-utils
+    state: present
+    update_cache: true

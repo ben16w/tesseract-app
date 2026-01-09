@@ -13,6 +13,7 @@ Environment="OLLAMA_KEEP_ALIVE={{ ollama_keep_alive }}"
 Environment="OLLAMA_CONTEXT_LENGTH={{ ollama_context_length }}"
 
 {% if ollama_install_vulkan is true %}
+Environment="OLLAMA_VULKAN=1"
 AmbientCapabilities=CAP_PERFMON
 {% endif %}
 
