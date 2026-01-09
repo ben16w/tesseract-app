@@ -49,6 +49,7 @@
 - name: Run amdgpu-install script to finalize installation.
   ansible.builtin.command:
     cmd: "amdgpu-install --usecase=graphics,rocm --accept-eula -y"
+  changed_when: true
 
 - name: Get current Ollama version.
   ansible.builtin.command: ollama --version
