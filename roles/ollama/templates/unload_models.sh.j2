@@ -4,5 +4,5 @@ OLLAMA_HOST="127.0.0.1:{{ ollama_port }}" ollama ps |
 awk '{ print $1 }' |
 tail -n +2 |
 while read line; do
-    curl -s http://localhost:{{ ollama_port }}/api/generate -d "{ \"model\": \"$line\", \"keep_alive\": {{ ollama_keep_alive }} }";
+    OLLAMA_HOST="127.0.0.1:{{ ollama_port }}" ollama stop "$line"
 done
