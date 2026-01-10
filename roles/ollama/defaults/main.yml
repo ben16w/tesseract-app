@@ -18,14 +18,16 @@ ollama_keep_alive: 300 # 5 minutes
 ollama_context_length: 8192 # 8k context length
 
 ollama_install_rocm: false
-ollama_install_vulkan: false
-
 ollama_rocm_version_short: ~
 # Example: ollama_rocm_version_short: "6.1.3"
 ollama_rocm_version_long: ~
 # Example: ollama_rocm_version_long: "6.1.60103-1"
 ollama_rocm_gfx_version: ~
 # Example: ollama_rocm_gfx_version: 10.3.0
+
+ollama_install_vulkan: false
+ollama_vulkan_visible_devices: ~
+# Example: ollama_vulkan_visible_devices: "2"
 
 ollama_keep_alive_cron: ~ # "*/2"
 ollama_restart_hour_cron: "3"

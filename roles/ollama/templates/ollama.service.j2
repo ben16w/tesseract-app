@@ -12,13 +12,17 @@ Environment="OLLAMA_HOST=0.0.0.0:{{ ollama_port }}"
 Environment="OLLAMA_KEEP_ALIVE={{ ollama_keep_alive }}"
 Environment="OLLAMA_CONTEXT_LENGTH={{ ollama_context_length }}"
 
+{% if ollama_install_rocm is true and ollama_rocm_gfx_version is not none %}
+Environment="HSA_OVERRIDE_GFX_VERSION={{ ollama_rocm_gfx_version }}"
+{% endif %}
+
 {% if ollama_install_vulkan is true %}
 Environment="OLLAMA_VULKAN=1"
 AmbientCapabilities=CAP_PERFMON
-{% endif %}
-
-{% if ollama_install_rocm is true and ollama_rocm_gfx_version is not none %}
-Environment="HSA_OVERRIDE_GFX_VERSION={{ ollama_rocm_gfx_version }}"
+CapabilityBoundingSet=CAP_PERFMON
+{%   if ollama_vulkan_visible_devices is not none %}
+Environment="GGML_VK_VISIBLE_DEVICES={{ ollama_vulkan_visible_devices }}"
+{%   endif %}
 {% endif %}
 
 {% if ollama_max_models is not none %}
