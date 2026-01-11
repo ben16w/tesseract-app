@@ -12,7 +12,6 @@ litellm_timeout: 1800 # 30 minutes
 
 litellm_logging_enabled: false
 
-litellm_drop_params: false
 litellm_modify_params: false
 
 litellm_models: []
