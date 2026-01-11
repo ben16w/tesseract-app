@@ -1,22 +1,31 @@
 [Unit]
 Description=LiteLLM Proxy Service
 After=network-online.target
+Wants=network-online.target
 
 [Service]
 ExecStart=/opt/litellm/venv/bin/litellm --config /opt/litellm/config.yaml
+
 User={{ tesseract_username }}
 Group={{ tesseract_username }}
+WorkingDirectory=/opt/litellm
+
 Restart=always
 RestartSec=3
+
 Environment="PATH=/opt/litellm/venv/bin:{{ ansible_env.PATH }}"
 Environment="HOST={{ litellm_listen_host }}"
 Environment="PORT={{ litellm_port }}"
 Environment="NO_DOCS=True"
 Environment="NO_REDOC=True"
+
 {% if litellm_master_key is not none %}
 Environment="LITELLM_MASTER_KEY={{ litellm_master_key }}"
 {% endif %}
-{% if litellm_debug_enabled %}
+
+{% if litellm_logging_enabled %}
+StandardOutput=append:/var/log/litellm/proxy.log
+StandardError=append:/var/log/litellm/proxy.log
 Environment="LITELLM_LOG=DEBUG"
 {% endif %}
 

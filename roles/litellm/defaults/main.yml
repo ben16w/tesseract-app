@@ -10,7 +10,7 @@ litellm_cache: false
 
 litellm_timeout: 1800 # 30 minutes
 
-litellm_debug_enabled: false
+litellm_logging_enabled: false
 
 litellm_models: []
 # Example:

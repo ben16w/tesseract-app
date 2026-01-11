@@ -64,6 +64,31 @@
     mode: '0755'
   notify: restart litellm
 
+- name: Configure logging.
+  when: litellm_logging_enabled
+  block:
+    - name: Ensure logrotate is installed.
+      ansible.builtin.package:
+        name:
+          - logrotate
+        state: present
+
+    - name: Create log directory.
+      ansible.builtin.file:
+        path: "/var/log/litellm"
+        state: directory
+        owner: "{{ tesseract_username }}"
+        group: "{{ tesseract_username }}"
+        mode: '0755'
+
+    - name: Deploy logrotate configuration.
+      ansible.builtin.template:
+        src: templates/logrotate.j2
+        dest: "/etc/logrotate.d/litellm"
+        owner: root
+        group: root
+        mode: '0644'
+
 - name: Enable and start LiteLLM proxy.
   ansible.builtin.systemd:
     name: "litellm"
