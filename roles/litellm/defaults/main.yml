@@ -6,7 +6,7 @@ litellm_port: 4000
 litellm_listen_host: "0.0.0.0"
 
 litellm_master_key: ~
-litellm_cache: true
+litellm_cache: false
 
 litellm_timeout: 1800 # 30 minutes
 
