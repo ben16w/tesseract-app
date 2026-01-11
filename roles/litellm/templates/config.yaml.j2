@@ -32,3 +32,9 @@ litellm_settings:
 {% if litellm_fallbacks %}
   default_fallbacks: {{ litellm_fallbacks | to_json }}
 {% endif %}
+{% if litellm_drop_params %}
+  drop_params: True
+{% endif %}
+{% if litellm_modify_params %}
+  modify_params: True
+{% endif %}
