@@ -4,6 +4,7 @@
   vars:
     litellm_port: 3000
     litellm_master_key: "sk-1234"
+    litellm_logging: true
     litellm_models:
       - model_name: mock-llm
         litellm_params:

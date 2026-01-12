@@ -23,7 +23,7 @@ Environment="NO_REDOC=True"
 Environment="LITELLM_MASTER_KEY={{ litellm_master_key }}"
 {% endif %}
 
-{% if litellm_logging_enabled %}
+{% if litellm_logging %}
 StandardOutput=append:/var/log/litellm/proxy.log
 StandardError=append:/var/log/litellm/proxy.log
 Environment="LITELLM_LOG=DEBUG"

@@ -65,7 +65,7 @@
   notify: restart litellm
 
 - name: Configure logging.
-  when: litellm_logging_enabled
+  when: litellm_logging
   block:
     - name: Ensure logrotate is installed.
       ansible.builtin.package:
