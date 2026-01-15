@@ -1,0 +1,14 @@
+{
+  "nanocoder": {
+    "providers": [
+      {
+        "name": "LiteLLM",
+        "models": [
+          "openrouter/gpt-5.1-codex"
+        ],
+        "baseUrl": "https://ai.welney.net",
+        "timeout": 30000
+      }
+    ]
+  }
+}
