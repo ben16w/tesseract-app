@@ -11,6 +11,7 @@ litellm_cache: false
 litellm_timeout: 1800 # 30 minutes
 
 litellm_logging: false
+litellm_log_level: "DEBUG"
 
 litellm_modify_params: false
 

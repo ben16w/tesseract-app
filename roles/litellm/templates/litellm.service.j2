@@ -26,7 +26,7 @@ Environment="LITELLM_MASTER_KEY={{ litellm_master_key }}"
 {% if litellm_logging %}
 StandardOutput=append:/var/log/litellm/proxy.log
 StandardError=append:/var/log/litellm/proxy.log
-Environment="LITELLM_LOG=DEBUG"
+Environment="LITELLM_LOG={{ litellm_log_level }}"
 {% endif %}
 
 [Install]

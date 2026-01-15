@@ -4,6 +4,7 @@
   vars:
     litellm_port: 3000
     litellm_master_key: "sk-1234"
+    litellm_logging: true
   tasks:
 
     - name: Check binary exists in venv.
@@ -66,3 +67,9 @@
         that:
           - mock_llm_response.json is defined
           - mock_llm_response.json.choices[0].message.content == "I don't know the answer to that. This is a mock response."
+
+    - name: Check log file was created.
+      ansible.builtin.stat:
+        path: /var/log/litellm/proxy.log
+      register: log_file
+      failed_when: not log_file.stat.exists
