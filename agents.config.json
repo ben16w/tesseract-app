@@ -2,9 +2,9 @@
   "nanocoder": {
     "providers": [
       {
-        "name": "LiteLLM",
+        "name": "tesseract",
         "models": [
-          "openrouter/gpt-codex"
+          "gpt-codex"
         ],
         "baseUrl": "https://ai.welney.net",
         "timeout": 30000

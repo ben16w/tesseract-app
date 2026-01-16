@@ -4,7 +4,7 @@ This file contains guidelines and commands for agentic coding agents working in 
 
 ## Project Overview
 
-This project is an **Ansible Collection**. The project follows Ansible Galaxy collection standards and practices. Anisble Molecule is used for testing roles in Docker containers.
+This project is an **Ansible Collection**. The project follows Ansible Galaxy collection standards and practices. Ansible Molecule is used for testing roles in Docker containers.
 
 ## Technology Stack
 
@@ -71,58 +71,13 @@ Each role includes a Molecule scenario for testing located in `roles/{role_name}
 
 ## Command Reference
 
-### Development Environment Setup
+For a complete list of available commands and their usage, run:
 
 ```bash
-# Create virtual environment and install dependencies
-make install-venv
+make help
 ```
 
-### Testing Commands
-
-```bash
-# Test a specific role (most common)
-make test ROLE=litellm
-
-# Test only modified roles (for feature branches)
-make test-changed
-
-# Test all roles
-make test-all
-
-# Test all roles on all distributions
-make test-all-distros DISTRO_LIST="ubuntu2204 ubuntu2004 debian12"
-
-# Run specific molecule command
-make test ROLE=litellm CMD=converge
-make test ROLE=litellm CMD=login
-```
-
-### Linting and Validation
-
-```bash
-# Run all linting checks (Docker, shell, YAML, Ansible)
-make lint
-
-# Individual linting tools (if needed)
-yamllint -d relaxed .
-ansible-lint playbooks/ docker-compose.*.yml vars.yml
-shellcheck **/*.sh
-docker compose -f docker-compose.*.yml config --quiet
-```
-
-### Build and Maintenance
-
-```bash
-# Update git commit hashes in requirements.yml
-make update-requirements
-
-# Sync molecule.yml files across all roles
-make update-molecule
-
-# Install Ansible Galaxy roles
-make install
-```
+This will display all available targets for development, testing, linting, and maintenance operations.
 
 ## Important Notes
 
