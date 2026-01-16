@@ -1,5 +1,5 @@
 ---
-description: Perform a code review against main branch.
+description: Perform a code review of current branch.
 aliases: [cr]
 ---
 
