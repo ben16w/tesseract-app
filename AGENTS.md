@@ -4,21 +4,82 @@ This file contains guidelines and commands for agentic coding agents working in 
 
 ## Project Overview
 
-This is an **Ansible Collection** called "tesseract-app" for managing application configurations and services. The project follows Ansible Galaxy collection standards and uses enterprise-grade practices with comprehensive testing.
+This project is an **Ansible Collection**. The project follows Ansible Galaxy collection standards and practices. Anisble Molecule is used for testing roles in Docker containers.
 
-## Development Environment Setup
+## Technology Stack
+
+- **Ansible**: Configuration management
+- **Molecule**: Testing framework with Docker driver
+- **Python**: Runtime environment
+- **Docker**: Container platform for testing and services
+
+## Role Structure
+
+Each role follows this standard structure:
+
+```
+roles/{role_name}/
+├── defaults/main.yml      # Default variables
+├── tasks/main.yml         # Main tasks
+├── handlers/main.yml      # Service handlers
+├── templates/             # Jinja2 templates (.j2)
+├── files/                 # Static files
+└── molecule/default/      # Test configuration
+```
+
+## Code Style Guidelines
+
+### YAML/Ansible Conventions
+
+- **Indentation**: 2 spaces for YAML
+- **File headers**: Always start with `---`
+- **Module naming**: Use fully qualified collection names (`ansible.builtin.user`, `ansible.builtin.package`)
+- **Task names**: Descriptive, starting with verbs ("Ensure", "Create", "Install")
+- **Line length**: ~80-100 characters
+- **Templates**: Template files use .j2 extension
+- **Variables**: Global variables: {service}_ prefix
+- **Defaults**: Always assert required inputs
+
+## Molecule Testing
+
+Each role includes a Molecule scenario for testing located in `roles/{role_name}/molecule/default/`:
+
+### Files
+
+- **`molecule.yml`**: Molecule configuration defining test infrastructure
+- **`converge.yml`**: Main test playbook that applies the role
+- **`verify.yml`**: Verification playbook that validates role execution
+- **`prepare.yml`**: Optional setup playbook for test dependencies
+- **`vars.yml`**: Optional external variables file
+
+### Workflow
+
+1. **Create**: Spins up Docker container(s)
+2. **Prepare**: Runs prepare.yml (if exists)
+3. **Converge**: Applies the role via converge.yml
+4. **Verify**: Runs verification tests via verify.yml
+5. **Destroy**: Tears down containers
+
+### Best Practices
+
+- Always verify service state and port availability
+- Include API/functionality tests where applicable
+- Test both positive and negative scenarios (auth, validation)
+- Use mock services for external dependencies
+- Keep test variables minimal but realistic
+- Ensure idempotency by running converge twice
+
+## Command Reference
+
+### Development Environment Setup
 
 ```bash
 # Create virtual environment and install dependencies
 make install-venv
-
-# Activate the virtual environment (required for all commands)
-source .venv/bin/activate
 ```
 
-## Build/Lint/Test Commands
-
 ### Testing Commands
+
 ```bash
 # Test a specific role (most common)
 make test ROLE=litellm
@@ -38,6 +99,7 @@ make test ROLE=litellm CMD=login
 ```
 
 ### Linting and Validation
+
 ```bash
 # Run all linting checks (Docker, shell, YAML, Ansible)
 make lint
@@ -50,6 +112,7 @@ docker compose -f docker-compose.*.yml config --quiet
 ```
 
 ### Build and Maintenance
+
 ```bash
 # Update git commit hashes in requirements.yml
 make update-requirements
@@ -61,189 +124,6 @@ make update-molecule
 make install
 ```
 
-## Code Style Guidelines
-
-### YAML/Ansible Conventions
-- **Indentation**: 2 spaces for YAML
-- **File headers**: Always start with `---`
-- **Module naming**: Use fully qualified collection names (`ansible.builtin.user`, `ansible.builtin.package`)
-- **Task names**: Descriptive, starting with verbs ("Ensure", "Create", "Install")
-- **Line length**: ~80-100 characters
-
-### Variable Naming Conventions
-```yaml
-# Global variables: {service}_ prefix
-docker_apps: []
-litellm_port: 4000
-ollama_install_rocm: true
-
-# User variables: tesseract_ prefix
-tesseract_username: "tesseract"
-tesseract_files_path: "/opt/tesseract"
-
-# Boolean flags: {service}_enabled, {service}_install_
-litellm_cache: false
-netdata_enabled: true
-```
-
-### Import Patterns
-```yaml
-# Always use fully qualified module names
-- name: Ensure user exists.
-  ansible.builtin.user:
-    name: "{{ tesseract_username }}"
-
-# Template files use .j2 extension
-- name: Deploy config file.
-  ansible.builtin.template:
-    src: templates/config.yaml.j2
-    dest: "/opt/service/config.yaml"
-```
-
-### Conditional Patterns
-```yaml
-# Use when blocks for simple conditions
-- name: Install AMD ROCm.
-  ansible.builtin.package:
-    name: rocm-dev
-  when: ollama_install_rocm is true
-
-# Use block for complex conditional logic
-- name: Configure logging.
-  when: litellm_logging
-  block:
-    - name: Create log directory.
-      ansible.builtin.file:
-        path: "/var/log/litellm"
-        state: directory
-```
-
-### Error Handling
-```yaml
-# Always assert required inputs
-- name: Assert that all required inputs have been provided.
-  ansible.builtin.assert:
-    that:
-      - litellm_models is defined
-      - litellm_models is iterable
-    fail_msg: "litellm_models must be defined and iterable"
-
-# Use register for command results
-- name: Create user.
-  register: tesseract_user_details
-  ansible.builtin.user:
-    name: "{{ tesseract_username }}"
-```
-
-## Role Structure
-
-Each role follows this standard structure:
-```
-roles/{role_name}/
-├── defaults/main.yml      # Default variables
-├── tasks/main.yml         # Main tasks
-├── handlers/main.yml      # Service handlers
-├── templates/             # Jinja2 templates (.j2)
-├── files/                 # Static files
-└── molecule/default/      # Test configuration
-```
-
-## Testing Patterns
-
-### Molecule Configuration
-```yaml
-# molecule/default/molecule.yml (standard template)
----
-dependency:
-  name: galaxy
-driver:
-  name: docker
-platforms:
-  - name: "${INSTANCE_NAME:-molecule}"
-    image: "geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2204}-ansible:latest"
-    command: ""
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-provisioner:
-  name: ansible
-verifier:
-  name: ansible
-```
-
-### Test Files
-- `converge.yml`: Main test playbook
-- `verify.yml`: Verification tasks
-- `prepare.yml`: Setup tasks
-- `vars.yml`: Test variables
-
-## Technology Stack
-
-- **Ansible** (>=2.15.0): Configuration management
-- **Molecule** (v25.1.0): Testing framework with Docker driver
-- **Python 3.12**: Runtime environment
-- **Docker**: Container platform for testing and services
-- **Drone CI**: Automated testing pipeline
-
-## Quality Tools
-
-- `ansible-lint`: Ansible best practices
-- `yamllint`: YAML syntax validation
-- `shellcheck`: Shell script validation
-- Docker Compose validation
-
-## Common Patterns
-
-### Service Management
-```yaml
-# Handlers for service restarts
-- name: restart litellm
-  ansible.builtin.systemd:
-    name: litellm
-    state: restarted
-  listen: "restart litellm"
-
-# Notify handlers in tasks
-- name: Deploy config.
-  ansible.builtin.template:
-    src: config.yaml.j2
-    dest: "/opt/service/config.yaml"
-  notify: restart litellm
-```
-
-### Directory Creation
-```yaml
-# Standard directory creation pattern
-- name: Create service directory.
-  ansible.builtin.file:
-    path: "/opt/service"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-```
-
-### Virtual Environment Pattern
-```yaml
-# Python venv creation and package installation
-- name: Create venv.
-  ansible.builtin.command:
-    cmd: python3 -m venv /opt/service/venv
-    creates: "/opt/service/venv/bin/activate"
-
-- name: Install packages in venv.
-  ansible.builtin.command:
-    cmd: "/opt/service/venv/bin/pip install package"
-    creates: "/opt/service/venv/bin/package"
-```
-
 ## Important Notes
 
-- Always activate the virtual environment before running commands
-- Use `make test ROLE=<role>` for single role testing
-- Follow the existing variable naming patterns
-- All YAML files must start with `---`
-- Use fully qualified module names (`ansible.builtin.*`)
-- Test on multiple distributions before submitting changes
+- Using molecule requires Docker and therefore sudo may be needed.
