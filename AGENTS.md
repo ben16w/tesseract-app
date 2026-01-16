@@ -126,4 +126,4 @@ make install
 
 ## Important Notes
 
-- The Molecule test require Docker and therefore sudo may be needed for the tests to run. If "Unable to contact the Docker daemon" errors occur run with sudo.
+- Molecule tests require Docker access. If you encounter "Unable to contact the Docker daemon" errors, run tests with `sudo`.
