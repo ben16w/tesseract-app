@@ -30,7 +30,6 @@ help:
 	@echo ""
 	@echo "Available targets:"
 	@echo "  help                 - Display this help message"
-	@echo "  review			   	  - Review the current branch using nanocoder."
 	@echo "  install              - Install Ansible Galaxy roles"
 	@echo "  install-venv         - Create a virtual environment and install Python packages."
 	@echo "  lint                 - Lint the repository."
@@ -110,13 +109,6 @@ define molecule-test-multi
 		echo "No molecule.yml found for role: $${moleculedir}" ;\
 	fi
 endef
-
-.PHONY: review
-review:
-	@set -e ;\
-	git diff origin/main... > changes.diff ;\
-	nanocoder run "This branch is a PR. I’ve included the changes in a file called changes.diff. Please review the changes and provide suggestions along with a brief summary." ;\
-	rm changes.diff
 
 .PHONY: install
 install:
