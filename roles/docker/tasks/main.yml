@@ -103,7 +103,7 @@
       TESSERACT_EMAIL_USERNAME="{{ email_username }}"
       TESSERACT_EMAIL_HOST="{{ email_host }}"
       TESSERACT_EMAIL_PORT="{{ email_port }}"
-      TESSERACT_EMAIL_PASSORD="{{ email_password }}"
+      TESSERACT_EMAIL_PASSWORD="{{ email_password }}"
       TESSERACT_HOSTNAME="{{ tesseract_hostname }}"
       TESSERACT_DOMAIN="{{ tesseract_domain }}"
       TESSERACT_TZ="{{ docker_tz }}"
