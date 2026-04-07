@@ -1,0 +1,25 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Check if ComfyUI service is running.
+      ansible.builtin.service:
+        name: comfyui
+        state: started
+      check_mode: true
+      register: comfyui_service
+      failed_when: (comfyui_service is changed) or (comfyui_service is failed)
+
+    - name: Check if ComfyUI is listening on the specified port.
+      ansible.builtin.wait_for:
+        port: 8188
+        timeout: 30
+      register: port_check
+      ignore_errors: true
+
+    - name: Verify port check succeeded.
+      ansible.builtin.assert:
+        that:
+          - port_check is not failed
+        fail_msg: "ComfyUI is not listening on port 8188"

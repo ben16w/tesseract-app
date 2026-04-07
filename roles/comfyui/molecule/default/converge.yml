@@ -1,0 +1,11 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    comfyui_version: "v0.3.10"
+    comfyui_port: 8188
+    comfyui_cpu_only: true
+    comfyui_extra_args:
+      - "--preview-method auto"
+  roles:
+    - role: comfyui

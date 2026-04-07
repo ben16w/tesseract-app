@@ -1,0 +1,26 @@
+---
+
+tesseract_username: "tesseract"
+
+comfyui_version: ~ # e.g. "v0.18.2"
+
+comfyui_port: 8188
+comfyui_listen_host: "0.0.0.0"
+
+comfyui_install_path: "/opt/comfyui"
+
+comfyui_cpu_only: false
+
+comfyui_install_rocm: false
+comfyui_rocm_version_short: ~
+# Example: comfyui_rocm_version_short: "6.1.3"
+comfyui_rocm_version_long: ~
+# Example: comfyui_rocm_version_long: "6.1.60103-1"
+comfyui_rocm_gfx_version: ~
+# Example: comfyui_rocm_gfx_version: 10.3.0
+
+comfyui_extra_args: []
+# Example:
+# comfyui_extra_args:
+#   - "--preview-method auto"
+#   - "--use-pytorch-cross-attention"
