@@ -4,7 +4,7 @@
   vars:
     comfyui_version: "v0.18.2"
     comfyui_port: 8188
-    comfyui_cpu_only: true
+    comfyui_use_cpu: true
     comfyui_extra_args:
       - "--preview-method auto"
   roles:

@@ -7,7 +7,10 @@ Type=simple
 ExecStart={{ comfyui_install_path }}/venv/bin/python {{ comfyui_install_path }}/main.py \
   --listen {{ comfyui_listen_host }} \
   --port {{ comfyui_port }} \
-  {% if comfyui_cpu_only %}--cpu{% endif %} \
+  {% if comfyui_use_cpu %}--cpu{% endif %} \
+  {% if comfyui_use_pytorch_cross_attention %}--use-pytorch-cross-attention{% endif %} \
+  --preview-method {{ comfyui_preview_method }} \
+  {% if comfyui_vram_mode is not none %}--{{ comfyui_vram_mode }}{% endif %} \
   {% if comfyui_extra_args | length > 0 %}{{ comfyui_extra_args | join(' ') }}{% endif %}
 
 User={{ tesseract_username }}
@@ -16,9 +19,13 @@ WorkingDirectory={{ comfyui_install_path }}
 Restart=always
 RestartSec=3
 
-{% if comfyui_install_rocm is true and comfyui_rocm_gfx_version is not none %}
+{% if comfyui_use_rocm is true %}
+{% if comfyui_rocm_gfx_version is not none %}
 Environment="HSA_OVERRIDE_GFX_VERSION={{ comfyui_rocm_gfx_version }}"
+{% endif %}
+{% if comfyui_rocm_aotriton_experimental %}
 Environment="TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1"
+{% endif %}
 {% endif %}
 
 [Install]

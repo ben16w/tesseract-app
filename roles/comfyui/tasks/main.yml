@@ -4,7 +4,7 @@
   ansible.builtin.assert:
     that:
       - comfyui_version is not none
-      - not (comfyui_cpu_only and comfyui_install_rocm)
+      - not (comfyui_use_cpu and comfyui_use_rocm)
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
@@ -24,7 +24,7 @@
 
 - name: Install AMD ROCm.
   ansible.builtin.include_tasks: install_rocm.yml
-  when: comfyui_install_rocm is true
+  when: comfyui_use_rocm is true
 
 - name: Create ComfyUI directory.
   ansible.builtin.file:
@@ -57,7 +57,7 @@
     creates: "{{ comfyui_install_path }}/venv/bin/activate"
 
 - name: Install PyTorch for AMD ROCm.
-  when: comfyui_install_rocm is true
+  when: comfyui_use_rocm is true
   ansible.builtin.pip:
     name:
       - torch
@@ -68,7 +68,7 @@
   notify: restart comfyui
 
 - name: Install PyTorch for CPU.
-  when: comfyui_cpu_only is true
+  when: comfyui_use_cpu is true
   ansible.builtin.pip:
     name:
       - torch
