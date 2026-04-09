@@ -5,7 +5,6 @@
     that:
       - comfyui_version is not none
       - not (comfyui_cpu_only and comfyui_install_rocm)
-    fail_msg: "Cannot enable both CPU-only mode and ROCm installation"
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
@@ -31,8 +30,8 @@
   ansible.builtin.file:
     path: "{{ comfyui_install_path }}"
     state: directory
-    owner: "{{ tesseract_username }}"
-    group: "{{ tesseract_username }}"
+    owner: root
+    group: root
     mode: '0755'
 
 - name: Clone ComfyUI repository.
@@ -41,16 +40,14 @@
     dest: "{{ comfyui_install_path }}"
     version: "{{ comfyui_version }}"
     force: true
-  become: true
-  become_user: "{{ tesseract_username }}"
   notify: restart comfyui
 
 - name: Create venv directory.
   ansible.builtin.file:
     path: "{{ comfyui_install_path }}/venv"
     state: directory
-    owner: "{{ tesseract_username }}"
-    group: "{{ tesseract_username }}"
+    owner: root
+    group: root
     mode: '0755'
 
 - name: Create Python venv.
@@ -58,8 +55,6 @@
     cmd: python3 -m venv venv
     chdir: "{{ comfyui_install_path }}"
     creates: "{{ comfyui_install_path }}/venv/bin/activate"
-  become: true
-  become_user: "{{ tesseract_username }}"
 
 - name: Install PyTorch for AMD ROCm.
   when: comfyui_install_rocm is true
@@ -68,10 +63,8 @@
       - torch
       - torchvision
       - torchaudio
-    extra_args: "--index-url https://download.pytorch.org/whl/rocm6.2"
+    extra_args: "--index-url https://download.pytorch.org/whl/rocm6.2 --no-cache-dir"
     virtualenv: "{{ comfyui_install_path }}/venv"
-  become: true
-  become_user: "{{ tesseract_username }}"
   notify: restart comfyui
 
 - name: Install PyTorch for CPU.
@@ -81,18 +74,14 @@
       - torch
       - torchvision
       - torchaudio
-    extra_args: "--index-url https://download.pytorch.org/whl/cpu"
+    extra_args: "--index-url https://download.pytorch.org/whl/cpu --no-cache-dir"
     virtualenv: "{{ comfyui_install_path }}/venv"
-  become: true
-  become_user: "{{ tesseract_username }}"
   notify: restart comfyui
 
 - name: Install ComfyUI requirements.
   ansible.builtin.pip:
     requirements: "{{ comfyui_install_path }}/requirements.txt"
     virtualenv: "{{ comfyui_install_path }}/venv"
-  become: true
-  become_user: "{{ tesseract_username }}"
   notify: restart comfyui
 
 - name: Deploy systemd service.

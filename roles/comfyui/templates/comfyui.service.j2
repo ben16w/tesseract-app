@@ -4,7 +4,11 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart={{ comfyui_install_path }}/venv/bin/python {{ comfyui_install_path }}/main.py --listen {{ comfyui_listen_host }} --port {{ comfyui_port }}{% if comfyui_cpu_only %} --cpu{% endif %}{% if comfyui_extra_args | length > 0 %} {{ comfyui_extra_args | join(' ') }}{% endif %}
+ExecStart={{ comfyui_install_path }}/venv/bin/python {{ comfyui_install_path }}/main.py \
+  --listen {{ comfyui_listen_host }} \
+  --port {{ comfyui_port }} \
+  {% if comfyui_cpu_only %}--cpu{% endif %} \
+  {% if comfyui_extra_args | length > 0 %}{{ comfyui_extra_args | join(' ') }}{% endif %}
 
 User={{ tesseract_username }}
 Group={{ tesseract_username }}
