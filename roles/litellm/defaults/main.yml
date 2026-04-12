@@ -2,6 +2,8 @@
 
 tesseract_username: "tesseract"
 
+litellm_version: ~ # e.g. "1.82.5"
+
 litellm_port: 4000
 litellm_listen_host: "0.0.0.0"
 
