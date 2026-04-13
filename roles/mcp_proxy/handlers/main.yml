@@ -1,0 +1,8 @@
+---
+
+- name: Reload systemd daemon and restart mcp-proxy service.
+  ansible.builtin.systemd:
+    name: mcp-proxy
+    state: restarted
+    daemon_reload: true
+  listen: "restart mcp_proxy"

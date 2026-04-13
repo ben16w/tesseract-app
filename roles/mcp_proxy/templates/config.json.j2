@@ -1,0 +1,16 @@
+{% set config = {
+  "mcpProxy": {
+    "baseURL": mcp_proxy_base_url,
+    "addr": mcp_proxy_listen_host ~ ":" ~ (mcp_proxy_port | string),
+    "name": mcp_proxy_name,
+    "version": mcp_proxy_server_version,
+    "type": mcp_proxy_transport_type,
+    "options": {
+      "panicIfInvalid": mcp_proxy_panic_if_invalid,
+      "logEnabled": mcp_proxy_log_enabled,
+      "authTokens": mcp_proxy_auth_tokens
+    }
+  },
+  "mcpServers": mcp_proxy_servers
+} %}
+{{ config | to_nice_json }}

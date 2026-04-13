@@ -1,0 +1,40 @@
+---
+- name: Verify
+  hosts: all
+  vars:
+    mcp_proxy_version: "0.43.2"
+  vars_files:
+    - ../../defaults/main.yml
+  tasks:
+    - name: Check binary exists.
+      ansible.builtin.stat:
+        path: /opt/mcp-proxy/mcp-proxy
+      register: mcp_proxy_binary
+      failed_when: not mcp_proxy_binary.stat.exists
+
+    - name: Check mcp-proxy version is correct.
+      ansible.builtin.command:
+        cmd: /opt/mcp-proxy/mcp-proxy --version
+      register: mcp_proxy_version_check
+      failed_when: mcp_proxy_version not in mcp_proxy_version_check.stdout
+      changed_when: false
+
+    - name: Check service is running.
+      ansible.builtin.service:
+        name: mcp-proxy
+        state: started
+      register: mcp_proxy_service_status
+      failed_when: not mcp_proxy_service_status.state == 'started'
+
+    - name: Check mcp-proxy is listening on the correct port.
+      ansible.builtin.wait_for:
+        port: "{{ mcp_proxy_port }}"
+        state: started
+        timeout: 10
+      register: mcp_proxy_port_check
+      failed_when: not mcp_proxy_port_check.elapsed < 10
+
+    - name: Check root endpoint returns not found.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ mcp_proxy_port }}/"
+        status_code: 404

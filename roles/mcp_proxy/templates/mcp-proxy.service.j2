@@ -1,0 +1,15 @@
+[Unit]
+Description=MCP Proxy Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart={{ mcp_proxy_install_path }}/mcp-proxy --config {{ mcp_proxy_config_path }} -expand-env={{ 'true' if mcp_proxy_expand_env else 'false' }}
+User={{ tesseract_username }}
+Group={{ tesseract_username }}
+Restart=always
+RestartSec=3
+EnvironmentFile=-{{ mcp_proxy_env_path }}
+
+[Install]
+WantedBy=default.target

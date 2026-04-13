@@ -1,0 +1,122 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - mcp_proxy_version is not none
+      - mcp_proxy_transport_type in ['sse', 'streamable-http']
+      - mcp_proxy_servers is defined
+      - mcp_proxy_servers is mapping
+
+- name: Checking if architecture is amd64.
+  ansible.builtin.set_fact:
+    mcp_proxy_download_arch: "amd64"
+  when: '"x86_64" in ansible_architecture'
+
+- name: Checking if architecture is arm64.
+  ansible.builtin.set_fact:
+    mcp_proxy_download_arch: "arm64"
+  when: '"aarch" in ansible_architecture or "arm64" in ansible_architecture'
+
+- name: Assert that the system architecture is supported.
+  ansible.builtin.assert:
+    that:
+      - mcp_proxy_download_arch is defined
+
+- name: Ensure tesseract user exists.
+  ansible.builtin.user:
+    name: "{{ tesseract_username }}"
+
+- name: Ensure tar is installed.
+  ansible.builtin.package:
+    name:
+      - tar
+    state: present
+    update_cache: true
+
+- name: Create mcp-proxy directory.
+  ansible.builtin.file:
+    path: "{{ mcp_proxy_install_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Download mcp-proxy archive.
+  vars:
+    mcp_proxy_archive_url: >-
+      https://github.com/tbxark/mcp-proxy/releases/download/v{{ mcp_proxy_version }}/
+      mcp-proxy_{{ mcp_proxy_version }}_linux_{{ mcp_proxy_download_arch }}.tar.gz
+    mcp_proxy_archive_path: >-
+      /tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz
+  ansible.builtin.get_url:
+    url: "{{ mcp_proxy_archive_url }}"
+    dest: "{{ mcp_proxy_archive_path }}"
+    mode: '0644'
+  register: mcp_proxy_download_result
+  retries: 5
+  delay: 10
+  until: mcp_proxy_download_result is succeeded
+
+- name: Unarchive mcp-proxy from archive.
+  vars:
+    mcp_proxy_archive_path: >-
+      /tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz
+    mcp_proxy_version_marker: >-
+      {{ mcp_proxy_install_path }}/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}
+  notify: restart mcp_proxy
+  ansible.builtin.unarchive:
+    src: "{{ mcp_proxy_archive_path }}"
+    dest: "{{ mcp_proxy_install_path }}/"
+    remote_src: true
+    extra_opts:
+      - "--overwrite"
+    creates: "{{ mcp_proxy_version_marker }}"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Mark installed mcp-proxy version.
+  vars:
+    mcp_proxy_version_marker: >-
+      {{ mcp_proxy_install_path }}/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}
+  ansible.builtin.file:
+    path: "{{ mcp_proxy_version_marker }}"
+    state: touch
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Template mcp-proxy environment file.
+  no_log: true
+  notify: restart mcp_proxy
+  ansible.builtin.template:
+    src: templates/mcp-proxy.env.j2
+    dest: "{{ mcp_proxy_env_path }}"
+    owner: root
+    group: root
+    mode: '0640'
+
+- name: Template the mcp-proxy config file.
+  notify: restart mcp_proxy
+  ansible.builtin.template:
+    src: templates/config.json.j2
+    dest: "{{ mcp_proxy_config_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Deploy systemd service.
+  notify: restart mcp_proxy
+  ansible.builtin.template:
+    src: templates/mcp-proxy.service.j2
+    dest: /etc/systemd/system/mcp-proxy.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable and start mcp-proxy.
+  ansible.builtin.systemd:
+    name: mcp-proxy
+    enabled: true
+    state: started

@@ -1,0 +1,42 @@
+---
+
+tesseract_username: "tesseract"
+
+mcp_proxy_version: ~ # e.g. "0.43.2"
+
+mcp_proxy_port: 9090
+mcp_proxy_listen_host: "0.0.0.0"
+mcp_proxy_base_url: "http://127.0.0.1:{{ mcp_proxy_port }}"
+
+mcp_proxy_name: "MCP Proxy"
+mcp_proxy_server_version: "1.0.0"
+mcp_proxy_transport_type: "sse"
+
+mcp_proxy_install_path: "/opt/mcp-proxy"
+mcp_proxy_config_path: "{{ mcp_proxy_install_path }}/config.json"
+mcp_proxy_env_path: "/etc/default/mcp-proxy"
+
+mcp_proxy_expand_env: true
+mcp_proxy_panic_if_invalid: false
+mcp_proxy_log_enabled: true
+mcp_proxy_auth_tokens: []
+
+mcp_proxy_environment: {}
+# Example:
+# mcp_proxy_environment:
+#   GITHUB_PERSONAL_ACCESS_TOKEN: "<token>"
+
+mcp_proxy_servers: {}
+# Example:
+# mcp_proxy_servers:
+#   github:
+#     command: "npx"
+#     args:
+#       - "-y"
+#       - "@modelcontextprotocol/server-github"
+#     env:
+#       GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+#   fetch:
+#     command: "uvx"
+#     args:
+#       - "mcp-server-fetch"

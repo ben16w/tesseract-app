@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    mcp_proxy_version: "0.43.2"
+  roles:
+    - role: mcp_proxy
