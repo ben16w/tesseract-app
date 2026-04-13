@@ -4,12 +4,12 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart={{ mcp_proxy_install_path }}/mcp-proxy --config {{ mcp_proxy_config_path }} -expand-env={{ 'true' if mcp_proxy_expand_env else 'false' }}
+ExecStart=/opt/mcp-proxy/mcp-proxy --config /opt/mcp-proxy/config.json -expand-env=true
 User={{ tesseract_username }}
 Group={{ tesseract_username }}
 Restart=always
 RestartSec=3
-EnvironmentFile=-{{ mcp_proxy_env_path }}
+EnvironmentFile=-/etc/default/mcp-proxy
 
 [Install]
 WantedBy=default.target

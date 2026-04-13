@@ -1,9 +1,9 @@
 {% set config = {
   "mcpProxy": {
     "baseURL": mcp_proxy_base_url,
-    "addr": mcp_proxy_listen_host ~ ":" ~ (mcp_proxy_port | string),
-    "name": mcp_proxy_name,
-    "version": mcp_proxy_server_version,
+    "addr": ":" ~ (mcp_proxy_port | string),
+    "name": "MCP Proxy",
+    "version": mcp_proxy_version,
     "type": mcp_proxy_transport_type,
     "options": {
       "panicIfInvalid": mcp_proxy_panic_if_invalid,

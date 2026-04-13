@@ -36,7 +36,7 @@
 
 - name: Create mcp-proxy directory.
   ansible.builtin.file:
-    path: "{{ mcp_proxy_install_path }}"
+    path: /opt/mcp-proxy
     state: directory
     owner: root
     group: root
@@ -63,11 +63,11 @@
     mcp_proxy_archive_path: >-
       /tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz
     mcp_proxy_version_marker: >-
-      {{ mcp_proxy_install_path }}/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}
+      /opt/mcp-proxy/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}
   notify: restart mcp_proxy
   ansible.builtin.unarchive:
     src: "{{ mcp_proxy_archive_path }}"
-    dest: "{{ mcp_proxy_install_path }}/"
+    dest: /opt/mcp-proxy/
     remote_src: true
     extra_opts:
       - "--overwrite"
@@ -79,7 +79,7 @@
 - name: Mark installed mcp-proxy version.
   vars:
     mcp_proxy_version_marker: >-
-      {{ mcp_proxy_install_path }}/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}
+      /opt/mcp-proxy/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}
   ansible.builtin.file:
     path: "{{ mcp_proxy_version_marker }}"
     state: touch
@@ -92,7 +92,7 @@
   notify: restart mcp_proxy
   ansible.builtin.template:
     src: templates/mcp-proxy.env.j2
-    dest: "{{ mcp_proxy_env_path }}"
+    dest: /etc/default/mcp-proxy
     owner: root
     group: root
     mode: '0640'
@@ -101,7 +101,7 @@
   notify: restart mcp_proxy
   ansible.builtin.template:
     src: templates/config.json.j2
-    dest: "{{ mcp_proxy_config_path }}"
+    dest: /opt/mcp-proxy/config.json
     owner: root
     group: root
     mode: '0644'
