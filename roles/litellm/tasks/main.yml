@@ -3,6 +3,7 @@
 - name: Assert that all required inputs have been provided.
   ansible.builtin.assert:
     that:
+      - litellm_version is not none
       - litellm_models is defined
       - litellm_models is iterable
 
@@ -42,9 +43,12 @@
     creates: "/opt/litellm/venv/bin/activate"
 
 - name: Install LiteLLM proxy in venv.
-  ansible.builtin.command:
-    cmd: "/opt/litellm/venv/bin/pip install 'litellm[proxy]'"
-    creates: "/opt/litellm/venv/bin/litellm"
+  ansible.builtin.pip:
+    name: litellm[proxy]
+    version: "{{ litellm_version }}"
+    virtualenv: /opt/litellm/venv
+    state: present
+  notify: restart litellm
 
 - name: Template the LiteLLM config file.
   ansible.builtin.template:
@@ -63,6 +67,31 @@
     group: root
     mode: '0755'
   notify: restart litellm
+
+- name: Configure logging.
+  when: litellm_logging
+  block:
+    - name: Ensure logrotate is installed.
+      ansible.builtin.package:
+        name:
+          - logrotate
+        state: present
+
+    - name: Create log directory.
+      ansible.builtin.file:
+        path: "/var/log/litellm"
+        state: directory
+        owner: "{{ tesseract_username }}"
+        group: "{{ tesseract_username }}"
+        mode: '0755'
+
+    - name: Deploy logrotate configuration.
+      ansible.builtin.template:
+        src: templates/logrotate.j2
+        dest: "/etc/logrotate.d/litellm"
+        owner: root
+        group: root
+        mode: '0644'
 
 - name: Enable and start LiteLLM proxy.
   ansible.builtin.systemd:
