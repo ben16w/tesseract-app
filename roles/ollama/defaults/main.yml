@@ -2,7 +2,8 @@
 
 tesseract_username: "tesseract"
 
-ollama_version: ~ # e.g. "0.12.11"
+ollama_version: ~
+# Example: ollama_version: "0.12.11"
 
 ollama_models: []
 # Example:
@@ -25,5 +26,9 @@ ollama_rocm_version_long: ~
 ollama_rocm_gfx_version: ~
 # Example: ollama_rocm_gfx_version: 10.3.0
 
-ollama_unload_models_cron: "*/2"
+ollama_install_vulkan: false
+ollama_vulkan_visible_devices: ~
+# Example: ollama_vulkan_visible_devices: "2"
+
+ollama_keep_alive_cron: ~ # "*/2"
 ollama_restart_hour_cron: "3"

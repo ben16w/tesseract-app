@@ -16,6 +16,15 @@ Environment="OLLAMA_CONTEXT_LENGTH={{ ollama_context_length }}"
 Environment="HSA_OVERRIDE_GFX_VERSION={{ ollama_rocm_gfx_version }}"
 {% endif %}
 
+{% if ollama_install_vulkan is true %}
+Environment="OLLAMA_VULKAN=1"
+AmbientCapabilities=CAP_PERFMON
+CapabilityBoundingSet=CAP_PERFMON
+{%   if ollama_vulkan_visible_devices is not none %}
+Environment="GGML_VK_VISIBLE_DEVICES={{ ollama_vulkan_visible_devices }}"
+{%   endif %}
+{% endif %}
+
 {% if ollama_max_models is not none %}
 Environment="OLLAMA_MAX_LOADED_MODELS={{ ollama_max_models }}"
 {% endif %}
