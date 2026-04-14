@@ -28,6 +28,7 @@ steps:
         path: /var/run
     commands:
       - apk update
+      - apk add --upgrade expat
       - apk add bash make python3 py3-pip
       - make install-venv
       - make lint
@@ -44,6 +45,7 @@ steps:
         path: /var/run
     commands:
       - apk update
+      - apk add --upgrade expat
       - apk add bash make python3 py3-pip
       - make install-venv
       - make lint
