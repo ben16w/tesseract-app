@@ -3,5 +3,12 @@
   hosts: all
   vars:
     mcp_proxy_version: "0.43.2"
+    mcp_proxy_servers:
+      filesystem:
+        command: "npx"
+        args:
+          - "-y"
+          - "@modelcontextprotocol/server-filesystem@2026.1.14"
+          - "/tmp"
   roles:
     - role: mcp_proxy

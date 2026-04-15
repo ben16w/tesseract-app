@@ -3,6 +3,13 @@
   hosts: all
   vars:
     mcp_proxy_version: "0.43.2"
+    mcp_proxy_servers:
+      filesystem:
+        command: "npx"
+        args:
+          - "-y"
+          - "@modelcontextprotocol/server-filesystem@2026.1.14"
+          - "/tmp"
   vars_files:
     - ../../defaults/main.yml
   tasks:
@@ -18,6 +25,18 @@
       register: mcp_proxy_version_check
       failed_when: mcp_proxy_version not in mcp_proxy_version_check.stdout
       changed_when: false
+
+    - name: Check npx is installed.
+      ansible.builtin.command:
+        cmd: npx --version
+      register: mcp_proxy_npx_version_check
+      changed_when: false
+
+    - name: Check npm package for npx MCP server is installed.
+      ansible.builtin.stat:
+        path: /opt/mcp-proxy/npm/node_modules/@modelcontextprotocol/server-filesystem/package.json
+      register: mcp_proxy_npm_package
+      failed_when: not mcp_proxy_npm_package.stat.exists
 
     - name: Check service is running.
       ansible.builtin.service:

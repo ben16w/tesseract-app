@@ -17,6 +17,16 @@ mcp_proxy_environment: {}
 # mcp_proxy_environment:
 #   GITHUB_PERSONAL_ACCESS_TOKEN: "<token>"
 
+mcp_proxy_auto_install_npx_servers: true
+mcp_proxy_nodejs_packages:
+  - nodejs
+  - npm
+mcp_proxy_npm_prefix: "/opt/mcp-proxy/npm"
+mcp_proxy_npm_packages: []
+# Example:
+# mcp_proxy_npm_packages:
+#   - "@modelcontextprotocol/server-github@2025.4.8"
+
 mcp_proxy_servers: {}
 # Example:
 # mcp_proxy_servers:
@@ -24,7 +34,7 @@ mcp_proxy_servers: {}
 #     command: "npx"
 #     args:
 #       - "-y"
-#       - "@modelcontextprotocol/server-github"
+#       - "@modelcontextprotocol/server-github@2025.4.8"
 #     env:
 #       GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_PERSONAL_ACCESS_TOKEN}"
 #   fetch:
