@@ -36,29 +36,41 @@
     state: present
     update_cache: true
 
-- name: Download the AMDGPU driver package.
-  ansible.builtin.get_url:
-    url: "https://repo.radeon.com/amdgpu-install/\
-      {{ ollama_rocm_version_short }}/ubuntu/\
-      {{ ansible_distribution_release }}/amdgpu-install_\
-      {{ ollama_rocm_version_long }}_all.deb"
-    dest: /tmp/amdgpu-install.deb
-    owner: root
-    group: root
-    mode: '0644'
-  register: download_driver
-  retries: 5
-  delay: 10
-  until: download_driver is succeeded
-
-- name: Install the AMDGPU driver package.
-  ansible.builtin.apt:
-    deb: /tmp/amdgpu-install.deb
-
-- name: Run amdgpu-install script to finalize installation.
+- name: Check if ROCm is already installed at the target version.
   ansible.builtin.command:
-    cmd: "amdgpu-install --usecase=graphics,rocm --accept-eula -y"
+    cmd: "dpkg-query -W -f='${Version}' rocm"
+  register: rocm_installed_version
+  failed_when: false
   changed_when: false
+
+- name: Download and install ROCm if required.
+  when: >
+    rocm_installed_version.rc != 0 or
+    ollama_rocm_version_short not in rocm_installed_version.stdout
+  block:
+    - name: Download the AMDGPU driver package.
+      ansible.builtin.get_url:
+        url: "https://repo.radeon.com/amdgpu-install/\
+          {{ ollama_rocm_version_short }}/ubuntu/\
+          {{ ansible_distribution_release }}/amdgpu-install_\
+          {{ ollama_rocm_version_long }}_all.deb"
+        dest: /tmp/amdgpu-install.deb
+        owner: root
+        group: root
+        mode: '0644'
+      register: download_driver
+      retries: 5
+      delay: 10
+      until: download_driver is succeeded
+
+    - name: Install the AMDGPU driver package.
+      ansible.builtin.apt:
+        deb: /tmp/amdgpu-install.deb
+
+    - name: Run amdgpu-install script to finalize installation.
+      ansible.builtin.command:
+        cmd: "amdgpu-install --usecase=graphics,rocm --accept-eula -y"
+      changed_when: true
 
 - name: Get current Ollama version.
   ansible.builtin.command: ollama --version
