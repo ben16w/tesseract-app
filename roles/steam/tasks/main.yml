@@ -1,0 +1,111 @@
+---
+- name: Enable i386 architecture
+  ansible.builtin.command: dpkg --add-architecture i386
+  register: steam_add_arch
+  changed_when: "'already' not in (steam_add_arch.stderr | default(''))"
+  when: steam_enable_i386_architecture | bool
+
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    name: "{{ steam_prerequisite_packages }}"
+    state: present
+    update_cache: true
+
+- name: Install Steam streaming packages
+  ansible.builtin.apt:
+    name: "{{ steam_packages }}"
+    state: present
+    update_cache: true
+
+- name: Create steam group
+  ansible.builtin.group:
+    name: "{{ steam_group }}"
+    state: present
+
+- name: Create steam user
+  ansible.builtin.user:
+    name: "{{ steam_user }}"
+    group: "{{ steam_group }}"
+    groups: audio,video,render,input
+    append: true
+    shell: /bin/bash
+    create_home: true
+    home: "{{ steam_home }}"
+    state: present
+
+- name: Get steam user information
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ steam_user }}"
+
+- name: Set steam uid fact
+  ansible.builtin.set_fact:
+    steam_uid: "{{ getent_passwd[steam_user][1] }}"
+
+- name: Ensure Steam and Sunshine directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ steam_user }}"
+    group: "{{ steam_group }}"
+    mode: '0755'
+  loop:
+    - "{{ steam_home }}/.config"
+    - "{{ steam_home }}/.local"
+    - "{{ steam_home }}/.local/state"
+    - "{{ steam_home }}/.config/sunshine"
+    - "{{ steam_home }}/.local/state/sunshine"
+
+- name: Install Steam session launcher
+  ansible.builtin.template:
+    src: steam-session.sh.j2
+    dest: /usr/local/bin/steam-session
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart steam service
+
+- name: Install Steam service bootstrap script
+  ansible.builtin.template:
+    src: steam-service.sh.j2
+    dest: /usr/local/bin/steam-service
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart steam service
+
+- name: Install Sunshine app configuration
+  ansible.builtin.template:
+    src: sunshine-apps.json.j2
+    dest: "{{ steam_home }}/.config/sunshine/apps.json"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_group }}"
+    mode: '0644'
+  notify: Restart steam service
+
+- name: Install Sunshine configuration
+  ansible.builtin.template:
+    src: sunshine.conf.j2
+    dest: "{{ steam_home }}/.config/sunshine/sunshine.conf"
+    owner: "{{ steam_user }}"
+    group: "{{ steam_group }}"
+    mode: '0600'
+  notify: Restart steam service
+
+- name: Install systemd service
+  ansible.builtin.template:
+    src: steam.service.j2
+    dest: "/etc/systemd/system/{{ steam_service_name }}.service"
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restart steam service
+
+- name: Ensure Steam streaming service is enabled and started
+  ansible.builtin.systemd:
+    name: "{{ steam_service_name }}"
+    enabled: true
+    state: started
+    daemon_reload: true

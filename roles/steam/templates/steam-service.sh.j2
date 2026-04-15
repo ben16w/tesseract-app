@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -u
+
+export HOME="{{ steam_home }}"
+export USER="{{ steam_user }}"
+export LOGNAME="{{ steam_user }}"
+export XDG_RUNTIME_DIR="/run/user/{{ steam_uid }}"
+export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+export PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native"
+
+mkdir -p "${XDG_RUNTIME_DIR}" "${XDG_RUNTIME_DIR}/pulse"
+chmod 700 "${XDG_RUNTIME_DIR}"
+
+if ! /usr/bin/dbus-send --session --dest=org.freedesktop.DBus --type=method_call / org.freedesktop.DBus.ListNames >/dev/null 2>&1; then
+  rm -f "${XDG_RUNTIME_DIR}/bus"
+  eval "$(/usr/bin/dbus-daemon --session --address=${DBUS_SESSION_BUS_ADDRESS} --fork --print-address --print-pid | awk 'NR==1{print \"export DBUS_SESSION_BUS_ADDRESS=\"$0} NR==2{print \"export STEAM_DBUS_PID=\"$0}')"
+fi
+
+/usr/bin/systemd-run --user --scope true >/dev/null 2>&1 || true
+/usr/bin/systemctl --user import-environment HOME USER LOGNAME XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS PULSE_SERVER DISPLAY SDL_VIDEODRIVER STEAM_MULTIPLE_XWAYLANDS STEAM_FORCE_DESKTOPUI_SCALING >/dev/null 2>&1 || true
+/usr/bin/systemctl --user start pipewire.service pipewire-pulse.service wireplumber.service >/dev/null 2>&1 || true
+
+cleanup() {
+  /usr/bin/pkill -TERM -u {{ steam_user }} -f steam-session || true
+  /usr/bin/pkill -TERM -u {{ steam_user }} steam || true
+  /usr/bin/pkill -TERM -u {{ steam_user }} gamescope || true
+  /usr/bin/pkill -TERM -u {{ steam_user }} sunshine || true
+  sleep 2
+  /usr/bin/pkill -KILL -u {{ steam_user }} steam || true
+  /usr/bin/pkill -KILL -u {{ steam_user }} gamescope || true
+  /usr/bin/pkill -KILL -u {{ steam_user }} sunshine || true
+  if [ -n "${STEAM_DBUS_PID:-}" ]; then
+    kill "${STEAM_DBUS_PID}" || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+exec /usr/bin/sunshine --creds-file "{{ steam_home }}/.local/state/sunshine/sunshine_state.json" --config "{{ steam_home }}/.config/sunshine/sunshine.conf"

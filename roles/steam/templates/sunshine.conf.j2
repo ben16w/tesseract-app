@@ -1,0 +1,15 @@
+# Managed by Ansible
+port = 47989
+address_family = ipv4
+output_name = 0
+min_log_level = 2
+origin_web_ui_allowed = lan
+upnp = enabled
+pkey = {{ steam_home }}/.local/state/sunshine/cakey.pem
+cert = {{ steam_home }}/.local/state/sunshine/cacert.pem
+file_state = {{ steam_home }}/.local/state/sunshine/sunshine_state.json
+credentials_file = {{ steam_home }}/.local/state/sunshine/credentials.json
+apps_file = {{ steam_home }}/.config/sunshine/apps.json
+fec_percentage = 20
+nv_preset = 1
+capture = wlr

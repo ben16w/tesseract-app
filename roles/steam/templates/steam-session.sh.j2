@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export HOME="{{ steam_home }}"
+export USER="{{ steam_user }}"
+export LOGNAME="{{ steam_user }}"
+export DISPLAY=:1
+export XDG_RUNTIME_DIR="/run/user/{{ steam_uid }}"
+export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+export PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native"
+export SDL_VIDEODRIVER=wayland
+export STEAM_MULTIPLE_XWAYLANDS=1
+export STEAM_FORCE_DESKTOPUI_SCALING=1.0
+
+cleanup() {
+  /usr/bin/pkill -TERM -u {{ steam_user }} steam || true
+  /usr/bin/pkill -TERM -u {{ steam_user }} gamescope || true
+  sleep 2
+  /usr/bin/pkill -KILL -u {{ steam_user }} steam || true
+  /usr/bin/pkill -KILL -u {{ steam_user }} gamescope || true
+  /usr/bin/pkill -KILL -u {{ steam_user }} -f steamwebhelper || true
+  /usr/bin/pkill -KILL -u {{ steam_user }} -f reaper || true
+}
+trap cleanup EXIT INT TERM HUP
+
+exec /usr/bin/gamescope \
+  --rt \
+  --steam \
+  --fullscreen \
+  --backend sdl \
+  --xwayland-count 2 \
+  --output-width {{ steam_resolution.split('x')[0] }} \
+  --output-height {{ steam_resolution.split('x')[1] }} \
+  --nested-width {{ steam_resolution.split('x')[0] }} \
+  --nested-height {{ steam_resolution.split('x')[1] }} \
+  --refresh {{ steam_framerate }} \
+  -- /usr/games/steam -gamepadui -steamos3 -steamdeck

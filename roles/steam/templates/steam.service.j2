@@ -1,0 +1,37 @@
+[Unit]
+Description=Steam streaming stack (Sunshine + Steam + gamescope)
+After=network-online.target systemd-user-sessions.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User={{ steam_user }}
+Group={{ steam_group }}
+SupplementaryGroups=audio video render input
+WorkingDirectory={{ steam_home }}
+Environment=HOME={{ steam_home }}
+Environment=USER={{ steam_user }}
+Environment=DISPLAY=:1
+Environment=XDG_RUNTIME_DIR=/run/user/{{ steam_uid }}
+Environment=PULSE_SERVER=unix:/run/user/{{ steam_uid }}/pulse/native
+Environment=STEAM_FORCE_DESKTOPUI_SCALING=1.0
+Environment=STEAM_MULTIPLE_XWAYLANDS=1
+Environment=SDL_VIDEODRIVER=wayland
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ steam_uid }}/bus
+RuntimeDirectory={{ steam_service_name }} user-{{ steam_uid }}
+RuntimeDirectoryMode=0755
+StateDirectory={{ steam_service_name }}
+StateDirectoryMode=0755
+ExecStart=/usr/local/bin/steam-service
+ExecStop=/bin/sh -lc '/usr/bin/pkill -KILL -g $MAINPID || true; /usr/bin/pkill -TERM -u {{ steam_user }} sunshine || true; /usr/bin/pkill -TERM -u {{ steam_user }} gamescope || true; /usr/bin/pkill -TERM -u {{ steam_user }} steam || true'
+KillMode=control-group
+KillSignal=SIGTERM
+TimeoutStopSec=15
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=false
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target
