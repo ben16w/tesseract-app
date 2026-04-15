@@ -1,0 +1,112 @@
+---
+- name: Enable i386 architecture
+  ansible.builtin.command: dpkg --add-architecture i386
+  register: headless_game_streaming_add_arch
+  changed_when: "'already' not in (headless_game_streaming_add_arch.stderr | default(''))"
+  when: headless_game_streaming_enable_i386_architecture | bool
+
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    name: "{{ headless_game_streaming_system_packages_pre }}"
+    state: present
+    update_cache: true
+
+- name: Install streaming stack packages
+  ansible.builtin.apt:
+    name: "{{ headless_game_streaming_packages }}"
+    state: present
+    update_cache: true
+
+- name: Create steam group
+  ansible.builtin.group:
+    name: "{{ headless_game_streaming_group }}"
+    state: present
+
+- name: Create steam user
+  ansible.builtin.user:
+    name: "{{ headless_game_streaming_user }}"
+    group: "{{ headless_game_streaming_group }}"
+    groups: "{{ headless_game_streaming_extra_groups | join(',') }}"
+    append: true
+    shell: /bin/bash
+    create_home: true
+    home: "{{ headless_game_streaming_home }}"
+    state: present
+
+- name: Get steam user information
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ headless_game_streaming_user }}"
+
+- name: Set steam user uid fact
+  ansible.builtin.set_fact:
+    headless_game_streaming_uid: "{{ getent_passwd[headless_game_streaming_user][1] }}"
+
+- name: Ensure base configuration directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ headless_game_streaming_user }}"
+    group: "{{ headless_game_streaming_group }}"
+    mode: '0755'
+  loop:
+    - "{{ headless_game_streaming_home }}/.config"
+    - "{{ headless_game_streaming_home }}/.local"
+    - "{{ headless_game_streaming_home }}/.local/state"
+    - "{{ headless_game_streaming_home }}/.config/systemd"
+    - "{{ headless_game_streaming_sunshine_config_dir }}"
+    - "{{ headless_game_streaming_sunshine_state_dir }}"
+
+- name: Install session launcher script
+  ansible.builtin.template:
+    src: headless-game-streaming-session.sh.j2
+    dest: /usr/local/bin/headless-game-streaming-session
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart headless game streaming service
+
+- name: Install stack bootstrap script
+  ansible.builtin.template:
+    src: headless-game-streaming-service.sh.j2
+    dest: /usr/local/bin/headless-game-streaming-service
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart headless game streaming service
+
+- name: Install Sunshine applications configuration
+  ansible.builtin.template:
+    src: sunshine-apps.json.j2
+    dest: "{{ headless_game_streaming_sunshine_config_dir }}/apps.json"
+    owner: "{{ headless_game_streaming_user }}"
+    group: "{{ headless_game_streaming_group }}"
+    mode: '0644'
+  notify: Restart headless game streaming service
+
+- name: Install Sunshine configuration
+  ansible.builtin.template:
+    src: sunshine.conf.j2
+    dest: "{{ headless_game_streaming_sunshine_config_dir }}/sunshine.conf"
+    owner: "{{ headless_game_streaming_user }}"
+    group: "{{ headless_game_streaming_group }}"
+    mode: '0600'
+  notify: Restart headless game streaming service
+
+- name: Install systemd service
+  ansible.builtin.template:
+    src: headless-game-streaming.service.j2
+    dest: "/etc/systemd/system/{{ headless_game_streaming_service_name }}.service"
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restart headless game streaming service
+
+- name: Ensure service is enabled and started
+  ansible.builtin.systemd:
+    name: "{{ headless_game_streaming_service_name }}"
+    enabled: true
+    state: started
+    daemon_reload: true

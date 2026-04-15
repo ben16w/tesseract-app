@@ -1,0 +1,86 @@
+---
+headless_game_streaming_user: steam
+headless_game_streaming_group: steam
+headless_game_streaming_home: "/home/{{ headless_game_streaming_user }}"
+headless_game_streaming_service_name: headless-game-streaming
+headless_game_streaming_display: :1
+headless_game_streaming_resolution: 1920x1080
+headless_game_streaming_framerate: 60
+headless_game_streaming_gamescope_args:
+  - --rt
+  - --steam
+  - --fullscreen
+  - --backend
+  - sdl
+  - --xwayland-count
+  - '2'
+  - --output-width
+  - "{{ headless_game_streaming_resolution.split('x')[0] }}"
+  - --output-height
+  - "{{ headless_game_streaming_resolution.split('x')[1] }}"
+  - --nested-width
+  - "{{ headless_game_streaming_resolution.split('x')[0] }}"
+  - --nested-height
+  - "{{ headless_game_streaming_resolution.split('x')[1] }}"
+  - --refresh
+  - "{{ headless_game_streaming_framerate }}"
+headless_game_streaming_steam_args:
+  - -gamepadui
+  - -steamos3
+  - -steamdeck
+headless_game_streaming_sunshine_apps:
+  - name: Steam Big Picture
+    image-path: steam
+    auto-detach: 'true'
+    wait-all: 'true'
+    exit-timeout: '5'
+    cmd: /usr/local/bin/headless-game-streaming-session
+headless_game_streaming_packages:
+  - steam-installer
+  - sunshine
+  - gamescope
+  - mesa-vulkan-drivers
+  - mesa-vulkan-drivers:i386
+  - libgl1-mesa-dri
+  - libgl1-mesa-dri:i386
+  - libegl1-mesa
+  - libegl1-mesa:i386
+  - libgbm1
+  - libgbm1:i386
+  - libva2
+  - libva2:i386
+  - libpipewire-0.3-0
+  - pipewire
+  - pipewire-pulse
+  - wireplumber
+  - xwayland
+  - xdg-desktop-portal
+  - xdg-user-dirs
+  - dbus-user-session
+  - pulseaudio-utils
+  - psmisc
+  - procps
+  - sudo
+headless_game_streaming_extra_groups:
+  - audio
+  - video
+  - render
+  - input
+headless_game_streaming_system_packages_pre:
+  - software-properties-common
+  - apt-transport-https
+  - ca-certificates
+headless_game_streaming_enable_i386_architecture: true
+headless_game_streaming_manage_sunshine_state: true
+headless_game_streaming_sunshine_config_dir: "{{ headless_game_streaming_home }}/.config/sunshine"
+headless_game_streaming_sunshine_state_dir: "{{ headless_game_streaming_home }}/.local/state/sunshine"
+headless_game_streaming_service_environment:
+  HOME: "{{ headless_game_streaming_home }}"
+  USER: "{{ headless_game_streaming_user }}"
+  DISPLAY: "{{ headless_game_streaming_display }}"
+  XDG_RUNTIME_DIR: "/run/user/{{ headless_game_streaming_uid | default('1001') }}"
+  PULSE_SERVER: "unix:/run/user/{{ headless_game_streaming_uid | default('1001') }}/pulse/native"
+  STEAM_FORCE_DESKTOPUI_SCALING: '1.0'
+  STEAM_MULTIPLE_XWAYLANDS: '1'
+  SDL_VIDEODRIVER: wayland
+  DBUS_SESSION_BUS_ADDRESS: "unix:path={{ headless_game_streaming_xdg_runtime_dir }}/bus"

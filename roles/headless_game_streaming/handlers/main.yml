@@ -1,0 +1,9 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart headless game streaming service
+  ansible.builtin.systemd:
+    name: "{{ headless_game_streaming_service_name }}"
+    state: restarted

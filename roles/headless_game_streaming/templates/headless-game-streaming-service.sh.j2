@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -eu
+
+export HOME="{{ headless_game_streaming_home }}"
+export USER="{{ headless_game_streaming_user }}"
+export LOGNAME="{{ headless_game_streaming_user }}"
+export XDG_RUNTIME_DIR="/run/user/{{ headless_game_streaming_uid }}"
+export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+export PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native"
+
+mkdir -p "${XDG_RUNTIME_DIR}" "${XDG_RUNTIME_DIR}/pulse"
+chmod 700 "${XDG_RUNTIME_DIR}"
+
+if ! /usr/bin/dbus-send --session --dest=org.freedesktop.DBus --type=method_call / org.freedesktop.DBus.ListNames >/dev/null 2>&1; then
+  rm -f "${XDG_RUNTIME_DIR}/bus"
+  eval "$(/usr/bin/dbus-daemon --session --address=${DBUS_SESSION_BUS_ADDRESS} --fork --print-address --print-pid 2>/tmp/headless-game-streaming-dbus.err | awk 'NR==1{print \"export DBUS_SESSION_BUS_ADDRESS=\"$0} NR==2{print \"export HEADLESS_STREAMING_DBUS_PID=\"$0}')"
+fi
+
+/usr/bin/systemd-run --user --scope true >/dev/null 2>&1 || true
+/usr/bin/systemctl --user import-environment HOME USER LOGNAME XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS PULSE_SERVER DISPLAY SDL_VIDEODRIVER STEAM_MULTIPLE_XWAYLANDS STEAM_FORCE_DESKTOPUI_SCALING >/dev/null 2>&1 || true
+/usr/bin/systemctl --user start pipewire.service pipewire-pulse.service wireplumber.service >/dev/null 2>&1 || true
+
+cleanup() {
+  /usr/bin/pkill -TERM -P $$ || true
+  /usr/bin/pkill -TERM -u {{ headless_game_streaming_user }} -f headless-game-streaming-session || true
+  /usr/bin/pkill -TERM -u {{ headless_game_streaming_user }} steam || true
+  /usr/bin/pkill -TERM -u {{ headless_game_streaming_user }} gamescope || true
+  /usr/bin/pkill -TERM -u {{ headless_game_streaming_user }} sunshine || true
+  sleep 2
+  /usr/bin/pkill -KILL -u {{ headless_game_streaming_user }} steam || true
+  /usr/bin/pkill -KILL -u {{ headless_game_streaming_user }} gamescope || true
+  /usr/bin/pkill -KILL -u {{ headless_game_streaming_user }} sunshine || true
+  if [ -n "${HEADLESS_STREAMING_DBUS_PID:-}" ]; then
+    kill "${HEADLESS_STREAMING_DBUS_PID}" || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+exec /usr/bin/sunshine --creds-file "{{ headless_game_streaming_sunshine_state_dir }}/sunshine_state.json" --config "{{ headless_game_streaming_sunshine_config_dir }}/sunshine.conf"

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export HOME="{{ headless_game_streaming_home }}"
+export USER="{{ headless_game_streaming_user }}"
+export LOGNAME="{{ headless_game_streaming_user }}"
+export DISPLAY="{{ headless_game_streaming_display }}"
+export XDG_RUNTIME_DIR="/run/user/{{ headless_game_streaming_uid }}"
+export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+export PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native"
+export SDL_VIDEODRIVER=wayland
+export STEAM_MULTIPLE_XWAYLANDS=1
+export STEAM_FORCE_DESKTOPUI_SCALING=1.0
+
+cleanup() {
+  /usr/bin/pkill -TERM -u {{ headless_game_streaming_user }} steam || true
+  /usr/bin/pkill -TERM -u {{ headless_game_streaming_user }} gamescope || true
+  sleep 2
+  /usr/bin/pkill -KILL -u {{ headless_game_streaming_user }} steam || true
+  /usr/bin/pkill -KILL -u {{ headless_game_streaming_user }} gamescope || true
+  /usr/bin/pkill -KILL -u {{ headless_game_streaming_user }} -f steamwebhelper || true
+  /usr/bin/pkill -KILL -u {{ headless_game_streaming_user }} -f reaper || true
+}
+trap cleanup EXIT INT TERM HUP
+
+exec /usr/bin/gamescope {{ headless_game_streaming_gamescope_args | join(' ') }} -- /usr/games/steam {{ headless_game_streaming_steam_args | join(' ') }}
