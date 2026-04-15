@@ -29,9 +29,6 @@ Common root files include `Makefile`, `requirements.txt`, `galaxy.yml`,
   current checkout.
 - Keep changes scoped to the relevant role unless a shared change is clearly
   required.
-- The `mcp_proxy` role can auto-detect `command: npx` server entries, install
-  `nodejs`/`npm`, and preinstall npm packages under `/opt/mcp-proxy/npm` so the
-  service can resolve them via `PATH`.
 
 ## Ansible Conventions
 
