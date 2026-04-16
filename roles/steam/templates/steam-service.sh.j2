@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u
 
-export HOME="{{ steam_home }}"
+export HOME="/home/{{ steam_user }}"
 export USER="{{ steam_user }}"
 export LOGNAME="{{ steam_user }}"
 export XDG_RUNTIME_DIR="/run/user/{{ steam_uid }}"
@@ -35,4 +35,4 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-exec /usr/bin/sunshine --creds-file "{{ steam_home }}/.local/state/sunshine/sunshine_state.json" --config "{{ steam_home }}/.config/sunshine/sunshine.conf"
+exec /usr/bin/sunshine --creds-file "/home/{{ steam_user }}/.local/state/sunshine/sunshine_state.json" --config "/home/{{ steam_user }}/.config/sunshine/sunshine.conf"

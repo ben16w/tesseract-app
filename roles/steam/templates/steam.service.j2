@@ -9,8 +9,8 @@ Type=simple
 User={{ steam_user }}
 Group={{ steam_group }}
 SupplementaryGroups=audio video render input
-WorkingDirectory={{ steam_home }}
-Environment=HOME={{ steam_home }}
+WorkingDirectory=/home/{{ steam_user }}
+Environment=HOME=/home/{{ steam_user }}
 Environment=USER={{ steam_user }}
 Environment=DISPLAY=:1
 Environment=XDG_RUNTIME_DIR=/run/user/{{ steam_uid }}
@@ -19,9 +19,9 @@ Environment=STEAM_FORCE_DESKTOPUI_SCALING=1.0
 Environment=STEAM_MULTIPLE_XWAYLANDS=1
 Environment=SDL_VIDEODRIVER=wayland
 Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{{ steam_uid }}/bus
-RuntimeDirectory={{ steam_service_name }} user-{{ steam_uid }}
+RuntimeDirectory=steam-stream user-{{ steam_uid }}
 RuntimeDirectoryMode=0755
-StateDirectory={{ steam_service_name }}
+StateDirectory=steam-stream
 StateDirectoryMode=0755
 ExecStart=/usr/local/bin/steam-service
 ExecStop=/bin/sh -lc '/usr/bin/pkill -KILL -g $MAINPID || true; /usr/bin/pkill -TERM -u {{ steam_user }} sunshine || true; /usr/bin/pkill -TERM -u {{ steam_user }} gamescope || true; /usr/bin/pkill -TERM -u {{ steam_user }} steam || true'

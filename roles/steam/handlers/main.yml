@@ -5,5 +5,5 @@
 
 - name: Restart steam service
   ansible.builtin.systemd:
-    name: "{{ steam_service_name }}"
+    name: steam-stream
     state: restarted
