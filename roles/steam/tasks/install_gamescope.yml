@@ -1,0 +1,94 @@
+---
+- name: Install gamescope build dependencies
+  ansible.builtin.apt:
+    name:
+      - build-essential
+      - cmake
+      - git
+      - glslang-dev
+      - glslang-tools
+      - libaom-dev
+      - libavif-dev
+      - libbenchmark-dev
+      - libcap-dev
+      - libdecor-0-dev
+      - libdrm-dev
+      - libgbm-dev
+      - libheif-dev
+      - libinput-dev
+      - libluajit-5.1-dev
+      - libpipewire-0.3-dev
+      - libsdl2-dev
+      - libseat-dev
+      - libudev-dev
+      - libvulkan-dev
+      - libwayland-dev
+      - libx11-dev
+      - libxcb-composite0-dev
+      - libxcb-dri3-dev
+      - libxcb-present-dev
+      - libxcb-randr0-dev
+      - libxcb-render0-dev
+      - libxcb-shm0-dev
+      - libxcb-xfixes0-dev
+      - libxcomposite-dev
+      - libxdamage-dev
+      - libxkbcommon-dev
+      - libxmu-dev
+      - libxrender-dev
+      - libxres-dev
+      - libxtst-dev
+      - meson
+      - ninja-build
+      - pkg-config
+      - spirv-headers
+      - wayland-protocols
+    state: present
+    update_cache: true
+
+- name: Check installed gamescope version
+  ansible.builtin.stat:
+    path: /usr/local/share/gamescope.version
+  register: steam_gamescope_version_file
+
+- name: Read installed gamescope version
+  ansible.builtin.slurp:
+    src: /usr/local/share/gamescope.version
+  register: steam_gamescope_installed_version
+  when: steam_gamescope_version_file.stat.exists
+
+- name: Build and install gamescope from source
+  when: >
+    not steam_gamescope_version_file.stat.exists or
+    (steam_gamescope_installed_version.content | b64decode | trim) != steam_gamescope_version
+  block:
+    - name: Clone gamescope repository
+      ansible.builtin.git:
+        repo: https://github.com/ValveSoftware/gamescope.git
+        dest: /usr/local/src/gamescope
+        version: "{{ steam_gamescope_version }}"
+        recursive: true
+        force: true
+
+    - name: Set up meson build for gamescope
+      ansible.builtin.command:
+        cmd: meson setup build/
+        chdir: /usr/local/src/gamescope
+
+    - name: Build gamescope
+      ansible.builtin.command:
+        cmd: ninja -C build/
+        chdir: /usr/local/src/gamescope
+
+    - name: Install gamescope
+      ansible.builtin.command:
+        cmd: meson install -C build/ --skip-subprojects
+        chdir: /usr/local/src/gamescope
+
+    - name: Record installed gamescope version
+      ansible.builtin.copy:
+        content: "{{ steam_gamescope_version }}"
+        dest: /usr/local/share/gamescope.version
+        owner: root
+        group: root
+        mode: '0644'

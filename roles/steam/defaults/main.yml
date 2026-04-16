@@ -5,3 +5,4 @@ steam_resolution: 1920x1080
 steam_framerate: 60
 steam_enable_i386_architecture: true
 steam_sunshine_version: "0.23.1"
+steam_gamescope_version: "3.16.23"
