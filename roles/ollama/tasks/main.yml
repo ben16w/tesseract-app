@@ -52,6 +52,39 @@
         group: root
         mode: '0755'
 
+- name: Check if ROCm Ollama payload is already installed.
+  when: ollama_use_rocm is true
+  ansible.builtin.stat:
+    path: /usr/lib/ollama/rocm
+  register: ollama_rocm_package_installed
+
+- name: Download and install Ollama ROCm package if required.
+  when:
+    - ollama_use_rocm is true
+    - ollama_version not in ollama_current_version.stdout or not ollama_rocm_package_installed.stat.exists
+  notify: restart ollama
+  block:
+    - name: Download the ROCm package to /tmp.
+      ansible.builtin.get_url:
+        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}-rocm.tgz"
+        dest: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
+        owner: root
+        group: root
+        mode: '0644'
+      register: download_rocm
+      retries: 5
+      delay: 10
+      until: download_rocm is succeeded
+
+    - name: Extract ROCm package to /usr.
+      ansible.builtin.unarchive:
+        src: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
+        dest: /usr
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0755'
+
 - name: Copy ollama.service template to /etc/systemd/system.
   ansible.builtin.template:
     src: templates/ollama.service.j2
