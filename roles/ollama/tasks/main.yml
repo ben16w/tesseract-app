@@ -33,8 +33,8 @@
   block:
     - name: Download the Ollama package to /tmp.
       ansible.builtin.get_url:
-        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}.tgz"
-        dest: "/tmp/ollama-linux-{{ arch }}.tgz"
+        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}.tar.zst"
+        dest: "/tmp/ollama-linux-{{ arch }}.tar.zst"
         owner: root
         group: root
         mode: '0644'
@@ -45,7 +45,7 @@
 
     - name: Extract the Ollama package to /usr.
       ansible.builtin.unarchive:
-        src: "/tmp/ollama-linux-{{ arch }}.tgz"
+        src: "/tmp/ollama-linux-{{ arch }}.tar.zst"
         dest: /usr
         remote_src: true
         owner: root
@@ -66,8 +66,8 @@
   block:
     - name: Download the ROCm package to /tmp.
       ansible.builtin.get_url:
-        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}-rocm.tgz"
-        dest: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
+        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}-rocm.tar.zst"
+        dest: "/tmp/ollama-linux-{{ arch }}-rocm.tar.zst"
         owner: root
         group: root
         mode: '0644'
@@ -78,7 +78,7 @@
 
     - name: Extract ROCm package to /usr.
       ansible.builtin.unarchive:
-        src: "/tmp/ollama-linux-{{ arch }}-rocm.tgz"
+        src: "/tmp/ollama-linux-{{ arch }}-rocm.tar.zst"
         dest: /usr
         remote_src: true
         owner: root
