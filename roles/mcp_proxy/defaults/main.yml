@@ -12,16 +12,7 @@ mcp_proxy_panic_if_invalid: false
 mcp_proxy_log_enabled: true
 mcp_proxy_auth_tokens: []
 
-mcp_proxy_environment: {}
-# Example:
-# mcp_proxy_environment:
-#   GITHUB_PERSONAL_ACCESS_TOKEN: "<token>"
-
 mcp_proxy_auto_install_npx_servers: true
-mcp_proxy_nodejs_packages:
-  - nodejs
-  - npm
-mcp_proxy_npm_prefix: "/opt/mcp-proxy/npm"
 mcp_proxy_npm_packages: []
 # Example:
 # mcp_proxy_npm_packages:

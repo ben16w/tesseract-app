@@ -1,0 +1,66 @@
+---
+# Builds the list of npm packages to install by combining explicitly declared
+# packages (mcp_proxy_npm_packages) with packages auto-detected from any npx
+# server definitions in mcp_proxy_servers. Then installs Node.js, creates the
+# npm prefix directory, and installs all resolved packages.
+
+- name: Seed npm package list.
+  ansible.builtin.set_fact:
+    mcp_proxy_npm_packages_to_install: "{{ mcp_proxy_npm_packages | list }}"
+
+- name: Detect npm packages from npx MCP server definitions.
+  vars:
+    mcp_proxy_detected_npm_package: >-
+      {{
+        ((item.value.args | default([]))
+        | reject('match', '^-')
+        | list
+        | first)
+        | default('')
+      }}
+  ansible.builtin.set_fact:
+    mcp_proxy_npm_packages_to_install: >-
+      {{ (mcp_proxy_npm_packages_to_install + [mcp_proxy_detected_npm_package]) | unique }}
+  loop: "{{ mcp_proxy_servers | dict2items }}"
+  when:
+    - mcp_proxy_auto_install_npx_servers
+    - item.value.command | default('') == 'npx'
+    - mcp_proxy_detected_npm_package | length > 0
+
+- name: Ensure Node.js and npm are installed for npx servers.
+  ansible.builtin.package:
+    name:
+      - nodejs
+      - npm
+    state: present
+    update_cache: true
+  when: mcp_proxy_npm_packages_to_install | length > 0
+
+- name: Create npm prefix directory.
+  ansible.builtin.file:
+    path: /opt/mcp-proxy/npm
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: mcp_proxy_npm_packages_to_install | length > 0
+
+- name: Install npm packages for npx MCP servers.
+  notify: restart mcp_proxy
+  ansible.builtin.command:
+    argv:
+      - npm
+      - install
+      - --prefix
+      - /opt/mcp-proxy/npm
+      - "{{ item }}"
+  environment:
+    NPM_CONFIG_AUDIT: 'false'
+    NPM_CONFIG_FUND: 'false'
+    NPM_CONFIG_UPDATE_NOTIFIER: 'false'
+  register: mcp_proxy_npm_install_result
+  changed_when: >-
+    'up to date' not in (mcp_proxy_npm_install_result.stdout | lower)
+    and 'up to date' not in (mcp_proxy_npm_install_result.stderr | lower)
+  loop: "{{ mcp_proxy_npm_packages_to_install }}"
+  when: mcp_proxy_npm_packages_to_install | length > 0

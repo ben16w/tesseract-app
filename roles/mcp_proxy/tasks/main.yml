@@ -42,119 +42,37 @@
     group: root
     mode: '0755'
 
-- name: Seed npm package list.
-  ansible.builtin.set_fact:
-    mcp_proxy_npm_packages_to_install: "{{ mcp_proxy_npm_packages | list }}"
-
-- name: Detect npm packages from npx MCP server definitions.
-  vars:
-    mcp_proxy_detected_npm_package: >-
-      {{
-        ((item.value.args | default([]))
-        | reject('match', '^-')
-        | list
-        | first)
-        | default('')
-      }}
-  ansible.builtin.set_fact:
-    mcp_proxy_npm_packages_to_install: >-
-      {{ (mcp_proxy_npm_packages_to_install + [mcp_proxy_detected_npm_package]) | unique }}
-  loop: "{{ mcp_proxy_servers | dict2items }}"
-  when:
-    - mcp_proxy_auto_install_npx_servers
-    - item.value.command | default('') == 'npx'
-    - mcp_proxy_detected_npm_package | length > 0
-
-- name: Ensure Node.js and npm are installed for npx servers.
-  ansible.builtin.package:
-    name: "{{ mcp_proxy_nodejs_packages }}"
-    state: present
-    update_cache: true
-  when: mcp_proxy_npm_packages_to_install | length > 0
-
-- name: Create npm prefix directory.
-  ansible.builtin.file:
-    path: "{{ mcp_proxy_npm_prefix }}"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  when: mcp_proxy_npm_packages_to_install | length > 0
-
 - name: Install npm packages for npx MCP servers.
-  notify: restart mcp_proxy
-  ansible.builtin.command:
-    argv:
-      - npm
-      - install
-      - --prefix
-      - "{{ mcp_proxy_npm_prefix }}"
-      - "{{ item }}"
-  environment:
-    NPM_CONFIG_AUDIT: 'false'
-    NPM_CONFIG_FUND: 'false'
-    NPM_CONFIG_UPDATE_NOTIFIER: 'false'
-  register: mcp_proxy_npm_install_result
-  changed_when: >-
-    'up to date' not in (mcp_proxy_npm_install_result.stdout | lower)
-    and 'up to date' not in (mcp_proxy_npm_install_result.stderr | lower)
-  loop: "{{ mcp_proxy_npm_packages_to_install }}"
-  when: mcp_proxy_npm_packages_to_install | length > 0
+  ansible.builtin.include_tasks: npm.yml
 
 - name: Download mcp-proxy archive.
-  vars:
-    mcp_proxy_archive_url: >-
-      https://github.com/tbxark/mcp-proxy/releases/download/v{{ mcp_proxy_version }}/
-      mcp-proxy_{{ mcp_proxy_version }}_linux_{{ mcp_proxy_download_arch }}.tar.gz
-    mcp_proxy_archive_path: >-
-      /tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz
   ansible.builtin.get_url:
-    url: "{{ mcp_proxy_archive_url }}"
-    dest: "{{ mcp_proxy_archive_path }}"
+    url: "https://github.com/tbxark/mcp-proxy/releases/download/v{{ mcp_proxy_version }}/mcp-proxy_{{ mcp_proxy_version }}_linux_{{ mcp_proxy_download_arch }}.tar.gz"
+    dest: "/tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz"
     mode: '0644'
-  register: mcp_proxy_download_result
   retries: 5
   delay: 10
-  until: mcp_proxy_download_result is succeeded
 
 - name: Unarchive mcp-proxy from archive.
-  vars:
-    mcp_proxy_archive_path: >-
-      /tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz
-    mcp_proxy_version_marker: >-
-      /opt/mcp-proxy/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}
   notify: restart mcp_proxy
   ansible.builtin.unarchive:
-    src: "{{ mcp_proxy_archive_path }}"
+    src: "/tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz"
     dest: /opt/mcp-proxy/
     remote_src: true
     extra_opts:
       - "--overwrite"
-    creates: "{{ mcp_proxy_version_marker }}"
+    creates: "/opt/mcp-proxy/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}"
     owner: root
     group: root
     mode: '0755'
 
 - name: Mark installed mcp-proxy version.
-  vars:
-    mcp_proxy_version_marker: >-
-      /opt/mcp-proxy/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}
   ansible.builtin.file:
-    path: "{{ mcp_proxy_version_marker }}"
+    path: "/opt/mcp-proxy/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}"
     state: touch
     owner: root
     group: root
     mode: '0644'
-
-- name: Template mcp-proxy environment file.
-  no_log: true
-  notify: restart mcp_proxy
-  ansible.builtin.template:
-    src: templates/mcp-proxy.env.j2
-    dest: /etc/default/mcp-proxy
-    owner: root
-    group: root
-    mode: '0640'
 
 - name: Template the mcp-proxy config file.
   notify: restart mcp_proxy
