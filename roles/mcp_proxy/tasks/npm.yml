@@ -7,7 +7,6 @@
       - npm
     state: present
     update_cache: true
-  when: mcp_proxy_npm_packages | length > 0
 
 - name: Create npm prefix directory.
   ansible.builtin.file:
@@ -16,7 +15,6 @@
     owner: root
     group: root
     mode: '0755'
-  when: mcp_proxy_npm_packages | length > 0
 
 - name: Install npm packages.
   notify: restart mcp_proxy
@@ -30,4 +28,3 @@
     'up to date' not in (mcp_proxy_npm_install_result.stdout | lower)
     and 'up to date' not in (mcp_proxy_npm_install_result.stderr | lower)
   loop: "{{ mcp_proxy_npm_packages }}"
-  when: mcp_proxy_npm_packages | length > 0

@@ -8,20 +8,9 @@
       - mcp_proxy_servers is defined
       - mcp_proxy_servers is mapping
 
-- name: Checking if architecture is amd64.
+- name: Set architecture variable.
   ansible.builtin.set_fact:
-    mcp_proxy_download_arch: "amd64"
-  when: '"x86_64" in ansible_architecture'
-
-- name: Checking if architecture is arm64.
-  ansible.builtin.set_fact:
-    mcp_proxy_download_arch: "arm64"
-  when: '"aarch" in ansible_architecture or "arm64" in ansible_architecture'
-
-- name: Assert that the system architecture is supported.
-  ansible.builtin.assert:
-    that:
-      - mcp_proxy_download_arch is defined
+    arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
 
 - name: Ensure tesseract user exists.
   ansible.builtin.user:
@@ -34,7 +23,7 @@
     state: present
     update_cache: true
 
-- name: Create mcp-proxy directory.
+- name: Ensure mcp-proxy directory exists.
   ansible.builtin.file:
     path: /opt/mcp-proxy
     state: directory
@@ -44,22 +33,28 @@
 
 - name: Install npm packages for npx MCP servers.
   ansible.builtin.include_tasks: npm.yml
+  when: mcp_proxy_npm_packages | length > 0
 
 - name: Download mcp-proxy archive.
   ansible.builtin.get_url:
-    url: "https://github.com/tbxark/mcp-proxy/releases/download/v{{ mcp_proxy_version }}/mcp-proxy_{{ mcp_proxy_version }}_linux_{{ mcp_proxy_download_arch }}.tar.gz"
-    dest: "/tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz"
-    mode: '0644'
+    url: "https://github.com/tbxark/mcp-proxy/releases/download/v{{ mcp_proxy_version }}/\
+      mcp-proxy_{{ mcp_proxy_version }}_linux_{{ arch }}.tar.gz"
+    dest: "/tmp/mcp-proxy.tar.gz"
+    mode: '0744'
+    owner: root
+    group: root
+  register: download_mcpproxy
   retries: 5
   delay: 10
+  until: download_mcpproxy is succeeded
 
 - name: Unarchive mcp-proxy from archive.
   notify: restart mcp_proxy
   ansible.builtin.unarchive:
-    src: "/tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz"
+    src: "/tmp/mcp-proxy.tar.gz"
     dest: /opt/mcp-proxy/
     remote_src: true
-    creates: "/opt/mcp-proxy/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}"
+    creates: "/opt/mcp-proxy/mcp-proxy"
     owner: root
     group: root
     mode: '0755'

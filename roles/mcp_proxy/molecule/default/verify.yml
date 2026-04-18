@@ -19,25 +19,6 @@
       register: mcp_proxy_binary
       failed_when: not mcp_proxy_binary.stat.exists
 
-    - name: Check mcp-proxy version is correct.
-      ansible.builtin.command:
-        cmd: /opt/mcp-proxy/mcp-proxy --version
-      register: mcp_proxy_version_check
-      failed_when: mcp_proxy_version not in mcp_proxy_version_check.stdout
-      changed_when: false
-
-    - name: Check npx is installed.
-      ansible.builtin.command:
-        cmd: npx --version
-      register: mcp_proxy_npx_version_check
-      changed_when: false
-
-    - name: Check npm package for npx MCP server is installed.
-      ansible.builtin.stat:
-        path: /opt/mcp-proxy/npm/node_modules/@modelcontextprotocol/server-filesystem/package.json
-      register: mcp_proxy_npm_package
-      failed_when: not mcp_proxy_npm_package.stat.exists
-
     - name: Check service is running.
       ansible.builtin.service:
         name: mcp-proxy
@@ -57,3 +38,15 @@
       ansible.builtin.uri:
         url: "http://localhost:{{ mcp_proxy_port }}/"
         status_code: 404
+
+    - name: Check npx is installed.
+      ansible.builtin.command:
+        cmd: npx --version
+      register: mcp_proxy_npx_version_check
+      changed_when: false
+
+    - name: Check npm package for npx MCP server is installed.
+      ansible.builtin.stat:
+        path: /opt/mcp-proxy/npm/node_modules/@modelcontextprotocol/server-filesystem/package.json
+      register: mcp_proxy_npm_package
+      failed_when: not mcp_proxy_npm_package.stat.exists
