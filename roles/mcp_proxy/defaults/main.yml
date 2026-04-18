@@ -6,11 +6,10 @@ mcp_proxy_version: ~ # e.g. "0.43.2"
 
 mcp_proxy_port: 9090
 mcp_proxy_base_url: "http://127.0.0.1:{{ mcp_proxy_port }}"
-mcp_proxy_transport_type: "sse"
+mcp_proxy_transport_type: streamable-http
 
 mcp_proxy_panic_if_invalid: false
 mcp_proxy_log_enabled: true
-mcp_proxy_auth_tokens: []
 
 mcp_proxy_npm_packages: []
 # Example:

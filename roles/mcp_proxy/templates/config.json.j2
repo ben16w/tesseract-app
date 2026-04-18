@@ -3,12 +3,10 @@
     "baseURL": mcp_proxy_base_url,
     "addr": ":" ~ (mcp_proxy_port | string),
     "name": "MCP Proxy",
-    "version": mcp_proxy_version,
     "type": mcp_proxy_transport_type,
     "options": {
       "panicIfInvalid": mcp_proxy_panic_if_invalid,
-      "logEnabled": mcp_proxy_log_enabled,
-      "authTokens": mcp_proxy_auth_tokens
+      "logEnabled": mcp_proxy_log_enabled
     }
   },
   "mcpServers": mcp_proxy_servers
