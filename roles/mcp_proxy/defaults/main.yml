@@ -12,7 +12,6 @@ mcp_proxy_panic_if_invalid: false
 mcp_proxy_log_enabled: true
 mcp_proxy_auth_tokens: []
 
-mcp_proxy_auto_install_npx_servers: true
 mcp_proxy_npm_packages: []
 # Example:
 # mcp_proxy_npm_packages:

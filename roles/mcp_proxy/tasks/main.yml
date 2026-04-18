@@ -59,20 +59,10 @@
     src: "/tmp/mcp-proxy-{{ mcp_proxy_version }}-linux-{{ mcp_proxy_download_arch }}.tar.gz"
     dest: /opt/mcp-proxy/
     remote_src: true
-    extra_opts:
-      - "--overwrite"
     creates: "/opt/mcp-proxy/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}"
     owner: root
     group: root
     mode: '0755'
-
-- name: Mark installed mcp-proxy version.
-  ansible.builtin.file:
-    path: "/opt/mcp-proxy/.mcp-proxy-{{ mcp_proxy_version }}-{{ mcp_proxy_download_arch }}"
-    state: touch
-    owner: root
-    group: root
-    mode: '0644'
 
 - name: Template the mcp-proxy config file.
   notify: restart mcp_proxy
