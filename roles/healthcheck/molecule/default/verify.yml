@@ -1,6 +1,19 @@
 ---
 - name: Verify
   hosts: all
-  vars_files:
-    - ../../defaults/main.yml
+  vars:
+    healthcheck_disabled: true
   tasks:
+
+    - name: Get crontab entries for root.
+      ansible.builtin.command:
+        cmd: crontab -l
+      changed_when: false
+      register: crontab_entries
+      failed_when: crontab_entries.rc not in [0, 1]
+
+    - name: Assert that no healthchecks.io cron entry exists when disabled.
+      ansible.builtin.assert:
+        that:
+          - "'hc-ping.com' not in crontab_entries.stdout"
+        fail_msg: "Healthchecks.io cron entry found but healthcheck_disabled is true."

@@ -1,10 +1,40 @@
 ---
 - name: Verify
   hosts: all
-  vars_files:
-    - ../../defaults/main.yml
+  vars:
+    tesseract_username: tesseract
+    syncthing_port: 8384
+    syncthing_config_dir: /home/tesseract/.config/syncthing
   tasks:
+
+    - name: Check that the syncthing binary exists.
+      ansible.builtin.stat:
+        path: /usr/bin/syncthing
+      register: syncthing_bin
+      failed_when: not syncthing_bin.stat.exists
+
+    - name: Check that the syncthing service is running.
+      ansible.builtin.service:
+        name: "syncthing@{{ tesseract_username }}.service"
+        state: started
+      register: syncthing_service
+      failed_when: syncthing_service.failed
+
+    - name: Check that the syncthing config file exists.
+      ansible.builtin.stat:
+        path: "{{ syncthing_config_dir }}/config.xml"
+      register: syncthing_config
+      failed_when: not syncthing_config.stat.exists
+
+    - name: Check that syncthing is listening on the correct port.
+      ansible.builtin.wait_for:
+        port: "{{ syncthing_port }}"
+        state: started
+        timeout: 30
+
     - name: Verify Syncthing is serving web requests.
       ansible.builtin.uri:
         url: "http://localhost:{{ syncthing_port }}"
         status_code: 200
+      register: syncthing_web
+      failed_when: syncthing_web.status != 200

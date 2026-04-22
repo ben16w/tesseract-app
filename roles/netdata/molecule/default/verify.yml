@@ -4,3 +4,29 @@
   vars_files:
     - ../../defaults/main.yml
   tasks:
+
+    - name: Check that the netdata binary exists.
+      ansible.builtin.stat:
+        path: /usr/sbin/netdata
+      register: netdata_bin
+      failed_when: not netdata_bin.stat.exists
+
+    - name: Check that the netdata service is running.
+      ansible.builtin.service:
+        name: netdata
+        state: started
+      register: netdata_service
+      failed_when: netdata_service.failed
+
+    - name: Check that netdata is listening on the correct port.
+      ansible.builtin.wait_for:
+        port: "{{ netdata_port }}"
+        state: started
+        timeout: 30
+
+    - name: Check that netdata is serving web requests.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ netdata_port }}/api/v1/info"
+        status_code: 200
+      register: netdata_api
+      failed_when: netdata_api.status != 200

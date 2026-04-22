@@ -1,9 +1,47 @@
 ---
 - name: Verify
   hosts: all
-  vars_files:
-    - ../../defaults/main.yml
+  vars:
+    tesseract_username: root
+    tesseract_files_path: /root
   tasks:
+
+    - name: Check that the tesseract user exists.
+      ansible.builtin.command:
+        cmd: "id {{ tesseract_username }}"
+      changed_when: false
+      failed_when: false
+      register: user_check
+
+    - name: Fail if tesseract user does not exist.
+      ansible.builtin.fail:
+        msg: "User {{ tesseract_username }} does not exist."
+      when: user_check.rc != 0
+
+    - name: Check that the cstates-limit script exists.
+      ansible.builtin.stat:
+        path: "{{ tesseract_files_path }}/scripts/cstates-limit.sh"
+      register: cstates_script
+      failed_when: not cstates_script.stat.exists
+
+    - name: Check that the drone-runner-exec binary exists.
+      ansible.builtin.stat:
+        path: /usr/local/bin/drone-runner-exec
+      register: drone_runner_bin
+      failed_when: not drone_runner_bin.stat.exists
+
+    - name: Check that the build user exists.
+      ansible.builtin.command:
+        cmd: id build
+      changed_when: false
+      register: build_user_check
+      failed_when: build_user_check.rc != 0
+
+    - name: Check that the drone runner config directory exists.
+      ansible.builtin.stat:
+        path: /home/build/.drone-runner-exec
+      register: drone_config_dir
+      failed_when: not drone_config_dir.stat.isdir
     - name: Run cstates-limit.sh script on host and check if there's any errors.
       ansible.builtin.command:
         cmd: "bash {{ tesseract_files_path }}/scripts/cstates-limit.sh -d"

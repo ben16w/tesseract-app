@@ -4,3 +4,29 @@
   vars_files:
     - ../../defaults/main.yml
   tasks:
+
+    - name: Check that Homer index.html exists.
+      ansible.builtin.stat:
+        path: /opt/homer/web/index.html
+      register: homer_index
+      failed_when: not homer_index.stat.exists
+
+    - name: Check that Homer config.yml exists.
+      ansible.builtin.stat:
+        path: /opt/homer/web/assets/config.yml
+      register: homer_config
+      failed_when: not homer_config.stat.exists
+
+    - name: Check that the Homer service is running.
+      ansible.builtin.service:
+        name: homer
+        state: started
+      register: homer_service
+      failed_when: homer_service.failed
+
+    - name: Check that Homer is serving web requests.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ dashboard_port }}"
+        status_code: 200
+      register: homer_web
+      failed_when: homer_web.status != 200
