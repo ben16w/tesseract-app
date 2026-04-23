@@ -3,7 +3,12 @@ model_list:
   - model_name: {{ model.model_name }}
     litellm_params:
 {%   for key, value in model.litellm_params.items() %}
+{%     if value is mapping %}
+      {{ key }}:
+        {{ value | to_yaml | indent(8) }}
+{%     else %}
       {{ key }}: {{ value }}
+{%     endif %}
 {%   endfor %}
 {% endfor %}
 
