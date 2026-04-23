@@ -22,10 +22,6 @@
     state: present
     update_cache: true
 
-- name: Install AMD ROCm.
-  ansible.builtin.include_tasks: install_rocm.yml
-  when: comfyui_use_rocm is true
-
 - name: Create ComfyUI directory.
   ansible.builtin.file:
     path: "{{ comfyui_install_path }}"
