@@ -20,37 +20,30 @@ roles/{role_name}/
 Common root files include `Makefile`, `requirements.txt`, `galaxy.yml`,
 `README.md`, and this `AGENTS.md`.
 
-## How to Work in This Repo
-
-- Use `make help` first. Treat it as the source of truth for available setup,
-  lint, test, and maintenance commands.
-- Prefer `Makefile` targets over ad hoc command sequences.
-- Before using a target, verify that any paths it references exist in the
-  current checkout.
-- Keep changes scoped to the relevant role unless a shared change is clearly
-  required.
-
 ## Ansible Conventions
 
 - Use 2-space YAML indentation and start YAML files with `---`.
 - Use fully qualified collection names such as `ansible.builtin.package`.
 - Write task names as clear actions.
 - Use `.j2` for Jinja2 templates.
-- Prefer role-prefixed variables; reserve `tesseract_*` for shared cross-role
-  values.
-- Put safe defaults in `defaults/main.yml` and validate required inputs in tasks
-  with `ansible.builtin.assert`.
+- Prefer role-prefixed variables; reserve `tesseract_*` for shared cross-role values.
+- Put safe defaults in `defaults/main.yml` and validate required inputs in tasks with `ansible.builtin.assert`.
 - Keep tasks idempotent and use handlers for restarts or reloads.
 - Split large roles into focused task files when helpful.
+
+## How to Work in This Repo
+
+- Use `make help` first. Treat it as the source of truth for available setup, lint, test, and maintenance commands.
+- Prefer `Makefile` targets over ad hoc command sequences.
+- Before using a target, verify that any paths it references exist in the current checkout.
+- Keep changes scoped to the relevant role unless a shared change is clearly required.
 
 ## Testing Guidance
 
 - Molecule scenarios live under `roles/{role_name}/molecule/default/`.
 - Prefer validating only the role or roles you changed.
-- Use the targets exposed by `make help` instead of hardcoding command choices
-  in this file.
-- When testing, favor checks for successful converge, important services,
-  relevant files, ports, endpoints, and idempotency.
+- Use the targets exposed by `make help` instead of hardcoding command choices in this file.
+- When testing, favor checks for successful converge, important services, relevant files, ports, endpoints, and idempotency.
 - If Docker or other prerequisites are unavailable, report that clearly.
 
 ## Recommended Agent Workflow
