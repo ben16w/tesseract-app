@@ -14,14 +14,24 @@
     state: present
     update_cache: true
 
-- name: Add an Apt signing key for 2016 virtualbox.
-  ansible.builtin.apt_key:
+- name: Ensure /etc/apt/keyrings directory exists.
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download VirtualBox signing key.
+  ansible.builtin.get_url:
     url: https://www.virtualbox.org/download/oracle_vbox_2016.asc
-    state: present
+    dest: /etc/apt/keyrings/virtualbox.asc
+    mode: '0644'
 
 - name: Add virtualbox repository into sources list
   ansible.builtin.apt_repository:
-    repo: "deb [arch={{ arch }}] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib"
+    repo: >-
+      deb [arch={{ arch }} signed-by=/etc/apt/keyrings/virtualbox.asc]
+      https://download.virtualbox.org/virtualbox/debian
+      {{ ansible_distribution_release }} contrib
     state: present
     update_cache: true
 
@@ -30,14 +40,18 @@
     pkg:
       - "virtualbox-{{ vagrant_virtualbox_version }}"
 
-- name: Add an Apt signing key for vagrant.
-  ansible.builtin.apt_key:
+- name: Download Hashicorp signing key.
+  ansible.builtin.get_url:
     url: https://apt.releases.hashicorp.com/gpg
-    state: present
+    dest: /etc/apt/keyrings/hashicorp.asc
+    mode: '0644'
 
 - name: Add vagrant repository into sources list
   ansible.builtin.apt_repository:
-    repo: "deb [arch={{ arch }}] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+    repo: >-
+      deb [arch={{ arch }} signed-by=/etc/apt/keyrings/hashicorp.asc]
+      https://apt.releases.hashicorp.com
+      {{ ansible_distribution_release }} main
     state: present
     update_cache: true
 
