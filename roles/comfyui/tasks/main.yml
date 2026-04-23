@@ -26,8 +26,8 @@
   ansible.builtin.file:
     path: "{{ comfyui_install_path }}"
     state: directory
-    owner: root
-    group: root
+    owner: "{{ tesseract_username }}"
+    group: "{{ tesseract_username }}"
     mode: '0755'
 
 - name: Clone ComfyUI repository.
@@ -36,14 +36,16 @@
     dest: "{{ comfyui_install_path }}"
     version: "{{ comfyui_version }}"
     force: true
+  become: true
+  become_user: "{{ tesseract_username }}"
   notify: restart comfyui
 
 - name: Create venv directory.
   ansible.builtin.file:
     path: "{{ comfyui_install_path }}/venv"
     state: directory
-    owner: root
-    group: root
+    owner: "{{ tesseract_username }}"
+    group: "{{ tesseract_username }}"
     mode: '0755'
 
 - name: Create Python venv.

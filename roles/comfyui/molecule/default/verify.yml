@@ -14,7 +14,7 @@
     - name: Check if ComfyUI is listening on the specified port.
       ansible.builtin.wait_for:
         port: 8188
-        timeout: 30
+        timeout: 120
       register: port_check
       ignore_errors: true
 
