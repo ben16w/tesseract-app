@@ -1,6 +1,7 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
 distros := env_var_or_default("DISTRO_LIST", "")
+venv := ".venv"
 
 # List available recipes
 default:
@@ -9,7 +10,7 @@ default:
 # ── private helpers ────────────────────────────────────────────────────────────
 
 _venv:
-    if [ ! -d .venv ]; then
+    if [ ! -d {{venv}} ]; then
         echo "✗ No virtual environment found. Run 'just install-venv' first."
         exit 1
     fi
@@ -23,24 +24,23 @@ bootstrap: install-venv install
 # Install Ansible Galaxy roles from requirements.yml
 [group('setup')]
 install: _venv
-    source .venv/bin/activate
-    ansible-galaxy install -r requirements.yml
+    {{venv}}/bin/ansible-galaxy install -r requirements.yml
 
 # Create .venv and install Python packages
 [group('setup')]
 install-venv:
-    test -d .venv || python3 -m venv .venv
-    .venv/bin/python -m pip install -q --upgrade pip
-    .venv/bin/pip install -q --upgrade -r requirements.txt
+    test -d {{venv}} || python3 -m venv {{venv}}
+    {{venv}}/bin/python -m pip install -q --upgrade pip
+    {{venv}}/bin/pip install -q --upgrade -r requirements.txt
     echo "✔ Virtual environment ready. Run 'source .venv/bin/activate' to activate."
 
 # Repair .venv file ownership (use when venv was created by a different user)
 [group('setup')]
 fix-venv-owner: _venv
     if sudo -n true 2>/dev/null; then
-        sudo chown -R "$(stat -c "%U:%G" .)" .venv
+        sudo chown -R "$(stat -c "%U:%G" .)" {{venv}}
     else
-        find .venv -type f -exec chown "$(stat -c "%U:%G" .)" {} + 2>/dev/null || \
+        find {{venv}} -type f -exec chown "$(stat -c "%U:%G" .)" {} + 2>/dev/null || \
             { echo "✗ Failed to change virtual environment owner."; exit 1; }
     fi
     echo "✔ Virtual environment ownership repaired."
@@ -109,14 +109,13 @@ lint: lint-yaml lint-shell lint-compose lint-ansible
 # Lint YAML files with yamllint
 [group('lint')]
 lint-yaml: _venv
-    source .venv/bin/activate
     echo "→ Linting YAML files..."
     find . -type f \
         \( -name "*.yml" -o -name "*.yaml" \) \
         ! -path "./.venv/*" \
         ! -path "./.ansible/*" \
         ! -path "./ansible_collections/*" \
-        -exec yamllint -d relaxed {} +
+        -exec {{venv}}/bin/yamllint -d relaxed {} +
     echo "✔ YAML lint passed."
 
 # Lint shell scripts with shellcheck
@@ -144,10 +143,9 @@ lint-compose:
 # Lint Ansible files with ansible-lint
 [group('lint')]
 lint-ansible: _venv
-    source .venv/bin/activate
     echo "→ Linting Ansible files..."
     if [[ -f "ansible.cfg" || -d "roles" || -d "playbooks" || -d "group_vars" || -d "host_vars" ]]; then
-        ANSIBLE_ASK_VAULT_PASS=false ansible-lint \
+        ANSIBLE_ASK_VAULT_PASS=false {{venv}}/bin/ansible-lint \
             --exclude "ansible_collections/" "playbooks/" "docker-compose.*.yml" "vars.yml" \
             -w var-naming[no-role-prefix] \
             -w galaxy[no-changelog] \
@@ -160,7 +158,6 @@ lint-ansible: _venv
 # Run molecule test for a role; empty role tests repo root
 [group('test')]
 test role="" scenario="default" destroy="true": _venv
-    source .venv/bin/activate
     if [ "{{role}}" == "" ]; then
         moleculedir="./molecule"
     else
@@ -173,9 +170,9 @@ test role="" scenario="default" destroy="true": _venv
     echo "→ Testing: ${moleculedir} [scenario={{scenario}}]"
     pushd "$(dirname "${moleculedir}")" > /dev/null
     if [ "{{destroy}}" == "true" ]; then
-        molecule test --scenario-name "{{scenario}}" --destroy always
+        {{venv}}/bin/molecule test --scenario-name "{{scenario}}" --destroy always
     else
-        molecule test --scenario-name "{{scenario}}" --destroy never
+        {{venv}}/bin/molecule test --scenario-name "{{scenario}}" --destroy never
     fi
     popd > /dev/null
     echo "✔ Test passed."
@@ -183,16 +180,15 @@ test role="" scenario="default" destroy="true": _venv
 # Test roles modified since origin/main
 [group('test')]
 test-changed scenario="default": _venv
-    source .venv/bin/activate
     git fetch origin main
     roles=$( (git diff --name-only "$(git merge-base HEAD origin/main)"; git diff --name-only) \
         | grep "roles/" | cut -d '/' -f 1-2 | sort -u)
     for roledir in ${roles}; do
         moleculedir="${roledir}/molecule"
-        if [ -f "${moleculedir}/default/molecule.yml" ]; then
+        if [ -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
             echo "→ Testing: ${moleculedir}"
             pushd "$(dirname "${moleculedir}")"
-            INSTANCE_NAME="molecule-${RANDOM}" molecule test
+            INSTANCE_NAME="molecule-${RANDOM}" {{venv}}/bin/molecule test --scenario-name "{{scenario}}"
             popd
             echo "  ✔ ${moleculedir} passed."
         else
@@ -204,12 +200,11 @@ test-changed scenario="default": _venv
 # Test every role in the collection
 [group('test')]
 test-all scenario="default": _venv
-    source .venv/bin/activate
     for moleculedir in roles/*/molecule; do
-        if [ -f "${moleculedir}/default/molecule.yml" ]; then
+        if [ -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
             echo "→ Testing: ${moleculedir}"
             pushd "$(dirname "${moleculedir}")"
-            INSTANCE_NAME="molecule-${RANDOM}" molecule test
+            INSTANCE_NAME="molecule-${RANDOM}" {{venv}}/bin/molecule test --scenario-name "{{scenario}}"
             popd
             echo "  ✔ ${moleculedir} passed."
         else
@@ -221,17 +216,16 @@ test-all scenario="default": _venv
 # Test every role across each distro (space-separated); overrides $DISTRO_LIST
 [group('test')]
 test-all-distros scenario="default" distros=distros: _venv
-    source .venv/bin/activate
     if [ -z "{{distros}}" ]; then
         echo "✗ distros is empty. Pass distros='debian12 ubuntu24' or set DISTRO_LIST."
         exit 1
     fi
     for moleculedir in roles/*/molecule; do
         for distro in {{distros}}; do
-            if [ -f "${moleculedir}/default/molecule.yml" ]; then
+            if [ -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
                 echo "→ Testing: ${moleculedir} on ${distro}"
                 pushd "$(dirname "${moleculedir}")"
-                INSTANCE_NAME="molecule-${RANDOM}" MOLECULE_DISTRO="${distro}" molecule test
+                INSTANCE_NAME="molecule-${RANDOM}" MOLECULE_DISTRO="${distro}" {{venv}}/bin/molecule test --scenario-name "{{scenario}}"
                 popd
                 echo "  ✔ ${moleculedir} [${distro}] passed."
             else
@@ -246,7 +240,6 @@ test-all-distros scenario="default" distros=distros: _venv
 # Run any molecule command in the role dir (cmd: test/converge/login/destroy/idempotence/verify/syntax)
 [group('molecule')]
 molecule cmd="test" role="" scenario="default" host="" destroy="true": _venv
-    source .venv/bin/activate
     if [ "{{role}}" == "" ]; then
         moleculedir="./molecule"
     else
@@ -259,18 +252,18 @@ molecule cmd="test" role="" scenario="default" host="" destroy="true": _venv
     pushd "$(dirname "${moleculedir}")" > /dev/null
     if [ "{{cmd}}" == "test" ]; then
         if [ "{{destroy}}" == "true" ]; then
-            molecule test --scenario-name "{{scenario}}" --destroy always
+            {{venv}}/bin/molecule test --scenario-name "{{scenario}}" --destroy always
         else
-            molecule test --scenario-name "{{scenario}}" --destroy never
+            {{venv}}/bin/molecule test --scenario-name "{{scenario}}" --destroy never
         fi
     elif [ "{{cmd}}" == "login" ]; then
         if [ "{{host}}" == "" ]; then
-            molecule login --scenario-name "{{scenario}}"
+            {{venv}}/bin/molecule login --scenario-name "{{scenario}}"
         else
-            molecule login --scenario-name "{{scenario}}" -h "{{host}}"
+            {{venv}}/bin/molecule login --scenario-name "{{scenario}}" -h "{{host}}"
         fi
     else
-        molecule "{{cmd}}" --scenario-name "{{scenario}}"
+        {{venv}}/bin/molecule "{{cmd}}" --scenario-name "{{scenario}}"
     fi
     popd > /dev/null
 
@@ -279,34 +272,29 @@ molecule cmd="test" role="" scenario="default" host="" destroy="true": _venv
 # Run the playbook with optional tag and host filters
 [group('deploy')]
 deploy tags="all" lim="all" env="prod": _venv
-    source .venv/bin/activate
-    ansible-playbook -i inventories/{{env}}/hosts.yml playbooks/{{env}}.yml --tags {{tags}} --limit {{lim}}
+    {{venv}}/bin/ansible-playbook -i inventories/{{env}}/hosts.yml playbooks/{{env}}.yml --tags {{tags}} --limit {{lim}}
 
 # Dry-run the playbook (--check --diff)
 [group('deploy')]
 check lim="all" env="prod": _venv
-    source .venv/bin/activate
-    ansible-playbook -i inventories/{{env}}/hosts.yml playbooks/{{env}}.yml --limit {{lim}} --diff --check
+    {{venv}}/bin/ansible-playbook -i inventories/{{env}}/hosts.yml playbooks/{{env}}.yml --limit {{lim}} --diff --check
 
 # Run an ad-hoc shell command on hosts (cmd is required)
 [group('deploy')]
 command cmd lim="all" env="prod": _venv
-    source .venv/bin/activate
-    ansible -i inventories/{{env}}/hosts.yml all -m shell -a "{{cmd}}" --limit {{lim}}
+    {{venv}}/bin/ansible -i inventories/{{env}}/hosts.yml all -m shell -a "{{cmd}}" --limit {{lim}}
 
 # ── ops ────────────────────────────────────────────────────────────────────────
 
 # Gracefully shut down hosts
 [group('ops')]
 shutdown lim="all" env="prod": _venv
-    source .venv/bin/activate
-    ansible -i inventories/{{env}}/hosts.yml all -b -m shell -a "shutdown -h now" --limit {{lim}}
+    {{venv}}/bin/ansible -i inventories/{{env}}/hosts.yml all -b -m shell -a "shutdown -h now" --limit {{lim}}
 
 # Edit the encrypted vault for the environment
 [group('ops')]
 vault env="prod": _venv
-    source .venv/bin/activate
-    ansible-vault edit inventories/{{env}}/group_vars/all.yml
+    {{venv}}/bin/ansible-vault edit inventories/{{env}}/group_vars/all.yml
 
 # Open SSH session to a host
 [group('ops')]
