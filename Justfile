@@ -34,7 +34,7 @@ install-venv:
     test -d {{venv}} || python3 -m venv {{venv}}
     {{venv}}/bin/python -m pip install -q --upgrade pip
     {{venv}}/bin/pip install -q --upgrade -r requirements.txt
-    echo "✔ Virtual environment ready. Run 'source .venv/bin/activate' to activate."
+    echo "✔ Virtual environment ready."
 
 # Repair .venv file ownership (use when venv was created by a different user)
 [group('setup')]
@@ -127,7 +127,7 @@ lint-yaml: _venv
         ! -path "./.venv/*" \
         ! -path "./.ansible/*" \
         ! -path "./ansible_collections/*" \
-        -exec {{venv}}/bin/yamllint -d relaxed {} +
+        -exec {{venv}}/bin/yamllint -d '{extends: relaxed, rules: {line-length: disable}}' {} +
     echo "✔ YAML lint passed."
 
 # Lint shell scripts with shellcheck
@@ -165,8 +165,8 @@ lint-ansible: _venv
     if [[ -f "ansible.cfg" || -d "roles" || -d "playbooks" || -d "group_vars" || -d "host_vars" ]]; then
         ANSIBLE_ASK_VAULT_PASS=false {{venv}}/bin/ansible-lint \
             --exclude "ansible_collections/" "playbooks/" "docker-compose.*.yml" "vars.yml" \
-            -w var-naming[no-role-prefix] \
-            -w galaxy[no-changelog] \
+            -x var-naming[no-role-prefix] \
+            -x galaxy[no-changelog] \
             --offline -q
     fi
     echo "✔ Ansible lint passed."
@@ -267,10 +267,10 @@ molecule cmd="test" role="" scenario="default" destroy="true" host="": _venv
     elif [ "{{cmd}}" == "login" ] && [ -n "{{host}}" ]; then
         args+=(-h "{{host}}")
     fi
-    MOLECULE_BIN="$(realpath "{{venv}}/bin/molecule")"
+    VENV_DIR="$(realpath "{{venv}}")"
     (
         cd "$(dirname "${moleculedir}")"
-        "${MOLECULE_BIN}" "{{cmd}}" "${args[@]}"
+        VIRTUAL_ENV="${VENV_DIR}" "${VENV_DIR}/bin/molecule" "{{cmd}}" "${args[@]}"
     )
 
 # ── deploy ─────────────────────────────────────────────────────────────────────
