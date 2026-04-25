@@ -38,7 +38,7 @@ install-venv:
 
 # Repair .venv file ownership (use when venv was created by a different user)
 [group('setup')]
-fix-venv-owner: _venv
+fix-venv: _venv
     #!/usr/bin/env bash
     set -euo pipefail
     if sudo -n true 2>/dev/null; then
@@ -267,9 +267,10 @@ molecule cmd="test" role="" scenario="default" destroy="true" host="": _venv
     elif [ "{{cmd}}" == "login" ] && [ -n "{{host}}" ]; then
         args+=(-h "{{host}}")
     fi
+    MOLECULE_BIN="$(realpath "{{venv}}/bin/molecule")"
     (
         cd "$(dirname "${moleculedir}")"
-        {{venv}}/bin/molecule "{{cmd}}" "${args[@]}"
+        "${MOLECULE_BIN}" "{{cmd}}" "${args[@]}"
     )
 
 # ── deploy ─────────────────────────────────────────────────────────────────────
