@@ -157,24 +157,9 @@ lint-ansible: _venv
 
 # Run molecule test for a role; empty role tests repo root
 [group('test')]
-test role="" scenario="default" destroy="true": _venv
-    if [ "{{role}}" == "" ]; then
-        moleculedir="./molecule"
-    else
-        moleculedir="roles/{{role}}/molecule"
-    fi
-    if [ ! -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
-        echo "✗ No molecule.yml found: ${moleculedir}/{{scenario}}/molecule.yml"
-        exit 1
-    fi
-    echo "→ Testing: ${moleculedir} [scenario={{scenario}}]"
-    pushd "$(dirname "${moleculedir}")" > /dev/null
-    if [ "{{destroy}}" == "true" ]; then
-        {{venv}}/bin/molecule test --scenario-name "{{scenario}}" --destroy always
-    else
-        {{venv}}/bin/molecule test --scenario-name "{{scenario}}" --destroy never
-    fi
-    popd > /dev/null
+test role="" scenario="default" destroy="true":
+    echo "→ Testing: {{role}} [scenario={{scenario}}]"
+    just molecule cmd="test" role="{{role}}" scenario="{{scenario}}" destroy="{{destroy}}"
     echo "✔ Test passed."
 
 # Test roles modified since origin/main
@@ -184,12 +169,11 @@ test-changed scenario="default": _venv
     roles=$( (git diff --name-only "$(git merge-base HEAD origin/main)"; git diff --name-only) \
         | grep "roles/" | cut -d '/' -f 1-2 | sort -u)
     for roledir in ${roles}; do
+        role=$(basename "${roledir}")
         moleculedir="${roledir}/molecule"
         if [ -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
             echo "→ Testing: ${moleculedir}"
-            pushd "$(dirname "${moleculedir}")"
-            INSTANCE_NAME="molecule-${RANDOM}" {{venv}}/bin/molecule test --scenario-name "{{scenario}}"
-            popd
+            INSTANCE_NAME="molecule-${RANDOM}" just molecule role="${role}" scenario="{{scenario}}"
             echo "  ✔ ${moleculedir} passed."
         else
             echo "  ~ ${moleculedir}: no molecule.yml, skipping."
@@ -201,11 +185,10 @@ test-changed scenario="default": _venv
 [group('test')]
 test-all scenario="default": _venv
     for moleculedir in roles/*/molecule; do
+        role=$(basename "$(dirname "${moleculedir}")")
         if [ -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
             echo "→ Testing: ${moleculedir}"
-            pushd "$(dirname "${moleculedir}")"
-            INSTANCE_NAME="molecule-${RANDOM}" {{venv}}/bin/molecule test --scenario-name "{{scenario}}"
-            popd
+            INSTANCE_NAME="molecule-${RANDOM}" just molecule role="${role}" scenario="{{scenario}}"
             echo "  ✔ ${moleculedir} passed."
         else
             echo "  ~ ${moleculedir}: no molecule.yml, skipping."
@@ -221,12 +204,11 @@ test-all-distros scenario="default" distros=distros: _venv
         exit 1
     fi
     for moleculedir in roles/*/molecule; do
+        role=$(basename "$(dirname "${moleculedir}")")
         for distro in {{distros}}; do
             if [ -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
                 echo "→ Testing: ${moleculedir} on ${distro}"
-                pushd "$(dirname "${moleculedir}")"
-                INSTANCE_NAME="molecule-${RANDOM}" MOLECULE_DISTRO="${distro}" {{venv}}/bin/molecule test --scenario-name "{{scenario}}"
-                popd
+                INSTANCE_NAME="molecule-${RANDOM}" MOLECULE_DISTRO="${distro}" just molecule role="${role}" scenario="{{scenario}}"
                 echo "  ✔ ${moleculedir} [${distro}] passed."
             else
                 echo "  ~ ${moleculedir}: no molecule.yml, skipping."
@@ -245,27 +227,24 @@ molecule cmd="test" role="" scenario="default" host="" destroy="true": _venv
     else
         moleculedir="roles/{{role}}/molecule"
     fi
-    if [ ! -f "${moleculedir}/default/molecule.yml" ]; then
+    if [ ! -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
         echo "✗ No molecule.yml found for role: ${moleculedir}"
         exit 1
     fi
-    pushd "$(dirname "${moleculedir}")" > /dev/null
+    args=(--scenario-name "{{scenario}}")
     if [ "{{cmd}}" == "test" ]; then
         if [ "{{destroy}}" == "true" ]; then
-            {{venv}}/bin/molecule test --scenario-name "{{scenario}}" --destroy always
+            args+=(--destroy always)
         else
-            {{venv}}/bin/molecule test --scenario-name "{{scenario}}" --destroy never
+            args+=(--destroy never)
         fi
-    elif [ "{{cmd}}" == "login" ]; then
-        if [ "{{host}}" == "" ]; then
-            {{venv}}/bin/molecule login --scenario-name "{{scenario}}"
-        else
-            {{venv}}/bin/molecule login --scenario-name "{{scenario}}" -h "{{host}}"
-        fi
-    else
-        {{venv}}/bin/molecule "{{cmd}}" --scenario-name "{{scenario}}"
+    elif [ "{{cmd}}" == "login" ] && [ -n "{{host}}" ]; then
+        args+=(-h "{{host}}")
     fi
-    popd > /dev/null
+    (
+        cd "$(dirname "${moleculedir}")"
+        {{venv}}/bin/molecule "{{cmd}}" "${args[@]}"
+    )
 
 # ── deploy ─────────────────────────────────────────────────────────────────────
 
