@@ -1,5 +1,3 @@
-set shell := ["bash", "-euo", "pipefail", "-c"]
-
 distros := env_var_or_default("DISTRO_LIST", "")
 venv := ".venv"
 
@@ -10,6 +8,8 @@ default:
 # ── private helpers ────────────────────────────────────────────────────────────
 
 _venv:
+    #!/usr/bin/env bash
+    set -euo pipefail
     if [ ! -d {{venv}} ]; then
         echo "✗ No virtual environment found. Run 'just install-venv' first."
         exit 1
@@ -29,6 +29,8 @@ install: _venv
 # Create .venv and install Python packages
 [group('setup')]
 install-venv:
+    #!/usr/bin/env bash
+    set -euo pipefail
     test -d {{venv}} || python3 -m venv {{venv}}
     {{venv}}/bin/python -m pip install -q --upgrade pip
     {{venv}}/bin/pip install -q --upgrade -r requirements.txt
@@ -37,6 +39,8 @@ install-venv:
 # Repair .venv file ownership (use when venv was created by a different user)
 [group('setup')]
 fix-venv-owner: _venv
+    #!/usr/bin/env bash
+    set -euo pipefail
     if sudo -n true 2>/dev/null; then
         sudo chown -R "$(stat -c "%U:%G" .)" {{venv}}
     else
@@ -48,6 +52,8 @@ fix-venv-owner: _venv
 # Symlink local collections into the Ansible collections path
 [group('setup')]
 link-collections collections="." project="../" suffix="roles-":
+    #!/usr/bin/env bash
+    set -euo pipefail
     for COLLECTION in $(ls -d {{collections}}/ansible_collections/tesseract/*); do
         COLLECTION_NAME=$(basename "${COLLECTION}")
         REAL_PROJECT_PATH=$(realpath "{{project}}")
@@ -66,6 +72,8 @@ link-collections collections="." project="../" suffix="roles-":
 # Update requirements.yml commit hashes to latest HEAD
 [group('update')]
 update-requirements:
+    #!/usr/bin/env bash
+    set -euo pipefail
     COMMITS=$(grep -E "version:" requirements.yml | cut -d ":" -f 2 | tr -d ' ')
     REPOS=$(grep -E "name:" requirements.yml | grep "tesseract" | cut -d ":" -f 2,3 | tr -d ' ')
     COUNTER=1
@@ -82,6 +90,8 @@ update-requirements:
 # Sync all role molecule.yml files from repo root template
 [group('update')]
 update-molecule:
+    #!/usr/bin/env bash
+    set -euo pipefail
     if [ ! -f molecule.yml ]; then
         echo "✗ No molecule.yml found in repository root."
         exit 1
@@ -109,6 +119,8 @@ lint: lint-yaml lint-shell lint-compose lint-ansible
 # Lint YAML files with yamllint
 [group('lint')]
 lint-yaml: _venv
+    #!/usr/bin/env bash
+    set -euo pipefail
     echo "→ Linting YAML files..."
     find . -type f \
         \( -name "*.yml" -o -name "*.yaml" \) \
@@ -121,6 +133,8 @@ lint-yaml: _venv
 # Lint shell scripts with shellcheck
 [group('lint')]
 lint-shell:
+    #!/usr/bin/env bash
+    set -euo pipefail
     echo "→ Linting shell scripts..."
     find . -type f -name '*.sh' \
         ! -path "./.venv/*" \
@@ -132,6 +146,8 @@ lint-shell:
 # Validate Docker Compose files
 [group('lint')]
 lint-compose:
+    #!/usr/bin/env bash
+    set -euo pipefail
     echo "→ Linting Docker Compose files..."
     find . -type f -name 'docker-compose.*.yml' \
         ! -path "./.venv/*" \
@@ -143,6 +159,8 @@ lint-compose:
 # Lint Ansible files with ansible-lint
 [group('lint')]
 lint-ansible: _venv
+    #!/usr/bin/env bash
+    set -euo pipefail
     echo "→ Linting Ansible files..."
     if [[ -f "ansible.cfg" || -d "roles" || -d "playbooks" || -d "group_vars" || -d "host_vars" ]]; then
         ANSIBLE_ASK_VAULT_PASS=false {{venv}}/bin/ansible-lint \
@@ -159,12 +177,14 @@ lint-ansible: _venv
 [group('test')]
 test role="" scenario="default" destroy="true":
     echo "→ Testing: {{role}} [scenario={{scenario}}]"
-    just molecule cmd="test" role="{{role}}" scenario="{{scenario}}" destroy="{{destroy}}"
+    just molecule "test" "{{role}}" "{{scenario}}" "{{destroy}}"
     echo "✔ Test passed."
 
 # Test roles modified since origin/main
 [group('test')]
 test-changed scenario="default": _venv
+    #!/usr/bin/env bash
+    set -euo pipefail
     git fetch origin main
     roles=$( (git diff --name-only "$(git merge-base HEAD origin/main)"; git diff --name-only) \
         | grep "roles/" | cut -d '/' -f 1-2 | sort -u)
@@ -173,7 +193,7 @@ test-changed scenario="default": _venv
         moleculedir="${roledir}/molecule"
         if [ -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
             echo "→ Testing: ${moleculedir}"
-            INSTANCE_NAME="molecule-${RANDOM}" just molecule role="${role}" scenario="{{scenario}}"
+            INSTANCE_NAME="molecule-${RANDOM}" just molecule "test" "${role}" "{{scenario}}"
             echo "  ✔ ${moleculedir} passed."
         else
             echo "  ~ ${moleculedir}: no molecule.yml, skipping."
@@ -184,11 +204,13 @@ test-changed scenario="default": _venv
 # Test every role in the collection
 [group('test')]
 test-all scenario="default": _venv
+    #!/usr/bin/env bash
+    set -euo pipefail
     for moleculedir in roles/*/molecule; do
         role=$(basename "$(dirname "${moleculedir}")")
         if [ -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
             echo "→ Testing: ${moleculedir}"
-            INSTANCE_NAME="molecule-${RANDOM}" just molecule role="${role}" scenario="{{scenario}}"
+            INSTANCE_NAME="molecule-${RANDOM}" just molecule "test" "${role}" "{{scenario}}"
             echo "  ✔ ${moleculedir} passed."
         else
             echo "  ~ ${moleculedir}: no molecule.yml, skipping."
@@ -199,6 +221,8 @@ test-all scenario="default": _venv
 # Test every role across each distro (space-separated); overrides $DISTRO_LIST
 [group('test')]
 test-all-distros scenario="default" distros=distros: _venv
+    #!/usr/bin/env bash
+    set -euo pipefail
     if [ -z "{{distros}}" ]; then
         echo "✗ distros is empty. Pass distros='debian12 ubuntu24' or set DISTRO_LIST."
         exit 1
@@ -208,7 +232,7 @@ test-all-distros scenario="default" distros=distros: _venv
         for distro in {{distros}}; do
             if [ -f "${moleculedir}/{{scenario}}/molecule.yml" ]; then
                 echo "→ Testing: ${moleculedir} on ${distro}"
-                INSTANCE_NAME="molecule-${RANDOM}" MOLECULE_DISTRO="${distro}" just molecule role="${role}" scenario="{{scenario}}"
+                INSTANCE_NAME="molecule-${RANDOM}" MOLECULE_DISTRO="${distro}" just molecule "test" "${role}" "{{scenario}}"
                 echo "  ✔ ${moleculedir} [${distro}] passed."
             else
                 echo "  ~ ${moleculedir}: no molecule.yml, skipping."
@@ -221,7 +245,9 @@ test-all-distros scenario="default" distros=distros: _venv
 
 # Run any molecule command in the role dir (cmd: test/converge/login/destroy/idempotence/verify/syntax)
 [group('molecule')]
-molecule cmd="test" role="" scenario="default" host="" destroy="true": _venv
+molecule cmd="test" role="" scenario="default" destroy="true" host="": _venv
+    #!/usr/bin/env bash
+    set -euo pipefail
     if [ "{{role}}" == "" ]; then
         moleculedir="./molecule"
     else
@@ -284,6 +310,8 @@ ssh host="localhost" user="vagrant" key="$HOME/.vagrant.d/insecure_private_key":
 [group('ops')]
 [confirm]
 delete-vms:
+    #!/usr/bin/env bash
+    set -euo pipefail
     VBoxManage list runningvms | awk '{print $2}' | xargs -I{} VBoxManage controlvm {} poweroff
     VBoxManage list vms | awk '{print $2}' | xargs -I{} VBoxManage unregistervm {}
     rm -rf ~/VirtualBox\ VMs/*
