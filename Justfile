@@ -277,24 +277,24 @@ molecule cmd="test" role="" scenario="default" destroy="true" host="": _venv
 
 # Run the playbook with optional tag and host filters
 [group('deploy')]
-deploy tags="all" lim="all" env="prod": _venv
+deploy env="prod" lim="all" tags="all": _venv
     {{venv}}/bin/ansible-playbook -i inventories/{{env}}/hosts.yml playbooks/{{env}}.yml --tags {{tags}} --limit {{lim}}
 
 # Dry-run the playbook (--check --diff)
 [group('deploy')]
-check lim="all" env="prod": _venv
+check env="prod" lim="all": _venv
     {{venv}}/bin/ansible-playbook -i inventories/{{env}}/hosts.yml playbooks/{{env}}.yml --limit {{lim}} --diff --check
 
 # Run an ad-hoc shell command on hosts (cmd is required)
 [group('deploy')]
-command cmd lim="all" env="prod": _venv
+command cmd env="prod" lim="all": _venv
     {{venv}}/bin/ansible -i inventories/{{env}}/hosts.yml all -m shell -a "{{cmd}}" --limit {{lim}}
 
 # ── ops ────────────────────────────────────────────────────────────────────────
 
 # Gracefully shut down hosts
 [group('ops')]
-shutdown lim="all" env="prod": _venv
+shutdown env="prod" lim="all": _venv
     {{venv}}/bin/ansible -i inventories/{{env}}/hosts.yml all -b -m shell -a "shutdown -h now" --limit {{lim}}
 
 # Edit the encrypted vault for the environment
