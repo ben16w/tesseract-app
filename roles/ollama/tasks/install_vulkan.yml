@@ -3,7 +3,7 @@
 - name: Check if the distribution is Ubuntu.
   ansible.builtin.assert:
     that:
-      - ansible_distribution == 'Ubuntu'
+      - ansible_facts['distribution'] == 'Ubuntu'
 
 - name: Install dirmngr for GPG key management.
   ansible.builtin.apt:

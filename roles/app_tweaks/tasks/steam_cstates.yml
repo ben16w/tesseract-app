@@ -6,7 +6,7 @@
       - cron
       - linux-cpupower
     update_cache: true
-  when: ansible_distribution != 'Ubuntu'
+  when: ansible_facts['distribution'] != 'Ubuntu'
 
 - name: Install cron and linux-tools-generic (Ubuntu only).
   ansible.builtin.package:
@@ -15,23 +15,23 @@
       - linux-tools-common
       - linux-tools-generic
     update_cache: true
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
 
 - name: Check if linux-tools package for the current kernel exists (Ubuntu only)
   ansible.builtin.command:
-    cmd: "apt-cache show linux-tools-{{ ansible_kernel }}"
+    cmd: "apt-cache show linux-tools-{{ ansible_facts['kernel'] }}"
   register: package_exists
   failed_when: false
   changed_when: false
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
 
 - name: Install linux-tools for the current kernel (Ubuntu only)
   ansible.builtin.package:
     name:
-      - "linux-tools-{{ ansible_kernel }}"
+      - "linux-tools-{{ ansible_facts['kernel'] }}"
     update_cache: true
   when:
-    - ansible_distribution == 'Ubuntu'
+    - ansible_facts['distribution'] == 'Ubuntu'
     - package_exists.rc == 0
 
 - name: Create scripts directory if it does not exist.

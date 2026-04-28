@@ -13,7 +13,7 @@ WorkingDirectory=/opt/litellm
 Restart=always
 RestartSec=3
 
-Environment="PATH=/opt/litellm/venv/bin:{{ ansible_env.PATH }}"
+Environment="PATH=/opt/litellm/venv/bin:{{ ansible_facts['env'].PATH }}"
 Environment="HOST={{ litellm_listen_host }}"
 Environment="PORT={{ litellm_port }}"
 Environment="NO_DOCS=True"

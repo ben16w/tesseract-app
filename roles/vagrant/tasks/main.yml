@@ -6,7 +6,7 @@
 
 - name: Set architecture variable.
   ansible.builtin.set_fact:
-    arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+    arch: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
 
 - name: Ensure gpg-agent is installed.
   ansible.builtin.apt:
@@ -31,7 +31,7 @@
     repo: >-
       deb [arch={{ arch }} signed-by=/etc/apt/keyrings/virtualbox.asc]
       https://download.virtualbox.org/virtualbox/debian
-      {{ ansible_distribution_release }} contrib
+      {{ ansible_facts['distribution_release'] }} contrib
     state: present
     update_cache: true
 
@@ -51,7 +51,7 @@
     repo: >-
       deb [arch={{ arch }} signed-by=/etc/apt/keyrings/hashicorp.asc]
       https://apt.releases.hashicorp.com
-      {{ ansible_distribution_release }} main
+      {{ ansible_facts['distribution_release'] }} main
     state: present
     update_cache: true
 

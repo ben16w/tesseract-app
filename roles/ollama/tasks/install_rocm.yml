@@ -9,7 +9,7 @@
 - name: Check if the distribution is Ubuntu.
   ansible.builtin.assert:
     that:
-      - ansible_distribution == 'Ubuntu'
+      - ansible_facts['distribution'] == 'Ubuntu'
 
 - name: Ensure render and video groups exist.
   ansible.builtin.group:
@@ -31,8 +31,8 @@
 - name: Install necessary Linux headers and modules.
   ansible.builtin.apt:
     name:
-      - "linux-headers-{{ ansible_kernel }}"
-      - "linux-modules-extra-{{ ansible_kernel }}"
+      - "linux-headers-{{ ansible_facts['kernel'] }}"
+      - "linux-modules-extra-{{ ansible_facts['kernel'] }}"
     state: present
     update_cache: true
 
@@ -52,7 +52,7 @@
       ansible.builtin.get_url:
         url: "https://repo.radeon.com/amdgpu-install/\
           {{ ollama_rocm_version_short }}/ubuntu/\
-          {{ ansible_distribution_release }}/amdgpu-install_\
+          {{ ansible_facts['distribution_release'] }}/amdgpu-install_\
           {{ ollama_rocm_version_long }}_all.deb"
         dest: /tmp/amdgpu-install.deb
         owner: root

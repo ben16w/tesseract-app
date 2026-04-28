@@ -12,17 +12,17 @@
 - name: Checking if architecture is amd64.
   ansible.builtin.set_fact:
     download_arch: "amd64"
-  when: '"x86_64" in ansible_architecture'
+  when: '"x86_64" in ansible_facts["architecture"]'
 
 - name: Checking if architecture is arm64
   ansible.builtin.set_fact:
     download_arch: "arm64"
-  when: '"armv" in ansible_architecture or "aarch" in ansible_architecture'
+  when: '"armv" in ansible_facts["architecture"] or "aarch" in ansible_facts["architecture"]'
 
 - name: Setting architecture to armhf.
   ansible.builtin.set_fact:
     download_arch: "arm-7"
-  when: '"armv7l" in ansible_architecture'
+  when: '"armv7l" in ansible_facts["architecture"]'
 
 - name: Install smartmontools, cron and netcat.
   ansible.builtin.apt:
