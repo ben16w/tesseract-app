@@ -20,14 +20,20 @@ litellm_modify_params: true
 litellm_models: []
 # Example:
 # litellm_models:
-#   - model_name: github_copilot/gpt-4
-#     litellm_params:
-#       model: github_copilot/gpt-4
-#       extra_headers: {"Editor-Version": "vscode/1.105.0", "Copilot-Integration-Id": "vscode-chat"}
 #   - model_name: llama3.1
 #     litellm_params:
 #       model: ollama_chat/llama3.1
 #       api_base: "https://ai.welney.net"
+#   - model_name: github_copilot/gpt-4
+#     litellm_params:
+#       model: github_copilot/gpt-5.4
+#     model_info:
+#       supports_function_calling: true
+#       supports_parallel_function_calling: true
+#       supports_reasoning: true
+#       supports_vision: true
+#       supports_web_search: false
+#       supports_url_context: false
 
 litellm_aliases: {}
 # Example:

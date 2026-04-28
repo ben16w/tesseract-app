@@ -6,6 +6,7 @@
       - litellm_version is not none
       - litellm_models is defined
       - litellm_models is iterable
+      - litellm_models | rejectattr('model_name', 'defined') | list | length == 0
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
