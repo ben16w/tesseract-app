@@ -36,6 +36,7 @@
       ansible.builtin.get_url:
         url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}{{ ollama_download_extension }}"
         dest: "/tmp/ollama-linux-{{ arch }}{{ ollama_download_extension }}"
+        force: true
         owner: root
         group: root
         mode: '0644'
@@ -69,6 +70,7 @@
       ansible.builtin.get_url:
         url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}-rocm{{ ollama_download_extension }}"
         dest: "/tmp/ollama-linux-{{ arch }}-rocm{{ ollama_download_extension }}"
+        force: true
         owner: root
         group: root
         mode: '0644'
