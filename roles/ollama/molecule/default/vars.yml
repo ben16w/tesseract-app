@@ -2,7 +2,8 @@
 
 ollama_port: 8080
 ollama_version: "0.12.11"
-ollama_install_vulkan: true
+ollama_use_vulkan: true
+ollama_download_extension: ".tgz"
 ollama_models:
   - name: TinyLlama
     url: "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/\

@@ -10,26 +10,17 @@
   ansible.builtin.user:
     name: "{{ tesseract_username }}"
 
-- name: Ensure curl and cron are installed.
+- name: Ensure curl, cron, and unzip are installed.
   ansible.builtin.package:
     name:
       - curl
       - cron
+      - unzip
     update_cache: true
 
 - name: Set architecture variable.
   ansible.builtin.set_fact:
     arch: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
-
-- name: Install AMD ROCm support.
-  ansible.builtin.include_tasks:
-    file: install_rocm.yml
-  when: ollama_install_rocm is true
-
-- name: Install Vulkan support.
-  ansible.builtin.include_tasks:
-    file: install_vulkan.yml
-  when: ollama_install_vulkan is true
 
 - name: Get current Ollama version.
   ansible.builtin.command: ollama --version
@@ -43,8 +34,8 @@
   block:
     - name: Download the Ollama package to /tmp.
       ansible.builtin.get_url:
-        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}.tgz"
-        dest: "/tmp/ollama-linux-{{ arch }}.tgz"
+        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}{{ ollama_download_extension }}"
+        dest: "/tmp/ollama-linux-{{ arch }}{{ ollama_download_extension }}"
         owner: root
         group: root
         mode: '0644'
@@ -55,7 +46,40 @@
 
     - name: Extract the Ollama package to /usr.
       ansible.builtin.unarchive:
-        src: "/tmp/ollama-linux-{{ arch }}.tgz"
+        src: "/tmp/ollama-linux-{{ arch }}{{ ollama_download_extension }}"
+        dest: /usr
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0755'
+
+- name: Check if ROCm Ollama payload is already installed.
+  when: ollama_use_rocm is true
+  ansible.builtin.stat:
+    path: /usr/lib/ollama/rocm
+  register: ollama_rocm_package_installed
+
+- name: Download and install Ollama ROCm package if required.
+  when:
+    - ollama_use_rocm is true
+    - ollama_version not in ollama_current_version.stdout or not ollama_rocm_package_installed.stat.exists
+  notify: restart ollama
+  block:
+    - name: Download the ROCm package to /tmp.
+      ansible.builtin.get_url:
+        url: "https://github.com/ollama/ollama/releases/download/v{{ ollama_version }}/ollama-linux-{{ arch }}-rocm{{ ollama_download_extension }}"
+        dest: "/tmp/ollama-linux-{{ arch }}-rocm{{ ollama_download_extension }}"
+        owner: root
+        group: root
+        mode: '0644'
+      register: download_rocm
+      retries: 5
+      delay: 10
+      until: download_rocm is succeeded
+
+    - name: Extract ROCm package to /usr.
+      ansible.builtin.unarchive:
+        src: "/tmp/ollama-linux-{{ arch }}-rocm{{ ollama_download_extension }}"
         dest: /usr
         remote_src: true
         owner: root
