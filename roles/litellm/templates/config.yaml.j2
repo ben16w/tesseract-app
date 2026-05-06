@@ -3,11 +3,11 @@ model_list:
   - model_name: {{ model.model_name }}
 {%   if model.litellm_params is defined %}
     litellm_params:
-      {{ model.litellm_params | to_nice_yaml | indent(6) }}
+      {{ model.litellm_params | to_nice_yaml(indent=2) | indent(6) }}
 {%   endif %}
 {%   if model.model_info is defined %}
     model_info:
-      {{ model.model_info | to_nice_yaml | indent(6) }}
+      {{ model.model_info | to_nice_yaml(indent=2) | indent(6) }}
 {%   endif %}
 {% endfor %}
 
@@ -29,7 +29,7 @@ router_settings:
 
 litellm_settings:
 {% if litellm_cache %}
-  cache: True
+  cache: true
   cache_params:
     type: local
 {% endif %}
@@ -37,6 +37,6 @@ litellm_settings:
   default_fallbacks: {{ litellm_fallbacks | to_json }}
 {% endif %}
 {% if litellm_modify_params %}
-  drop_params: True
-  modify_params: True
+  drop_params: true
+  modify_params: true
 {% endif %}
