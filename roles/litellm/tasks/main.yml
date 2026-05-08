@@ -4,6 +4,7 @@
   ansible.builtin.assert:
     that:
       - litellm_version is not none
+      - litellm_version is string
       - litellm_models is defined
       - litellm_models is iterable
       - litellm_models | rejectattr('model_name', 'defined') | list | length == 0
@@ -21,6 +22,7 @@
       - python3-venv
     state: present
     update_cache: true
+    cache_valid_time: 3600
 
 - name: Create litellm directory.
   ansible.builtin.file:
@@ -30,24 +32,12 @@
     group: root
     mode: '0755'
 
-- name: Create venv directory.
-  ansible.builtin.file:
-    path: "/opt/litellm/venv"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-
-- name: Create venv.
-  ansible.builtin.command:
-    cmd: python3 -m venv /opt/litellm/venv
-    creates: "/opt/litellm/venv/bin/activate"
-
 - name: Install LiteLLM proxy in venv.
   ansible.builtin.pip:
     name: litellm[proxy]
     version: "{{ litellm_version }}"
     virtualenv: /opt/litellm/venv
+    virtualenv_command: python3 -m venv
     state: present
   notify: restart litellm
 
@@ -57,7 +47,7 @@
     dest: "/opt/litellm/config.yaml"
     owner: root
     group: root
-    mode: '0755'
+    mode: '0644'
   notify: restart litellm
 
 - name: Deploy systemd service.
@@ -66,7 +56,7 @@
     dest: "/etc/systemd/system/litellm.service"
     owner: root
     group: root
-    mode: '0755'
+    mode: '0644'
   notify: restart litellm
 
 - name: Configure logging.
@@ -99,3 +89,4 @@
     name: "litellm"
     enabled: true
     state: started
+    daemon_reload: true

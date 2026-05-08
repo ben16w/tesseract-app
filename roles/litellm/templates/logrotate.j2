@@ -1,10 +1,12 @@
 /var/log/litellm/proxy.log {
     daily
-    maxsize 50M
+    maxsize 100M
     rotate 14
     compress
     delaycompress
     missingok
     notifempty
     copytruncate
+    dateext
+    dateformat -%Y-%m-%d
 }

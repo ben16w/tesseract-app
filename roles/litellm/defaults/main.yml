@@ -20,29 +20,39 @@ litellm_modify_params: true
 litellm_models: []
 # Example:
 # litellm_models:
-#   - model_name: llama3.1
+#   - model_name: provider/model-name
 #     litellm_params:
-#       model: ollama_chat/llama3.1
-#       api_base: "https://ai.welney.net"
-#   - model_name: github_copilot/gpt-4
-#     litellm_params:
-#       model: github_copilot/gpt-5.4
-#     model_info:
+#       model: provider/model-id
+#       api_key: "{{ some_api_key }}"   # required for external providers
+#       api_base: "http://host:11434"   # required for self-hosted providers
+#       reasoning_effort: {"effort": "high", "summary": "detailed"} # tune reasoning depth
+#       use_chat_completions_api: true  # force Chat Completions endpoint instead of Responses
+#       think: false                    # disable chain-of-thought (Ollama)
+#     model_info:                       # declares capabilities for routing and validation
+#       mode: responses                 # "responses" or "chat"; selects the API endpoint
 #       supports_function_calling: true
 #       supports_parallel_function_calling: true
 #       supports_reasoning: true
 #       supports_vision: true
-#       supports_web_search: false
-#       supports_url_context: false
+#   - model_name: auto
+#     litellm_params:
+#       model: auto_router/complexity_router
+#       complexity_router_config:
+#         tiers:                        # map complexity tiers to model aliases
+#           SIMPLE: local
+#           MEDIUM: quick
+#           COMPLEX: balanced
+#           REASONING: smart
+#       complexity_router_default_model: balanced
 
 litellm_aliases: {}
 # Example:
 # litellm_aliases:
-#   gpt-4: github_copilot/gpt-4
-#   llama3: llama3.1
+#   smart: provider/model-name # short name -> model_name defined above
+#   local: ollama/model-name
 
 litellm_fallbacks: []
 # Example:
-# litellm_fallbacks:
-#   - "copilot/gpt-4.1"
-#   - "gpt-3.5-turbo"
+# litellm_fallbacks: # ordered list of aliases tried on failure
+#   - smart
+#   - local
