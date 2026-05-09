@@ -1,0 +1,90 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - comfyui_version is not none
+      - not (comfyui_use_cpu and comfyui_use_rocm)
+
+- name: Ensure tesseract user exists.
+  register: tesseract_user_details
+  ansible.builtin.user:
+    name: "{{ tesseract_username }}"
+
+- name: Ensure required system packages are installed.
+  ansible.builtin.package:
+    name:
+      - git
+      - python3
+      - python3-pip
+      - python3-venv
+      - wget
+    state: present
+    update_cache: true
+
+- name: Create ComfyUI directory.
+  ansible.builtin.file:
+    path: /opt/comfyui
+    state: directory
+    owner: "{{ tesseract_username }}"
+    group: "{{ tesseract_username }}"
+    mode: '0755'
+
+- name: Clone ComfyUI repository.
+  ansible.builtin.git:
+    repo: https://github.com/comfyanonymous/ComfyUI.git
+    dest: /opt/comfyui
+    version: "{{ comfyui_version }}"
+    force: true
+  become: true
+  become_user: "{{ tesseract_username }}"
+  notify: restart comfyui
+
+- name: Install PyTorch for AMD ROCm.
+  when: comfyui_use_rocm is true
+  ansible.builtin.pip:
+    name:
+      - torch
+      - torchvision
+      - torchaudio
+    extra_args: "--index-url https://download.pytorch.org/whl/rocm6.2 --no-cache-dir"
+    virtualenv: /opt/comfyui/venv
+    virtualenv_command: python3 -m venv
+    state: present
+  notify: restart comfyui
+
+- name: Install PyTorch for CPU.
+  when: comfyui_use_cpu is true
+  ansible.builtin.pip:
+    name:
+      - torch
+      - torchvision
+      - torchaudio
+    extra_args: "--index-url https://download.pytorch.org/whl/cpu --no-cache-dir"
+    virtualenv: /opt/comfyui/venv
+    virtualenv_command: python3 -m venv
+    state: present
+  notify: restart comfyui
+
+- name: Install ComfyUI requirements.
+  ansible.builtin.pip:
+    requirements: /opt/comfyui/requirements.txt
+    virtualenv: /opt/comfyui/venv
+    virtualenv_command: python3 -m venv
+    state: present
+  notify: restart comfyui
+
+- name: Deploy systemd service.
+  ansible.builtin.template:
+    src: templates/comfyui.service.j2
+    dest: /etc/systemd/system/comfyui.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart comfyui
+
+- name: Enable and start ComfyUI service.
+  ansible.builtin.systemd:
+    name: comfyui
+    enabled: true
+    state: started

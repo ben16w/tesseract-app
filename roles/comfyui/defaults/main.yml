@@ -1,0 +1,28 @@
+---
+
+tesseract_username: "tesseract"
+
+comfyui_version: ~ # e.g. "v0.18.2"
+
+comfyui_port: 8188
+comfyui_listen_host: "0.0.0.0"
+
+comfyui_use_cpu: false
+
+comfyui_use_rocm: false
+comfyui_rocm_gfx_version: ~
+# Example: comfyui_rocm_gfx_version: 10.3.0
+comfyui_rocm_aotriton_experimental: false
+
+comfyui_use_pytorch_cross_attention: false
+
+comfyui_preview_method: "auto"
+# Valid values: none, auto, latent2rgb, taesd
+
+comfyui_vram_mode: ~
+# Valid values: highvram, lowvram, novram, gpu-only
+
+comfyui_extra_args: []
+# Example:
+# comfyui_extra_args:
+#   - "--use-split-cross-attention"
