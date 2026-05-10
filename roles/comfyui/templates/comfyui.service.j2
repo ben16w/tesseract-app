@@ -10,6 +10,7 @@ ExecStart=/opt/comfyui/venv/bin/python /opt/comfyui/main.py \
   {% if comfyui_use_cpu %}--cpu{% endif %} \
   {% if comfyui_use_pytorch_cross_attention %}--use-pytorch-cross-attention{% endif %} \
   {% if comfyui_enable_manager | bool %}--enable-manager{% endif %} \
+  {% if comfyui_enable_manager | bool and comfyui_enable_manager_legacy_ui | bool %}--enable-manager-legacy-ui{% endif %} \
   --preview-method {{ comfyui_preview_method }} \
   {% if comfyui_vram_mode is not none %}--{{ comfyui_vram_mode }}{% endif %} \
   {% if comfyui_extra_args | length > 0 %}{{ comfyui_extra_args | join(' ') }}{% endif %}

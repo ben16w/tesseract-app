@@ -17,6 +17,7 @@ comfyui_rocm_aotriton_experimental: false
 comfyui_use_pytorch_cross_attention: false
 
 comfyui_enable_manager: true
+comfyui_enable_manager_legacy_ui: false
 
 comfyui_preview_method: "auto"
 # Valid values: none, auto, latent2rgb, taesd

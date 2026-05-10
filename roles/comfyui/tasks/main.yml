@@ -4,7 +4,8 @@
   ansible.builtin.assert:
     that:
       - comfyui_version is not none
-      - not (comfyui_use_cpu and comfyui_use_rocm)
+      - not ((comfyui_use_cpu | bool) and (comfyui_use_rocm | bool))
+      - not ((comfyui_enable_manager_legacy_ui | bool) and not (comfyui_enable_manager | bool))
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
