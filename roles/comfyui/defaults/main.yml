@@ -18,6 +18,8 @@ comfyui_use_pytorch_cross_attention: false
 
 comfyui_enable_manager: true
 comfyui_enable_manager_legacy_ui: false
+comfyui_manager_security_level: weak
+comfyui_manager_network_mode: personal_cloud
 
 comfyui_preview_method: "auto"
 # Valid values: none, auto, latent2rgb, taesd
