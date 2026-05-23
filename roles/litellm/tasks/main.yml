@@ -8,6 +8,9 @@
       - litellm_models is defined
       - litellm_models is iterable
       - litellm_models | rejectattr('model_name', 'defined') | list | length == 0
+      - litellm_mcp_servers is mapping
+      - litellm_install_npx is boolean
+      - litellm_install_uvx is boolean
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
@@ -23,6 +26,20 @@
     state: present
     update_cache: true
     cache_valid_time: 3600
+
+- name: Install nodejs and npm.
+  when: litellm_install_npx
+  ansible.builtin.package:
+    name:
+      - nodejs
+      - npm
+    state: present
+
+- name: Install uv.
+  when: litellm_install_uvx
+  ansible.builtin.pip:
+    name: uv
+    state: present
 
 - name: Create litellm directory.
   ansible.builtin.file:

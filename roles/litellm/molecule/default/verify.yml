@@ -1,10 +1,8 @@
 ---
 - name: Verify
   hosts: all
-  vars:
-    litellm_port: 3000
-    litellm_master_key: "sk-1234"
-    litellm_logging: true
+  vars_files:
+    - vars.yml
   tasks:
 
     - name: Check binary exists in venv.
@@ -66,7 +64,62 @@
       ansible.builtin.assert:
         that:
           - mock_llm_response.json is defined
-          - mock_llm_response.json.choices[0].message.content == "I don't know the answer to that. This is a mock response."
+          - >
+            mock_llm_response.json.choices[0].message.content ==
+            "I don't know the answer to that. This is a mock response."
+
+    - name: Call npm MCP add tool through LiteLLM proxy.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ litellm_port }}/npm_mock_mcp/mcp"
+        method: POST
+        body_format: json
+        return_content: true
+        headers:
+          Accept: "application/json, text/event-stream"
+          Content-Type: "application/json"
+          x-litellm-api-key: "Bearer {{ litellm_master_key }}"
+        body:
+          jsonrpc: "2.0"
+          id: 3
+          method: tools/call
+          params:
+            name: add
+            arguments:
+              a: 2
+              b: 2
+      register: litellm_mcp_tool_call_response
+      failed_when: litellm_mcp_tool_call_response.status != 200
+
+    - name: Assert LiteLLM proxies npm MCP requests successfully.
+      ansible.builtin.assert:
+        that:
+          - "'The sum of 2 and 2 is 4' in litellm_mcp_tool_call_response.content"
+
+    - name: Call uv MCP calculate tool through LiteLLM proxy.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ litellm_port }}/uv_mock_mcp/mcp"
+        method: POST
+        body_format: json
+        return_content: true
+        headers:
+          Accept: "application/json, text/event-stream"
+          Content-Type: "application/json"
+          x-litellm-api-key: "Bearer {{ litellm_master_key }}"
+        body:
+          jsonrpc: "2.0"
+          id: 3
+          method: tools/call
+          params:
+            name: calculate
+            arguments:
+              expression: "2+2"
+      register: litellm_uv_mcp_tool_call_response
+      failed_when: litellm_uv_mcp_tool_call_response.status != 200
+
+    - name: Assert LiteLLM proxies uv MCP requests successfully.
+      ansible.builtin.assert:
+        that:
+          - "'4' in litellm_uv_mcp_tool_call_response.content"
 
     - name: Check log file was created.
       ansible.builtin.stat:

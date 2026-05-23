@@ -1,0 +1,25 @@
+---
+
+litellm_version: "1.82.5"
+litellm_port: 3000
+litellm_master_key: "sk-1234"
+litellm_logging: true
+litellm_install_npx: true
+litellm_install_uvx: true
+litellm_mcp_servers:
+  npm_mock_mcp:
+    transport: stdio
+    command: npx
+    args:
+      - "@wrtnlabs/calculator-mcp"
+  uv_mock_mcp:
+    transport: stdio
+    command: uvx
+    args:
+      - mcp-server-calculator
+litellm_models:
+  - model_name: mock-llm
+    litellm_params:
+      model: openai/mock-llm
+      api_base: http://localhost:8000/v1
+      api_key: sk-1234

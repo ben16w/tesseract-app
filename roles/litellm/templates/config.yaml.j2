@@ -11,10 +11,16 @@ model_list:
 {%   endif %}
 {% endfor %}
 
+{% if litellm_mcp_servers %}
+mcp_servers:
+  {{ litellm_mcp_servers | to_nice_yaml(indent=2) | indent(2) }}
+{% endif %}
+
 general_settings:
 {% if litellm_master_key is not none %}
   master_key: "os.environ/LITELLM_MASTER_KEY"
 {% endif %}
+  store_model_in_db: false
   timeout: {{ litellm_timeout }}
 
 router_settings:

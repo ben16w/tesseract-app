@@ -56,3 +56,26 @@ litellm_fallbacks: []
 # litellm_fallbacks: # ordered list of aliases tried on failure
 #   - smart
 #   - local
+
+litellm_mcp_servers: {}
+# Example:
+# litellm_mcp_servers:
+#   my_http_server:
+#     url: "https://my-mcp-server.com/mcp"
+#     transport: "http"
+#     description: "My custom MCP server"
+#     auth_type: "api_key"
+#     auth_value: "abc123"
+#   circleci_mcp:
+#     transport: "stdio"
+#     command: "npx"
+#     args: ["-y", "@circleci/mcp-server-circleci"]
+#     env:
+#       CIRCLECI_TOKEN: "your-circleci-token"
+#       CIRCLECI_BASE_URL: "https://circleci.com"
+
+litellm_install_npx: false
+# Install nodejs and npm (required for npx MCP servers).
+
+litellm_install_uvx: false
+# Install uv (required for uvx MCP servers).
