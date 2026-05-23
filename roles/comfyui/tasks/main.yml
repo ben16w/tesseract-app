@@ -93,6 +93,34 @@
     state: present
   notify: restart comfyui
 
+- name: Ensure ComfyUI manager configuration directory exists.
+  when: comfyui_enable_manager | bool
+  ansible.builtin.file:
+    path: /opt/comfyui/user/__manager
+    state: directory
+    owner: "{{ tesseract_username }}"
+    group: "{{ tesseract_username }}"
+    mode: '0755'
+
+- name: Deploy ComfyUI manager configuration.
+  when: comfyui_enable_manager | bool
+  ansible.builtin.template:
+    src: templates/manager-config.ini.j2
+    dest: /opt/comfyui/user/__manager/config.ini
+    owner: "{{ tesseract_username }}"
+    group: "{{ tesseract_username }}"
+    mode: '0644'
+    force: false
+  notify: restart comfyui
+
+- name: Create cron job to restart ComfyUI service.
+  ansible.builtin.cron:
+    name: "Restart ComfyUI service"
+    job: /bin/systemctl restart comfyui.service
+    minute: "0"
+    hour: "{{ comfyui_restart_cron_hour }}"
+    state: "{{ 'present' if comfyui_restart_cron_enabled else 'absent' }}"
+
 - name: Deploy systemd service.
   ansible.builtin.template:
     src: templates/comfyui.service.j2
@@ -107,20 +135,4 @@
     name: comfyui
     enabled: true
     state: started
-
-- name: Set ComfyUI Manager config settings.
-  when: comfyui_enable_manager | bool
-  ansible.builtin.lineinfile:
-    path: /opt/comfyui/user/__manager/config.ini
-    search_string: "{{ item.search }}"
-    line: "{{ item.line }}"
-  loop:
-    - search: "security_level ="
-      line: "security_level = {{ comfyui_manager_security_level }}"
-    - search: "network_mode ="
-      line: "network_mode = {{ comfyui_manager_network_mode }}"
-  register: result
-  retries: 10
-  delay: 3
-  until: result is not failed
-  notify: restart comfyui
+    daemon_reload: true

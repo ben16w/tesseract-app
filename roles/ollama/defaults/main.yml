@@ -28,5 +28,7 @@ ollama_use_vulkan: false
 ollama_vulkan_visible_devices: ~
 # Example: ollama_vulkan_visible_devices: "2"
 
-ollama_keep_alive_cron: ~ # "*/2"
-ollama_restart_hour_cron: "3"
+ollama_keep_alive_cron_enabled: false
+ollama_keep_alive_cron_hour: "*/2"
+ollama_restart_cron_enabled: true
+ollama_restart_cron_hour: "3"

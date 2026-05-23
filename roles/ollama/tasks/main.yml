@@ -117,26 +117,21 @@
     group: root
     mode: '0755'
 
-- name: Ensure set_keep_alive cron job is absent when disabled.
-  when: ollama_keep_alive_cron is none
-  ansible.builtin.cron:
-    name: "Run set_keep_alive.sh"
-    state: absent
-
-- name: Ensure set_keep_alive cron job is present when enabled.
-  when: ollama_keep_alive_cron is not none
+- name: Ensure set_keep_alive cron job is present or absent.
   ansible.builtin.cron:
     name: "Run set_keep_alive.sh"
     job: /bin/bash /opt/ollama/bin/set_keep_alive.sh
     minute: "0"
-    hour: "{{ ollama_keep_alive_cron }}"
+    hour: "{{ ollama_keep_alive_cron_hour }}"
+    state: "{{ 'present' if ollama_keep_alive_cron_enabled else 'absent' }}"
 
 - name: Create cron job to restart ollama service.
   ansible.builtin.cron:
     name: "Restart Ollama service"
     job: /bin/systemctl restart ollama.service
     minute: "30"
-    hour: "{{ ollama_restart_hour_cron }}"
+    hour: "{{ ollama_restart_cron_hour }}"
+    state: "{{ 'present' if ollama_restart_cron_enabled else 'absent' }}"
 
 - name: Ensure the Ollama models are downloaded.
   ansible.builtin.include_tasks:
