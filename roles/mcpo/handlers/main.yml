@@ -1,0 +1,8 @@
+---
+
+- name: Reload systemd daemon and restart mcpo service.
+  ansible.builtin.systemd:
+    name: mcpo
+    state: restarted
+    daemon_reload: true
+  listen: "restart mcpo"

@@ -1,0 +1,10 @@
+---
+
+mcpo_version: "0.0.20"
+mcpo_port: 3001
+mcpo_api_key: "top-secret"
+mcpo_logging: true
+mcpo_install_uvx: true
+mcpo_server_command:
+  - uvx
+  - mcp-server-calculator

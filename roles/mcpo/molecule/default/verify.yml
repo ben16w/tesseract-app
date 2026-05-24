@@ -1,0 +1,89 @@
+---
+- name: Verify
+  hosts: all
+  vars_files:
+    - vars.yml
+  tasks:
+
+    - name: Check mcpo binary exists in venv.
+      ansible.builtin.stat:
+        path: /opt/mcpo/venv/bin/mcpo
+      register: mcpo_binary
+      failed_when: not mcpo_binary.stat.exists
+
+    - name: Check service is running.
+      ansible.builtin.service:
+        name: mcpo
+        state: started
+      register: mcpo_service_status
+      failed_when: not mcpo_service_status.state == 'started'
+
+    - name: Check mcpo is listening on the correct port.
+      ansible.builtin.wait_for:
+        port: "{{ mcpo_port }}"
+        state: started
+        timeout: 20
+      register: mcpo_port_check
+      failed_when: not mcpo_port_check.elapsed < 20
+
+    - name: Fetch OpenAPI document expecting auth failure.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ mcpo_port }}/openapi.json"
+        method: GET
+        return_content: true
+        status_code: 401
+      register: mcpo_openapi_unauthorized
+      failed_when: mcpo_openapi_unauthorized.status != 401
+
+    - name: Fetch OpenAPI document with API key.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ mcpo_port }}/openapi.json"
+        method: GET
+        return_content: true
+        headers:
+          Authorization: "Bearer {{ mcpo_api_key }}"
+      register: mcpo_openapi_response
+      failed_when: mcpo_openapi_response.status != 200
+
+    - name: Assert calculator endpoint is exposed.
+      ansible.builtin.assert:
+        that:
+          - mcpo_openapi_response.json.paths is defined
+          - mcpo_openapi_response.json.paths['/calculate'] is defined
+
+    - name: Call calculator tool expecting auth failure.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ mcpo_port }}/calculate"
+        method: POST
+        body_format: json
+        return_content: true
+        status_code: 401
+        body:
+          expression: "2+2"
+      register: mcpo_calculate_unauthorized
+      failed_when: mcpo_calculate_unauthorized.status != 401
+
+    - name: Call calculator tool with API key.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ mcpo_port }}/calculate"
+        method: POST
+        body_format: json
+        return_content: true
+        headers:
+          Authorization: "Bearer {{ mcpo_api_key }}"
+          Content-Type: "application/json"
+        body:
+          expression: "2+2"
+      register: mcpo_calculate_response
+      failed_when: mcpo_calculate_response.status != 200
+
+    - name: Assert calculator returned expected result.
+      ansible.builtin.assert:
+        that:
+          - mcpo_calculate_response.content == '4'
+
+    - name: Check log file was created.
+      ansible.builtin.stat:
+        path: /var/log/mcpo/proxy.log
+      register: mcpo_log_file
+      failed_when: not mcpo_log_file.stat.exists

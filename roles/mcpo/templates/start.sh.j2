@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+cmd=(
+  /opt/mcpo/venv/bin/mcpo
+  --host {{ mcpo_listen_host | quote }}
+  --port {{ mcpo_port | string | quote }}
+)
+
+{% if mcpo_api_key is not none %}
+cmd+=(--api-key {{ mcpo_api_key | quote }})
+{% endif %}
+{% if mcpo_strict_auth %}
+cmd+=(--strict-auth)
+{% endif %}
+{% if mcpo_root_path %}
+cmd+=(--root-path {{ mcpo_root_path | quote }})
+{% endif %}
+{% if mcpo_path_prefix != '/' %}
+cmd+=(--path-prefix {{ mcpo_path_prefix | quote }})
+{% endif %}
+{% if mcpo_log_level %}
+cmd+=(--log-level {{ mcpo_log_level | quote }})
+{% endif %}
+
+{% for env_key, env_value in mcpo_server_env.items() %}
+export {{ env_key }}={{ env_value | quote }}
+{% endfor %}
+
+{% if mcpo_servers %}
+cmd+=(--config /opt/mcpo/config.json)
+{%   if mcpo_hot_reload %}
+cmd+=(--hot-reload)
+{%   endif %}
+{% else %}
+{%   if mcpo_server_type != 'stdio' %}
+cmd+=(--server-type {{ mcpo_server_type | quote }})
+{%   endif %}
+{%   if mcpo_server_headers %}
+cmd+=(--header {{ mcpo_server_headers | to_json | quote }})
+{%   endif %}
+cmd+=(--)
+{%   for arg in mcpo_server_command %}
+cmd+=({{ arg | quote }})
+{%   endfor %}
+{% endif %}
+
+exec "${cmd[@]}"

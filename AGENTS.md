@@ -53,3 +53,7 @@ Common root files include `Makefile`, `requirements.txt`, `galaxy.yml`,
 3. Use `make help` to choose the smallest relevant validation step.
 4. Run the appropriate lint or test targets when practical.
 5. Report blockers and missing prerequisites explicitly.
+
+## Repository Notes
+
+- Service-style roles in this collection commonly follow the `litellm` pattern: defaults, tasks, handlers, systemd template, optional logrotate config, and a dedicated Molecule scenario for end-to-end verification.

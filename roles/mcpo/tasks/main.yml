@@ -1,0 +1,150 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - mcpo_version is not none
+      - mcpo_version is string
+      - mcpo_server_command is iterable
+      - mcpo_server_command is not string
+      - mcpo_server_env is mapping
+      - mcpo_server_headers is mapping
+      - mcpo_servers is mapping
+      - mcpo_strict_auth is boolean
+      - mcpo_logging is boolean
+      - mcpo_hot_reload is boolean
+      - mcpo_install_npx is boolean
+      - mcpo_install_uvx is boolean
+      - mcpo_server_type in ['stdio', 'sse', 'streamable-http']
+      - (mcpo_server_command | length > 0) != (mcpo_servers | length > 0)
+      - mcpo_server_type == 'stdio' or mcpo_server_command | length == 1
+    fail_msg: >-
+      Provide exactly one mcpo server configuration: either mcpo_server_command
+      for a single server or mcpo_servers for config-file mode.
+
+- name: Ensure tesseract user exists.
+  register: mcpo_tesseract_user_details
+  ansible.builtin.user:
+    name: "{{ tesseract_username }}"
+
+- name: Ensure python3 and venv are installed.
+  ansible.builtin.package:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install nodejs and npm.
+  when: mcpo_install_npx
+  ansible.builtin.package:
+    name:
+      - nodejs
+      - npm
+    state: present
+
+- name: Install uv.
+  when: mcpo_install_uvx
+  ansible.builtin.pip:
+    name: uv
+    state: present
+
+- name: Create mcpo directory.
+  ansible.builtin.file:
+    path: /opt/mcpo
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create mcpo bin directory.
+  ansible.builtin.file:
+    path: /opt/mcpo/bin
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Install mcpo in venv.
+  ansible.builtin.pip:
+    name: mcpo
+    version: "{{ mcpo_version }}"
+    virtualenv: /opt/mcpo/venv
+    virtualenv_command: python3 -m venv
+    state: present
+  notify: restart mcpo
+
+- name: Template mcpo config file.
+  when: mcpo_servers | length > 0
+  ansible.builtin.template:
+    src: templates/config.json.j2
+    dest: /opt/mcpo/config.json
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart mcpo
+
+- name: Remove mcpo config file when using single server mode.
+  when: mcpo_servers | length == 0
+  ansible.builtin.file:
+    path: /opt/mcpo/config.json
+    state: absent
+  notify: restart mcpo
+
+- name: Template mcpo startup script.
+  ansible.builtin.template:
+    src: templates/start.sh.j2
+    dest: /opt/mcpo/bin/start.sh
+    owner: root
+    group: root
+    mode: '0755'
+  notify: restart mcpo
+
+- name: Deploy systemd service.
+  ansible.builtin.template:
+    src: templates/mcpo.service.j2
+    dest: /etc/systemd/system/mcpo.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart mcpo
+
+- name: Configure logging.
+  when: mcpo_logging
+  block:
+    - name: Ensure logrotate is installed.
+      ansible.builtin.package:
+        name:
+          - logrotate
+        state: present
+
+    - name: Create log directory.
+      ansible.builtin.file:
+        path: /var/log/mcpo
+        state: directory
+        owner: "{{ tesseract_username }}"
+        group: "{{ tesseract_username }}"
+        mode: '0755'
+
+    - name: Deploy logrotate configuration.
+      ansible.builtin.template:
+        src: templates/logrotate.j2
+        dest: /etc/logrotate.d/mcpo
+        owner: root
+        group: root
+        mode: '0644'
+
+- name: Remove mcpo logrotate configuration when logging is disabled.
+  when: not mcpo_logging
+  ansible.builtin.file:
+    path: /etc/logrotate.d/mcpo
+    state: absent
+
+- name: Enable and start mcpo.
+  ansible.builtin.systemd:
+    name: mcpo
+    enabled: true
+    state: started
+    daemon_reload: true

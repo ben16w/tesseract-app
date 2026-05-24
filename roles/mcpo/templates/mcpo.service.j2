@@ -1,0 +1,20 @@
+[Unit]
+Description=mcpo Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/opt/mcpo/bin/start.sh
+User={{ tesseract_username }}
+Group={{ tesseract_username }}
+WorkingDirectory=/opt/mcpo
+Restart=always
+RestartSec=3
+Environment="PATH=/opt/mcpo/venv/bin:{{ ansible_facts['env'].PATH }}"
+{% if mcpo_logging %}
+StandardOutput=append:/var/log/mcpo/proxy.log
+StandardError=append:/var/log/mcpo/proxy.log
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target

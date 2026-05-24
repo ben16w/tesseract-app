@@ -1,0 +1,56 @@
+---
+
+tesseract_username: "tesseract"
+
+mcpo_version: ~
+# Example: mcpo_version: "0.0.20"
+
+mcpo_port: 8000
+mcpo_listen_host: "0.0.0.0"
+mcpo_api_key: ~
+mcpo_strict_auth: false
+mcpo_log_level: "INFO"
+mcpo_logging: false
+
+mcpo_path_prefix: "/"
+mcpo_root_path: ""
+
+mcpo_server_type: "stdio"
+mcpo_server_command: []
+# Example:
+# mcpo_server_command:
+#   - uvx
+#   - mcp-server-time
+#   - --local-timezone=America/New_York
+
+mcpo_server_env: {}
+# Example:
+# mcpo_server_env:
+#   EXAMPLE_API_KEY: "secret"
+
+mcpo_server_headers: {}
+# Example for remote MCP servers:
+# mcpo_server_headers:
+#   Authorization: "Bearer token"
+
+mcpo_servers: {}
+# Example config-file mode:
+# mcpo_servers:
+#   memory:
+#     command: npx
+#     args:
+#       - -y
+#       - '@modelcontextprotocol/server-memory'
+#   remote:
+#     type: streamable-http
+#     url: http://127.0.0.1:8002/mcp
+#     headers:
+#       Authorization: "Bearer token"
+
+mcpo_hot_reload: false
+
+mcpo_install_npx: false
+# Install nodejs and npm (required for npx MCP servers).
+
+mcpo_install_uvx: false
+# Install uv (required for uvx MCP servers).
