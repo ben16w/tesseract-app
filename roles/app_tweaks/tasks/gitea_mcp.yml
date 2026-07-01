@@ -1,0 +1,35 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - app_tweaks_gitea_mcp_version is not none
+
+- name: Set architecture to x86_64.
+  ansible.builtin.set_fact:
+    download_arch: "x86_64"
+  when: '"x86_64" in ansible_facts["architecture"]'
+
+- name: Set architecture to arm64.
+  ansible.builtin.set_fact:
+    download_arch: "arm64"
+  when: '"aarch64" in ansible_facts["architecture"]'
+
+- name: Download and extract Gitea MCP binary.
+  ansible.builtin.unarchive:
+    src: "https://gitea.com/gitea/gitea-mcp/releases/download/v{{ app_tweaks_gitea_mcp_version }}/gitea-mcp_Linux_{{ download_arch }}.tar.gz"
+    dest: /tmp
+    remote_src: true
+  register: download_gitea_mcp
+  retries: 5
+  delay: 10
+  until: download_gitea_mcp is succeeded
+
+- name: Install Gitea MCP binary.
+  ansible.builtin.copy:
+    src: /tmp/gitea-mcp
+    dest: /usr/local/bin/gitea-mcp
+    owner: root
+    group: root
+    mode: '0755'
+    remote_src: true

@@ -20,6 +20,9 @@ app_tweaks_transmission_config_path: /media/appdata/transmission_config
 app_tweaks_transmission_username: ~
 app_tweaks_transmission_password: ~
 
+app_tweaks_enable_gitea_mcp: false
+app_tweaks_gitea_mcp_version: ~
+
 app_tweaks_enable_jenkins: false
 app_tweaks_enable_drone: false
 app_tweaks_drone_exec_download_url: "https://github.com/drone-runners/drone-runner-exec/releases/latest/download/drone_runner_exec_linux_amd64.tar.gz"

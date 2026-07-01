@@ -45,3 +45,8 @@
   ansible.builtin.include_tasks:
     file: drone.yml
   when: app_tweaks_enable_drone is true
+
+- name: Run tasks when Gitea MCP is enabled.
+  ansible.builtin.include_tasks:
+    file: gitea_mcp.yml
+  when: app_tweaks_enable_gitea_mcp is true

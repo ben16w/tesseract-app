@@ -21,3 +21,9 @@
         state: started
       register: service_status
       failed_when: service_status.changed
+
+    - name: Verify gitea-mcp binary is installed.
+      ansible.builtin.stat:
+        path: /usr/local/bin/gitea-mcp
+      register: gitea_mcp_binary
+      failed_when: not gitea_mcp_binary.stat.exists
