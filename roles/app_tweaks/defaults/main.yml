@@ -1,6 +1,6 @@
 ---
 
-tesseract_files_path: /root
+app_tweaks_scripts_path: /opt/tesseract/scripts
 tesseract_username: ~
 tesseract_domain: ~
 

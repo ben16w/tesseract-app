@@ -2,10 +2,10 @@
 - name: Converge
   hosts: all
   vars:
-    email_username: "email@email.com"
-    email_host: "email.com"
-    email_port: "465"
-    email_password: "password"
+    tesseract_email_username: "email@email.com"
+    tesseract_email_host: "email.com"
+    tesseract_email_port: "465"
+    tesseract_email_password: "password"
     scrutiny_version: "0.8.1"
   roles:
     - role: scrutiny

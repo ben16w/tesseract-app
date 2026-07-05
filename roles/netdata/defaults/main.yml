@@ -1,8 +1,8 @@
 ---
-email_host: ~
-email_port: ~
-email_username: ~
-email_password: ~
+tesseract_email_host: ~
+tesseract_email_port: ~
+tesseract_email_username: ~
+tesseract_email_password: ~
 
 netdata_emails_disabled: false
 netdata_port: 19999

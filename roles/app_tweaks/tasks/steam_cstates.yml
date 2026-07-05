@@ -36,7 +36,7 @@
 
 - name: Create scripts directory if it does not exist.
   ansible.builtin.file:
-    path: "{{ tesseract_files_path }}/scripts"
+    path: "{{ app_tweaks_scripts_path }}"
     state: directory
     owner: root
     group: root
@@ -45,7 +45,7 @@
 - name: Template cstates-limit.sh script to scripts directory.
   ansible.builtin.template:
     src: templates/cstates-limit.sh.j2
-    dest: "{{ tesseract_files_path }}/scripts/cstates-limit.sh"
+    dest: "{{ app_tweaks_scripts_path }}/cstates-limit.sh"
     owner: root
     group: root
     mode: '0755'
@@ -54,4 +54,4 @@
   ansible.builtin.cron:
     name: "Limit C-states for Steam."
     special_time: reboot
-    job: "bash {{ tesseract_files_path }}/scripts/cstates-limit.sh"
+    job: "bash {{ app_tweaks_scripts_path }}/cstates-limit.sh"

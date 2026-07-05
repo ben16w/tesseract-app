@@ -7,10 +7,10 @@
       - tesseract_hostname is not none
       - tesseract_domain is not none
 
-      - email_username is not none
-      - email_host is not none
-      - email_port is not none
-      - email_password is not none
+      - tesseract_email_username is not none
+      - tesseract_email_host is not none
+      - tesseract_email_port is not none
+      - tesseract_email_password is not none
 
       - docker_compose_repo is not none
 
@@ -70,7 +70,7 @@
 
 - name: Create docker directory if it does not exist.
   ansible.builtin.file:
-    path: "{{ tesseract_files_path }}/docker"
+    path: "{{ docker_compose_path }}"
     state: directory
     owner: root
     group: root
@@ -80,7 +80,7 @@
 - name: Git checkout docker compose files to docker directory.
   ansible.builtin.git:
     repo: "{{ docker_compose_repo }}"
-    dest: "{{ tesseract_files_path }}/docker"
+    dest: "{{ docker_compose_path }}"
     version: "{{ docker_compose_repo_version }}"
     force: true
   register: download_docker_compose
@@ -91,7 +91,7 @@
 - name: Set environment variables for docker.
   no_log: true
   ansible.builtin.blockinfile:
-    path: "{{ tesseract_files_path }}/docker/.env"
+    path: "{{ docker_compose_path }}/.env"
     create: true
     owner: root
     group: root
@@ -100,10 +100,10 @@
       COMPOSE_PROJECT_NAME="{{ docker_project_name }}"
       TESSERACT_APPDATA_PATH="{{ docker_appdata_path }}"
       TESSERACT_USERNAME="{{ tesseract_username }}"
-      TESSERACT_EMAIL_USERNAME="{{ email_username }}"
-      TESSERACT_EMAIL_HOST="{{ email_host }}"
-      TESSERACT_EMAIL_PORT="{{ email_port }}"
-      TESSERACT_EMAIL_PASSWORD="{{ email_password }}"
+      TESSERACT_EMAIL_USERNAME="{{ tesseract_email_username }}"
+      TESSERACT_EMAIL_HOST="{{ tesseract_email_host }}"
+      TESSERACT_EMAIL_PORT="{{ tesseract_email_port }}"
+      TESSERACT_EMAIL_PASSWORD="{{ tesseract_email_password }}"
       TESSERACT_HOSTNAME="{{ tesseract_hostname }}"
       TESSERACT_DOMAIN="{{ tesseract_domain }}"
       TESSERACT_TZ="{{ docker_tz }}"
@@ -115,7 +115,7 @@
 - name: Add data paths to docker environment variables.
   loop: "{{ docker_data_paths }}"
   ansible.builtin.lineinfile:
-    path: "{{ tesseract_files_path }}/docker/.env"
+    path: "{{ docker_compose_path }}/.env"
     search_string: TESSERACT_{{ item.name | upper }}_PATH=
     create: true
     owner: root
@@ -127,7 +127,7 @@
   no_log: true
   loop: "{{ docker_extra_vars | dict2items }}"
   ansible.builtin.lineinfile:
-    path: "{{ tesseract_files_path }}/docker/.env"
+    path: "{{ docker_compose_path }}/.env"
     search_string: TESSERACT_{{ item.key | upper }}=
     create: true
     owner: root
@@ -141,7 +141,7 @@
 
 - name: Generate list of Docker compose files.
   ansible.builtin.set_fact:
-    docker_compose_list: "{{ docker_compose_list + [tesseract_files_path + '/docker/docker-compose.' + item + '.yml'] }}"
+    docker_compose_list: "{{ docker_compose_list + [docker_compose_path + '/docker-compose.' + item + '.yml'] }}"
   loop: "{{ docker_apps }}"
 
 - name: Add extra Docker compose files.
@@ -153,7 +153,7 @@
 - name: Create and start Docker apps using cli.
   ansible.builtin.command:
     cmd: docker compose -f {{ docker_compose_list | join(' -f ') }} up -d --remove-orphans
-    chdir: "{{ tesseract_files_path }}/docker"
+    chdir: "{{ docker_compose_path }}"
   when: docker_apps | length > 0
   register: docker_compose_result
   changed_when: docker_compose_result.stdout.find('Creating') != -1

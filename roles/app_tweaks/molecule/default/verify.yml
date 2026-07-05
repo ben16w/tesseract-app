@@ -6,7 +6,7 @@
   tasks:
     - name: Run cstates-limit.sh script on host and check if there's any errors.
       ansible.builtin.command:
-        cmd: "bash {{ tesseract_files_path }}/scripts/cstates-limit.sh -d"
+        cmd: "bash {{ app_tweaks_scripts_path }}/cstates-limit.sh -d"
       register: cstate_limit
       changed_when: false
 

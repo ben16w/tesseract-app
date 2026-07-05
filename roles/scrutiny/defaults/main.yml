@@ -11,7 +11,7 @@ scrutiny_influxdb_version: "2.2.0"
 scrutiny_cron_hour: "*/12"
 scrutiny_cron_minute: "30"
 
-email_username: ~
-email_host: ~
-email_port: ~
-email_password: ~
+tesseract_email_username: ~
+tesseract_email_host: ~
+tesseract_email_port: ~
+tesseract_email_password: ~

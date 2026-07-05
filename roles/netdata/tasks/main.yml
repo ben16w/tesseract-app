@@ -16,10 +16,10 @@
     - name: Assert that all required inputs have been provided.
       ansible.builtin.assert:
         that:
-          - email_host is not none
-          - email_port is not none
-          - email_username is not none
-          - email_password is not none
+          - tesseract_email_host is not none
+          - tesseract_email_port is not none
+          - tesseract_email_username is not none
+          - tesseract_email_password is not none
 
     - name: Add msmtp email global config.
       no_log: true
@@ -35,11 +35,11 @@
           tls_starttls off
           tls_certcheck off
           auth login
-          host "{{ email_host }}"
-          port "{{ email_port }}"
-          user "{{ email_username }}"
-          from "{{ email_username }}"
-          password "{{ email_password }}"
+          host "{{ tesseract_email_host }}"
+          port "{{ tesseract_email_port }}"
+          user "{{ tesseract_email_username }}"
+          from "{{ tesseract_email_username }}"
+          password "{{ tesseract_email_password }}"
 
 - name: Download netdata install script.
   ansible.builtin.get_url:
@@ -104,14 +104,14 @@
       ansible.builtin.lineinfile:
         path: /etc/netdata/health_alarm_notify.conf
         search_string: EMAIL_SENDER=
-        line: "EMAIL_SENDER='{{ email_username }}'"
+        line: "EMAIL_SENDER='{{ tesseract_email_username }}'"
 
     - name: Set netdata email recipient.
       notify: restart netdata
       ansible.builtin.lineinfile:
         path: /etc/netdata/health_alarm_notify.conf
         search_string: DEFAULT_RECIPIENT_EMAIL=
-        line: "DEFAULT_RECIPIENT_EMAIL='{{ email_username }}|critical'"
+        line: "DEFAULT_RECIPIENT_EMAIL='{{ tesseract_email_username }}|critical'"
 
 - name: Claim netdata node.
   when: netdata_token is not none and netdata_rooms is not none

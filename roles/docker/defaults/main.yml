@@ -1,6 +1,6 @@
 ---
 
-tesseract_files_path: "/root"
+docker_compose_path: /opt/tesseract/docker
 tesseract_username: "tesseract"
 
 tesseract_hostname: ~
@@ -8,10 +8,10 @@ tesseract_domain: ~
 
 docker_apps: []
 
-email_username: ~
-email_host: ~
-email_port: ~
-email_password: ~
+tesseract_email_username: ~
+tesseract_email_host: ~
+tesseract_email_port: ~
+tesseract_email_password: ~
 
 docker_data_paths: []
   # - name: example

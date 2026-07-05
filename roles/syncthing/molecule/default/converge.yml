@@ -3,6 +3,6 @@
   hosts: all
   vars:
     tesseract_username: tesseract
-    tesseract_password: password
+    syncthing_password: password
   roles:
     - role: syncthing

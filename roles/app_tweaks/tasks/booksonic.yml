@@ -7,7 +7,7 @@
 
 - name: Create scripts directory if it does not exist.
   ansible.builtin.file:
-    path: "{{ tesseract_files_path }}/scripts"
+    path: "{{ app_tweaks_scripts_path }}"
     state: directory
     owner: root
     group: root
@@ -16,7 +16,7 @@
 - name: Copy podcast_tagger script to scripts directory.
   ansible.builtin.template:
     src: templates/podcast_tagger.py.j2
-    dest: "{{ tesseract_files_path }}/scripts/podcast_tagger.py"
+    dest: "{{ app_tweaks_scripts_path }}/podcast_tagger.py"
     owner: root
     group: root
     mode: '0755'
@@ -27,4 +27,4 @@
     minute: "0"
     hour: "0"
     weekday: "*"
-    job: "python3 {{ tesseract_files_path }}/scripts/podcast_tagger.py"
+    job: "python3 {{ app_tweaks_scripts_path }}/podcast_tagger.py"

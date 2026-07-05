@@ -4,7 +4,7 @@
   ansible.builtin.assert:
     that:
       - tesseract_username is not none
-      - tesseract_password is not none
+      - syncthing_password is not none
 
 - name: Ensure gpg-agent is installed.
   ansible.builtin.apt:
@@ -45,7 +45,7 @@
     cmd: >
       syncthing generate
         --config="{{ syncthing_config_dir }}"
-        --gui-password="{{ tesseract_password }}"
+        --gui-password="{{ syncthing_password }}"
         --gui-user="{{ tesseract_username }}"
     creates: "{{ syncthing_config_dir }}/config.xml"
   notify: restart syncthing
