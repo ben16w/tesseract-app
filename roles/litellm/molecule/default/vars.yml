@@ -1,11 +1,14 @@
 ---
 
-litellm_version: "1.82.5"
+litellm_version: "1.92.0"
+litellm_log_level: DEBUG
 litellm_port: 3000
 litellm_master_key: "sk-1234"
 litellm_logging: true
-litellm_install_npx: true
-litellm_install_uvx: true
+litellm_headroom_enabled: true
+litellm_headroom_version: "0.27.0"
+litellm_mcp_install_npx: true
+litellm_mcp_install_uvx: true
 litellm_mcp_servers:
   npm_mock_mcp:
     transport: stdio

@@ -74,8 +74,10 @@ litellm_mcp_servers: {}
 #       CIRCLECI_TOKEN: "your-circleci-token"
 #       CIRCLECI_BASE_URL: "https://circleci.com"
 
-litellm_install_npx: false
-# Install nodejs and npm (required for npx MCP servers).
+litellm_mcp_extra_allowed_commands: [] # Extra commands to allow for stdio MCP servers.
+litellm_mcp_install_npx: false # Install nodejs and npm (required for npx MCP servers).
+litellm_mcp_install_uvx: false # Install uv (required for uvx MCP servers).
 
-litellm_install_uvx: false
-# Install uv (required for uvx MCP servers).
+litellm_headroom_enabled: false # Install and run the Headroom prompt-compression sidecar service.
+litellm_headroom_version: ~ # e.g. "0.27.0"
+litellm_headroom_port: 8787

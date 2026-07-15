@@ -2,6 +2,7 @@
 - name: Verify
   hosts: all
   vars_files:
+    - ../../defaults/main.yml
     - vars.yml
   tasks:
 
@@ -11,38 +12,49 @@
       register: litellm_bin
       failed_when: not litellm_bin.stat.exists
 
-    - name: Check service is running.
+    - name: Check LiteLLM service is running.
       ansible.builtin.service:
         name: litellm
         state: started
       register: service_status
       failed_when: not service_status.state == 'started'
 
+    - name: Check Headroom service is running.
+      ansible.builtin.service:
+        name: headroom
+        state: started
+      register: headroom_status
+      failed_when: not headroom_status.state == 'started'
+
     - name: Check LiteLLM is listening on the correct port.
       ansible.builtin.wait_for:
         port: "{{ litellm_port }}"
         state: started
         timeout: 10
-      register: port_check
-      failed_when: not port_check.elapsed < 10
+
+    - name: Check Headroom is listening on the correct port.
+      ansible.builtin.wait_for:
+        port: "{{ litellm_headroom_port }}"
+        state: started
+        timeout: 10
 
     - name: List models expecting failure without API key.
       ansible.builtin.uri:
         url: "http://localhost:{{ litellm_port }}/models"
         method: GET
         return_content: true
+        status_code: 500
       register: model_list_response
-      failed_when: model_list_response.status == 200
 
     - name: List models with master key.
       ansible.builtin.uri:
         url: "http://localhost:{{ litellm_port }}/models"
         method: GET
         return_content: true
+        status_code: 200
         headers:
           Authorization: "Bearer {{ litellm_master_key }}"
       register: model_list_response_key
-      failed_when: model_list_response_key.status != 200
 
     - name: Send chat completion request to mock-llm.
       ansible.builtin.uri:
@@ -74,6 +86,7 @@
         method: POST
         body_format: json
         return_content: true
+        status_code: 200
         headers:
           Accept: "application/json, text/event-stream"
           Content-Type: "application/json"
@@ -88,7 +101,6 @@
               a: 2
               b: 2
       register: litellm_mcp_tool_call_response
-      failed_when: litellm_mcp_tool_call_response.status != 200
 
     - name: Assert LiteLLM proxies npm MCP requests successfully.
       ansible.builtin.assert:
@@ -101,6 +113,7 @@
         method: POST
         body_format: json
         return_content: true
+        status_code: 200
         headers:
           Accept: "application/json, text/event-stream"
           Content-Type: "application/json"
@@ -114,7 +127,6 @@
             arguments:
               expression: "2+2"
       register: litellm_uv_mcp_tool_call_response
-      failed_when: litellm_uv_mcp_tool_call_response.status != 200
 
     - name: Assert LiteLLM proxies uv MCP requests successfully.
       ansible.builtin.assert:
@@ -126,3 +138,16 @@
         path: /var/log/litellm/proxy.log
       register: log_file
       failed_when: not log_file.stat.exists
+
+    - name: Read LiteLLM log.
+      ansible.builtin.slurp:
+        src: /var/log/litellm/proxy.log
+      register: litellm_log
+
+    - name: Assert log is clean and headroom was called.
+      ansible.builtin.assert:
+        that:
+          - "'Headroom: compressed' in litellm_log.content | b64decode"
+          - "':ERROR:' not in litellm_log.content | b64decode"
+          - "':CRITICAL:' not in litellm_log.content | b64decode"
+          - "'POST /chat/completions HTTP/1.1\" 500' not in litellm_log.content | b64decode"

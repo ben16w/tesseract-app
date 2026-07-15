@@ -1,0 +1,20 @@
+[Unit]
+Description=Headroom Proxy Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/opt/litellm/venv/bin/headroom proxy --host 127.0.0.1 --port {{ litellm_headroom_port }}
+
+User={{ tesseract_username }}
+Group={{ tesseract_username }}
+WorkingDirectory=/opt/litellm
+
+Restart=always
+RestartSec=3
+
+Environment="PATH=/opt/litellm/venv/bin:{{ ansible_facts['env'].PATH }}"
+Environment="HEADROOM_TELEMETRY=off"
+
+[Install]
+WantedBy=multi-user.target

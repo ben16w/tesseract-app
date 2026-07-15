@@ -9,8 +9,12 @@
       - litellm_models is iterable
       - litellm_models | rejectattr('model_name', 'defined') | list | length == 0
       - litellm_mcp_servers is mapping
-      - litellm_install_npx is boolean
-      - litellm_install_uvx is boolean
+      - litellm_mcp_extra_allowed_commands is iterable
+      - litellm_mcp_install_npx is boolean
+      - litellm_mcp_install_uvx is boolean
+      - litellm_headroom_enabled is boolean
+      - litellm_headroom_port is number
+      - not litellm_headroom_enabled or (litellm_headroom_version is not none and litellm_headroom_version is string)
 
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
@@ -26,20 +30,6 @@
     state: present
     update_cache: true
     cache_valid_time: 3600
-
-- name: Install nodejs and npm.
-  when: litellm_install_npx
-  ansible.builtin.package:
-    name:
-      - nodejs
-      - npm
-    state: present
-
-- name: Install uv.
-  when: litellm_install_uvx
-  ansible.builtin.pip:
-    name: uv
-    state: present
 
 - name: Create litellm directory.
   ansible.builtin.file:
@@ -57,6 +47,22 @@
     virtualenv_command: python3 -m venv
     state: present
   notify: restart litellm
+
+- name: Install nodejs and npm.
+  when: litellm_mcp_install_npx
+  ansible.builtin.package:
+    name:
+      - nodejs
+      - npm
+    state: present
+
+- name: Install uv.
+  when: litellm_mcp_install_uvx
+  ansible.builtin.pip:
+    name: uv
+    virtualenv: /opt/litellm/venv
+    virtualenv_command: python3 -m venv
+    state: present
 
 - name: Template the LiteLLM config file.
   ansible.builtin.template:
@@ -100,6 +106,34 @@
         owner: root
         group: root
         mode: '0644'
+
+- name: Install headroom proxy in venv.
+  when: litellm_headroom_enabled
+  ansible.builtin.pip:
+    name: "headroom-ai[proxy]"
+    version: "{{ litellm_headroom_version }}"
+    virtualenv: /opt/litellm/venv
+    virtualenv_command: python3 -m venv
+    state: present
+  notify: restart headroom
+
+- name: Deploy headroom systemd service.
+  when: litellm_headroom_enabled
+  ansible.builtin.template:
+    src: templates/headroom.service.j2
+    dest: "/etc/systemd/system/headroom.service"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart headroom
+
+- name: Enable and start headroom proxy.
+  when: litellm_headroom_enabled
+  ansible.builtin.systemd:
+    name: "headroom"
+    enabled: true
+    state: started
+    daemon_reload: true
 
 - name: Enable and start LiteLLM proxy.
   ansible.builtin.systemd:

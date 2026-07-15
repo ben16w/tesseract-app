@@ -2,6 +2,7 @@
 - name: Converge
   hosts: all
   vars_files:
+    - ../../defaults/main.yml
     - vars.yml
   roles:
     - role: litellm

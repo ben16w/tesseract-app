@@ -16,6 +16,16 @@ mcp_servers:
   {{ litellm_mcp_servers | to_nice_yaml(indent=2) | indent(2) }}
 {% endif %}
 
+{% if litellm_headroom_enabled %}
+guardrails:
+  - guardrail_name: headroom-compression
+    litellm_params:
+      guardrail: headroom
+      mode: pre_call
+      api_base: "http://localhost:{{ litellm_headroom_port }}"
+      default_on: true
+{% endif %}
+
 general_settings:
 {% if litellm_master_key is not none %}
   master_key: "os.environ/LITELLM_MASTER_KEY"

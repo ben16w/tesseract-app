@@ -26,6 +26,10 @@ Environment="LITELLM_MASTER_KEY={{ litellm_master_key }}"
 
 Environment="LITELLM_LOG={{ litellm_log_level }}"
 
+{% if litellm_mcp_extra_allowed_commands | length > 0 %}
+Environment="LITELLM_MCP_STDIO_EXTRA_COMMANDS={{ litellm_mcp_extra_allowed_commands | join(',') }}"
+{% endif %}
+
 {% if litellm_logging %}
 StandardOutput=append:/var/log/litellm/proxy.log
 StandardError=append:/var/log/litellm/proxy.log
