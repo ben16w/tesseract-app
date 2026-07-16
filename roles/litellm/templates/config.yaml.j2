@@ -1,16 +1,18 @@
+{% if litellm_models %}
 model_list:
-{% for model in litellm_models %}
+{%   for model in litellm_models %}
   - model_name: {{ model.model_name }}
-{%   if model.litellm_params is defined %}
+{%     if model.litellm_params is defined %}
     litellm_params:
       {{ model.litellm_params | to_nice_yaml(indent=2) | indent(6) }}
-{%   endif %}
-{%   if model.model_info is defined %}
+{%     endif %}
+{%     if model.model_info is defined %}
     model_info:
       {{ model.model_info | to_nice_yaml(indent=2) | indent(6) }}
-{%   endif %}
-{% endfor %}
+{%     endif %}
+{%   endfor %}
 
+{% endif %}
 {% if litellm_mcp_servers %}
 mcp_servers:
   {{ litellm_mcp_servers | to_nice_yaml(indent=2) | indent(2) }}
