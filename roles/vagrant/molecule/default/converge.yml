@@ -4,4 +4,4 @@
   vars:
     vagrant_virtualbox_version: 6.1
   roles:
-    - role: vagrant
+    - role: tesseract.app.vagrant

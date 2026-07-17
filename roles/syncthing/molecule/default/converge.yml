@@ -5,4 +5,4 @@
     tesseract_username: tesseract
     syncthing_password: password
   roles:
-    - role: syncthing
+    - role: tesseract.app.syncthing

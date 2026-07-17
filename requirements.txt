@@ -2,6 +2,6 @@ yamllint
 shellcheck-py
 ansible
 ansible-lint
-molecule==25.1.0 # See https://github.com/ansible/molecule/pull/4380
+molecule
 molecule-plugins[docker]
 passlib

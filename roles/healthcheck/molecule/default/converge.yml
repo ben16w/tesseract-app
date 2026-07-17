@@ -4,4 +4,4 @@
   vars:
     healthcheck_disabled: true
   roles:
-    - role: healthcheck
+    - role: tesseract.app.healthcheck

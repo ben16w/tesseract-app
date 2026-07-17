@@ -4,4 +4,4 @@
   vars:
     netdata_emails_disabled: true
   roles:
-    - role: netdata
+    - role: tesseract.app.netdata

@@ -8,4 +8,4 @@
     comfyui_extra_args:
       - "--preview-method auto"
   roles:
-    - role: comfyui
+    - role: tesseract.app.comfyui

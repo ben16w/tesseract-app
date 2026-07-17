@@ -5,4 +5,4 @@
     dashboard_apps: []
     dashboard_admin_apps: []
   roles:
-    - role: dashboard
+    - role: tesseract.app.dashboard

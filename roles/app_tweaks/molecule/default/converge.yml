@@ -18,4 +18,4 @@
     app_tweaks_drone_rpc_secret: "ABDC1234"
     app_tweaks_gitea_mcp_version: "1.3.0"
   roles:
-    - role: app_tweaks
+    - role: tesseract.app.app_tweaks

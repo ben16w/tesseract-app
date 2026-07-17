@@ -8,4 +8,4 @@
     tesseract_email_password: "password"
     scrutiny_version: "0.8.1"
   roles:
-    - role: scrutiny
+    - role: tesseract.app.scrutiny
