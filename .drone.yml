@@ -27,12 +27,11 @@ steps:
       - name: dockersock
         path: /var/run
     commands:
-      - apk update
+      - ./setup.sh
       - apk add --upgrade expat
-      - apk add bash make python3 py3-pip
-      - make install-venv
-      - make lint
-      - make test-changed
+      - just install-venv
+      - just lint
+      - just test-changed
     when:
       branch:
         exclude:
@@ -44,12 +43,11 @@ steps:
       - name: dockersock
         path: /var/run
     commands:
-      - apk update
+      - ./setup.sh
       - apk add --upgrade expat
-      - apk add bash make python3 py3-pip
-      - make install-venv
-      - make lint
-      - DISTRO_LIST="debian12 ubuntu2004 ubuntu2204" make test-all-distros
+      - just install-venv
+      - just lint
+      - just test-all --distros="debian12 ubuntu2004 ubuntu2204"
     when:
       branch:
         - main

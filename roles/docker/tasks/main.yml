@@ -12,8 +12,6 @@
       - tesseract_email_port is not none
       - tesseract_email_password is not none
 
-      - docker_compose_repo is not none
-
       - docker_data_paths is iterable
       - docker_data_paths | length > 0
       - docker_appdata_path is not none
@@ -68,30 +66,21 @@
     name: docker
     state: started
 
-- name: Create docker directory if it does not exist.
-  ansible.builtin.file:
-    path: "{{ docker_compose_path }}"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  when: docker_apps | length > 0
-
-- name: Git checkout docker compose files to docker directory.
+- name: Git checkout common repo.
   ansible.builtin.git:
     repo: "{{ docker_compose_repo }}"
     dest: "{{ docker_compose_path }}"
-    version: "{{ docker_compose_repo_version }}"
+    version: "{{ docker_compose_version }}"
     force: true
-  register: download_docker_compose
+  register: download_common
   retries: 5
   delay: 10
-  until: download_docker_compose is succeeded
+  until: download_common is succeeded
 
 - name: Set environment variables for docker.
   no_log: true
   ansible.builtin.blockinfile:
-    path: "{{ docker_compose_path }}/.env"
+    path: "{{ docker_compose_path }}/{{ docker_compose_subdir }}/.env"
     create: true
     owner: root
     group: root
@@ -115,7 +104,7 @@
 - name: Add data paths to docker environment variables.
   loop: "{{ docker_data_paths }}"
   ansible.builtin.lineinfile:
-    path: "{{ docker_compose_path }}/.env"
+    path: "{{ docker_compose_path }}/{{ docker_compose_subdir }}/.env"
     search_string: TESSERACT_{{ item.name | upper }}_PATH=
     create: true
     owner: root
@@ -127,7 +116,7 @@
   no_log: true
   loop: "{{ docker_extra_vars | dict2items }}"
   ansible.builtin.lineinfile:
-    path: "{{ docker_compose_path }}/.env"
+    path: "{{ docker_compose_path }}/{{ docker_compose_subdir }}/.env"
     search_string: TESSERACT_{{ item.key | upper }}=
     create: true
     owner: root
@@ -141,7 +130,7 @@
 
 - name: Generate list of Docker compose files.
   ansible.builtin.set_fact:
-    docker_compose_list: "{{ docker_compose_list + [docker_compose_path + '/docker-compose.' + item + '.yml'] }}"
+    docker_compose_list: "{{ docker_compose_list + [docker_compose_path + '/' + docker_compose_subdir + '/docker-compose.' + item + '.yml'] }}"
   loop: "{{ docker_apps }}"
 
 - name: Add extra Docker compose files.
@@ -153,7 +142,7 @@
 - name: Create and start Docker apps using cli.
   ansible.builtin.command:
     cmd: docker compose -f {{ docker_compose_list | join(' -f ') }} up -d --remove-orphans
-    chdir: "{{ docker_compose_path }}"
+    chdir: "{{ docker_compose_path }}/{{ docker_compose_subdir }}"
   when: docker_apps | length > 0
   register: docker_compose_result
   changed_when: docker_compose_result.stdout.find('Creating') != -1

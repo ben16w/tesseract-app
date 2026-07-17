@@ -17,7 +17,7 @@ roles/{role_name}/
 └── molecule/default/      # Test configuration/
 ```
 
-Common root files include `Makefile`, `requirements.txt`, `galaxy.yml`,
+Common root files include `Justfile`, `requirements.txt`, `galaxy.yml`,
 `README.md`, and this `AGENTS.md`.
 
 ## Ansible Conventions
@@ -33,16 +33,16 @@ Common root files include `Makefile`, `requirements.txt`, `galaxy.yml`,
 
 ## How to Work in This Repo
 
-- Use `make help` first. Treat it as the source of truth for available setup, lint, test, and maintenance commands.
-- Prefer `Makefile` targets over ad hoc command sequences.
-- Before using a target, verify that any paths it references exist in the current checkout.
+- Use `just` first. Treat it as the source of truth for available setup, lint, test, and maintenance commands.
+- Prefer `Justfile` recipes over ad hoc command sequences.
+- Before using a recipe, verify that any paths it references exist in the current checkout.
 - Keep changes scoped to the relevant role unless a shared change is clearly required.
 
 ## Testing Guidance
 
 - Molecule scenarios live under `roles/{role_name}/molecule/default/`.
 - Prefer validating only the role or roles you changed.
-- Use the targets exposed by `make help` instead of hardcoding command choices in this file.
+- Use the recipes exposed by `just` instead of hardcoding command choices in this file.
 - When testing, favor checks for successful converge, important services, relevant files, ports, endpoints, and idempotency.
 - If Docker or other prerequisites are unavailable, report that clearly.
 
@@ -50,6 +50,6 @@ Common root files include `Makefile`, `requirements.txt`, `galaxy.yml`,
 
 1. Inspect the target role and nearby files before editing.
 2. Make the smallest change that solves the task.
-3. Use `make help` to choose the smallest relevant validation step.
+3. Use `just` to choose the smallest relevant validation step.
 4. Run the appropriate lint or test targets when practical.
 5. Report blockers and missing prerequisites explicitly.

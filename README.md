@@ -1,13 +1,13 @@
-# roles-app
+# roles-app / roles-network / roles-system
 
-This project contains Ansible roles for managing application configurations and services for tesseract.
+This project contains Ansible roles for tesseract.
 
 ## Installation
 
 To install the collection, run the command below. This will install the collection from the git repository to the default collection location.
 
 ```sh
-ansible-galaxy collection install git+https://github.com/ben16w/tesseract-app.git
+ansible-galaxy collection install git+https://github.com/ben16w/<collection>.git
 ```
 
 ## Usage
@@ -17,27 +17,27 @@ You can use these roles in your Ansible playbooks. For example:
 ```yaml
 - hosts: all
   roles:
-    - tesseract.app.docker
+    - tesseract.<collection>.<role>
 ```
 
 ## Development
 
-Install the required system packages:
+Run the setup script to install dependencies and download the Justfile:
 
 ```sh
-sudo apt install make python3 python3-pip python3-venv
+./setup.sh
 ```
 
-Set up the virtual environment and install the required Python packages:
+Set up the virtual environment:
 
 ```sh
-make install-venv
+just install-venv
 ```
 
 To run the tests, execute the following command:
 
 ```sh
-make test
+just test
 ```
 
 ## License
