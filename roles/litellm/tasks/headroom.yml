@@ -1,0 +1,45 @@
+---
+
+- name: Configure headroom.
+  when: litellm_headroom_enabled
+  block:
+    - name: Deploy headroom logrotate configuration.
+      when: litellm_headroom_logging
+      ansible.builtin.template:
+        src: templates/headroom_logrotate.j2
+        dest: "/etc/logrotate.d/headroom"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Install headroom proxy in venv.
+      ansible.builtin.pip:
+        name: "headroom-ai[proxy,ml]"
+        version: "{{ litellm_headroom_version }}"
+        virtualenv: /opt/litellm/venv
+        virtualenv_command: python3 -m venv
+        state: present
+      notify: restart headroom
+
+    - name: Deploy headroom systemd service.
+      ansible.builtin.template:
+        src: templates/headroom.service.j2
+        dest: "/etc/systemd/system/headroom.service"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart headroom
+
+    - name: Enable and start headroom proxy.
+      ansible.builtin.systemd:
+        name: "headroom"
+        enabled: true
+        state: started
+        daemon_reload: true
+
+- name: Disable and stop headroom proxy if disabled.
+  when: not litellm_headroom_enabled
+  ansible.builtin.systemd:
+    name: "headroom"
+    enabled: false
+    state: stopped

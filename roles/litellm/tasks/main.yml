@@ -100,7 +100,7 @@
 
     - name: Deploy logrotate configuration.
       ansible.builtin.template:
-        src: templates/logrotate.j2
+        src: templates/litellm_logrotate.j2
         dest: "/etc/logrotate.d/litellm"
         owner: root
         group: root
@@ -109,7 +109,7 @@
 - name: Install headroom proxy in venv.
   when: litellm_headroom_enabled
   ansible.builtin.pip:
-    name: "headroom-ai[proxy]"
+    name: "headroom-ai[proxy,ml]"
     version: "{{ litellm_headroom_version }}"
     virtualenv: /opt/litellm/venv
     virtualenv_command: python3 -m venv

@@ -1,0 +1,12 @@
+/var/log/litellm/headroom.log {
+    daily
+    maxsize 100M
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    dateext
+    dateformat -%Y-%m-%d
+}

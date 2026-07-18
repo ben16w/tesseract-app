@@ -15,6 +15,12 @@ RestartSec=3
 
 Environment="PATH=/opt/litellm/venv/bin:{{ ansible_facts['env'].PATH }}"
 Environment="HEADROOM_TELEMETRY=off"
+Environment="HEADROOM_LOG_LEVEL={{ litellm_headroom_log_level }}"
+
+{% if litellm_headroom_logging %}
+StandardOutput=append:/var/log/litellm/headroom.log
+StandardError=append:/var/log/litellm/headroom.log
+{% endif %}
 
 [Install]
 WantedBy=multi-user.target
