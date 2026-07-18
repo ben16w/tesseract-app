@@ -4,7 +4,12 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/opt/litellm/venv/bin/headroom proxy --host 127.0.0.1 --port {{ litellm_headroom_port }}
+ExecStart=/opt/litellm/venv/bin/headroom proxy \
+    --host 127.0.0.1 \
+    --port {{ litellm_headroom_port }}
+{%- if litellm_headroom_logging %} \
+    --log-file /var/log/litellm/headroom-requests.jsonl
+{%- endif %}
 
 User={{ tesseract_username }}
 Group={{ tesseract_username }}
