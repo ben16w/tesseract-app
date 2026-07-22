@@ -80,6 +80,53 @@
             mock_llm_response.json.choices[0].message.content ==
             "I don't know the answer to that. This is a mock response."
 
+    - name: Build large tool output payload for Headroom compression.
+      ansible.builtin.set_fact:
+        headroom_tool_output: >-
+          [
+          {%- for i in range(0, 2500) %}
+          {"id": {{ i }}, "status": "ok", "message": "all good", "value": {{ i % 10 }}}
+          {%- if not loop.last %}, {% endif %}
+          {%- endfor %},
+          {"id": 2501, "status": "error", "message": "database timeout on shard 7", "value": -1}
+          ]
+
+    - name: Send chat completion request with large tool output history.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ litellm_port }}/chat/completions"
+        method: POST
+        body_format: json
+        status_code: 200
+        headers:
+          Authorization: "Bearer {{ litellm_master_key }}"
+          Content-Type: "application/json"
+        body:
+          model: "mock-llm"
+          messages:
+            - role: "user"
+              content: "Summarize the results from the tool output and mention any errors."
+            - role: "assistant"
+              content: ""
+              tool_calls:
+                - id: "call_1"
+                  type: "function"
+                  function:
+                    name: "get_records"
+                    arguments: "{}"
+            - role: "tool"
+              tool_call_id: "call_1"
+              content: "{{ headroom_tool_output }}"
+      register: headroom_compression_response
+
+    - name: Assert Headroom compressed the large tool output request.
+      ansible.builtin.assert:
+        that:
+          - headroom_compression_response.json is defined
+          - >
+            headroom_compression_response.json.choices[0].message.content ==
+            "I don't know the answer to that. This is a mock response."
+          - headroom_compression_response.json.usage.prompt_tokens < 5000
+
     - name: Call npm MCP add tool through LiteLLM proxy.
       ansible.builtin.uri:
         url: "http://localhost:{{ litellm_port }}/npm_mock_mcp/mcp"

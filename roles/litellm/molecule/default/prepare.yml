@@ -23,7 +23,16 @@
 
     - name: Start mockllm server.
       ansible.builtin.shell: >
-        mockllm start
+        nohup mockllm start
         --responses /tmp/responses.yml
-        --port 8000 &
-      changed_when: false
+        --port 8000
+        >/tmp/mockllm.log 2>&1 &
+      args:
+        creates: /tmp/mockllm.log
+
+    - name: Wait for mockllm server to start.
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: 8000
+        state: started
+        timeout: 30
