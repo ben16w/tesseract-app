@@ -1,12 +1,12 @@
 ---
 
-litellm_version: "1.92.0"
+litellm_version: "1.94.0"
 litellm_log_level: DEBUG
 litellm_port: 3000
 litellm_master_key: "sk-1234"
 litellm_logging: true
 litellm_headroom_enabled: true
-litellm_headroom_version: "0.27.0"
+litellm_headroom_version: "0.33.0"
 litellm_mcp_install_npx: true
 litellm_mcp_install_uvx: true
 litellm_mcp_servers:
@@ -19,6 +19,8 @@ litellm_mcp_servers:
     transport: stdio
     command: uvx
     args:
+      - --with
+      - "mcp<2.0"
       - mcp-server-calculator
 litellm_models:
   - model_name: mock-llm

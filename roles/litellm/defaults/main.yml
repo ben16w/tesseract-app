@@ -12,7 +12,7 @@ litellm_cache: false
 
 litellm_timeout: 1800 # 30 minutes
 
-litellm_logging: false
+litellm_logging: true
 litellm_log_level: "INFO"
 
 litellm_modify_params: true
@@ -81,3 +81,5 @@ litellm_mcp_install_uvx: false # Install uv (required for uvx MCP servers).
 litellm_headroom_enabled: false # Install and run the Headroom prompt-compression sidecar service.
 litellm_headroom_version: ~ # e.g. "0.27.0"
 litellm_headroom_port: 8787
+litellm_headroom_logging: true
+litellm_headroom_log_level: "INFO"

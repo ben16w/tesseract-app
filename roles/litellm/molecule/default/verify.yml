@@ -6,25 +6,7 @@
     - vars.yml
   tasks:
 
-    - name: Check binary exists in venv.
-      ansible.builtin.stat:
-        path: /opt/litellm/venv/bin
-      register: litellm_bin
-      failed_when: not litellm_bin.stat.exists
-
-    - name: Check LiteLLM service is running.
-      ansible.builtin.service:
-        name: litellm
-        state: started
-      register: service_status
-      failed_when: not service_status.state == 'started'
-
-    - name: Check Headroom service is running.
-      ansible.builtin.service:
-        name: headroom
-        state: started
-      register: headroom_status
-      failed_when: not headroom_status.state == 'started'
+    # Services
 
     - name: Check LiteLLM is listening on the correct port.
       ansible.builtin.wait_for:
@@ -38,7 +20,9 @@
         state: started
         timeout: 10
 
-    - name: List models expecting failure without API key.
+    # LiteLLM API
+
+    - name: Check unauthenticated model list request is rejected.
       ansible.builtin.uri:
         url: "http://localhost:{{ litellm_port }}/models"
         method: GET
@@ -46,7 +30,7 @@
         status_code: 500
       register: model_list_response
 
-    - name: List models with master key.
+    - name: Check authenticated model list request succeeds.
       ansible.builtin.uri:
         url: "http://localhost:{{ litellm_port }}/models"
         method: GET
@@ -79,6 +63,8 @@
           - >
             mock_llm_response.json.choices[0].message.content ==
             "I don't know the answer to that. This is a mock response."
+
+    # MCP proxy
 
     - name: Call npm MCP add tool through LiteLLM proxy.
       ansible.builtin.uri:
@@ -133,7 +119,53 @@
         that:
           - "'4' in litellm_uv_mcp_tool_call_response.content"
 
-    - name: Check log file was created.
+    # Headroom compression
+
+    - name: Build large tool output payload for Headroom compression.
+      ansible.builtin.set_fact:
+        headroom_tool_output: >-
+          {{ ([{'id': 0, 'status': 'ok', 'message': 'all good', 'value': 0}] * 2500 +
+          [{'id': 2501, 'status': 'error', 'message': 'database timeout on shard 7', 'value': -1}]) | to_json }}
+
+    - name: Send chat completion request with large tool output history.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ litellm_port }}/chat/completions"
+        method: POST
+        body_format: json
+        status_code: 200
+        headers:
+          Authorization: "Bearer {{ litellm_master_key }}"
+          Content-Type: "application/json"
+        body:
+          model: "mock-llm"
+          messages:
+            - role: "user"
+              content: "Get the records."
+            - role: "assistant"
+              content: ""
+              tool_calls:
+                - id: "call_1"
+                  type: "function"
+                  function:
+                    name: "get_records"
+                    arguments: "{}"
+            - role: "tool"
+              tool_call_id: "call_1"
+              content: "{{ headroom_tool_output }}"
+      register: headroom_compression_response
+
+    - name: Assert Headroom compressed the large tool output request.
+      ansible.builtin.assert:
+        that:
+          - headroom_compression_response.json is defined
+          - >
+            headroom_compression_response.json.choices[0].message.content ==
+            "I don't know the answer to that. This is a mock response."
+          - headroom_compression_response.json.usage.prompt_tokens < 5000
+
+    # Logs
+
+    - name: Check LiteLLM proxy log exists.
       ansible.builtin.stat:
         path: /var/log/litellm/proxy.log
       register: log_file
@@ -151,3 +183,25 @@
           - "':ERROR:' not in litellm_log.content | b64decode"
           - "':CRITICAL:' not in litellm_log.content | b64decode"
           - "'POST /chat/completions HTTP/1.1\" 500' not in litellm_log.content | b64decode"
+
+    - name: Check Headroom requests log exists.
+      ansible.builtin.stat:
+        path: /var/log/litellm/headroom-requests.jsonl
+      register: headroom_requests_file
+      failed_when: not headroom_requests_file.stat.exists
+
+    - name: Read headroom requests log.
+      ansible.builtin.slurp:
+        src: /var/log/litellm/headroom-requests.jsonl
+      register: headroom_requests_log
+
+    - name: Assert headroom requests log shows compression occurred.
+      vars:
+        headroom_log_entries: >-
+          {{ (headroom_requests_log.content | b64decode).splitlines()
+            | reject('equalto', '')
+            | map('from_json')
+            | list }}
+      ansible.builtin.assert:
+        that:
+          - headroom_log_entries | selectattr('tokens_saved', 'gt', 0) | list | length > 0
