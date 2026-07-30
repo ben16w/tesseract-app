@@ -17,6 +17,7 @@ ollama_max_models: ~
 ollama_num_parallel: ~
 ollama_keep_alive: 300 # 5 minutes
 ollama_context_length: 8192 # 8k context length
+ollama_kvcache_type: "q8_0" # Options: f16, q8_0, q4_0
 
 ollama_download_extension: ".tar.zst"
 
