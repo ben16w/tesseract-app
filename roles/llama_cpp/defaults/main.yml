@@ -1,0 +1,34 @@
+---
+
+tesseract_username: "tesseract"
+
+llama_cpp_version: ~
+# Example: llama_cpp_version: "b10199"
+
+llama_cpp_models: []
+# Each entry requires a name (used as filename and API model ID) and a url.
+# Example:
+# llama_cpp_models:
+#   - name: smollm
+#     url: "https://huggingface.co/QuantFactory/SmolLM-135M-GGUF/resolve/main/\
+#       SmolLM-135M.Q4_K_M.gguf"
+
+llama_cpp_models_dir: "/opt/llama_cpp/models"
+llama_cpp_models_max: 1 # Maximum number of models loaded simultaneously.
+llama_cpp_port: 8080
+llama_cpp_context_length: 8192
+llama_cpp_parallel: 1 # Number of concurrent request slots.
+llama_cpp_gpu_layers: 0 # Number of model layers to offload to GPU (0 = CPU only).
+llama_cpp_kvcache_type_k: "q8_0" # Options: f16, q8_0, q5_1, q5_0, q4_1, q4_0
+llama_cpp_kvcache_type_v: "q4_1" # Options: f16, q8_0, q5_1, q5_0, q4_1, q4_0
+
+llama_cpp_sleep_idle_seconds: 300 # Unload model after this many seconds of inactivity. -1 to disable.
+
+llama_cpp_use_vulkan: false
+llama_cpp_use_rocm: false
+llama_cpp_rocm_version: "7.2" # ROCm version suffix used in the release filename.
+# Example: llama_cpp_rocm_version: "7.2"
+
+llama_cpp_rocm_gfx_version: ~
+# Override HSA_OVERRIDE_GFX_VERSION when using ROCm with an unsupported GPU.
+# Example: llama_cpp_rocm_gfx_version: "10.3.0"

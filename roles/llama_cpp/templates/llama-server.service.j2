@@ -1,0 +1,28 @@
+[Unit]
+Description=llama.cpp Server
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/llama-server \
+  --models-dir {{ llama_cpp_models_dir }} \
+  --host 0.0.0.0 \
+  --port {{ llama_cpp_port }} \
+  --models-max {{ llama_cpp_models_max }} \
+  --ctx-size {{ llama_cpp_context_length }} \
+  --n-gpu-layers {{ llama_cpp_gpu_layers }} \
+  --parallel {{ llama_cpp_parallel }} \
+  --cache-type-k {{ llama_cpp_kvcache_type_k }} \
+  --cache-type-v {{ llama_cpp_kvcache_type_v }} \
+  --sleep-idle-seconds {{ llama_cpp_sleep_idle_seconds }}
+
+User={{ tesseract_username }}
+Group={{ tesseract_username }}
+Restart=always
+RestartSec=3
+
+{% if llama_cpp_use_rocm is true and llama_cpp_rocm_gfx_version is not none %}
+Environment="HSA_OVERRIDE_GFX_VERSION={{ llama_cpp_rocm_gfx_version }}"
+{% endif %}
+
+[Install]
+WantedBy=default.target

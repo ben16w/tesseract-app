@@ -8,9 +8,9 @@ ollama_version: ~
 ollama_models: []
 # Example:
 # ollama_models:
-#   - name: TinyLlama
-#     url: "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/\
-#       resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
+#   - name: smollm
+#     url: "https://huggingface.co/QuantFactory/SmolLM-135M-GGUF/resolve/main/\
+#       SmolLM-135M.Q4_K_M.gguf"
 
 ollama_port: 11434
 ollama_max_models: ~

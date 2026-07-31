@@ -1,0 +1,96 @@
+---
+
+- name: Assert that all required inputs have been provided.
+  ansible.builtin.assert:
+    that:
+      - llama_cpp_version is not none
+      - llama_cpp_models | length > 0
+
+- name: Ensure tesseract user exists.
+  register: tesseract_user_details
+  ansible.builtin.user:
+    name: "{{ tesseract_username }}"
+
+- name: Ensure curl is installed.
+  ansible.builtin.package:
+    name:
+      - curl
+    update_cache: true
+
+- name: Set architecture variable.
+  ansible.builtin.set_fact:
+    arch: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'x64' }}"
+
+- name: Set download variant.
+  ansible.builtin.set_fact:
+    llama_cpp_build_variant: >-
+      {{ 'vulkan-' if llama_cpp_use_vulkan else ('rocm-' + llama_cpp_rocm_version | string + '-' if llama_cpp_use_rocm else '') }}
+
+- name: Get current llama.cpp version.
+  ansible.builtin.command: llama-server --version
+  register: llama_cpp_current_version
+  failed_when: false
+  changed_when: false
+
+- name: Download and install llama.cpp if required.
+  when: llama_cpp_version not in llama_cpp_current_version.stdout
+  notify: restart llama-server
+  block:
+    - name: Download the llama.cpp package to /tmp.
+      ansible.builtin.get_url:
+        url: "https://github.com/ggml-org/llama.cpp/releases/download/{{ llama_cpp_version }}/\
+          llama-{{ llama_cpp_version }}-bin-ubuntu-{{ llama_cpp_build_variant }}{{ arch }}.tar.gz"
+        dest: "/tmp/llama-{{ llama_cpp_version }}-bin-ubuntu-{{ llama_cpp_build_variant }}{{ arch }}.tar.gz"
+        force: true
+        owner: root
+        group: root
+        mode: '0644'
+      register: download_llama_cpp
+      retries: 5
+      delay: 10
+      until: download_llama_cpp is succeeded
+
+    - name: Extract the llama.cpp package to /usr/local.
+      ansible.builtin.unarchive:
+        src: "/tmp/llama-{{ llama_cpp_version }}-bin-ubuntu-{{ llama_cpp_build_variant }}{{ arch }}.tar.gz"
+        dest: /usr/local
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0755'
+
+- name: Ensure models directory exists.
+  ansible.builtin.file:
+    path: "{{ llama_cpp_models_dir }}"
+    state: directory
+    owner: "{{ tesseract_username }}"
+    group: "{{ tesseract_username }}"
+    mode: '0755'
+
+- name: Download model files if not present.
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ llama_cpp_models_dir }}/{{ item.name }}.gguf"
+    owner: "{{ tesseract_username }}"
+    group: "{{ tesseract_username }}"
+    mode: '0644'
+  loop: "{{ llama_cpp_models }}"
+  register: download_model
+  retries: 5
+  delay: 10
+  until: download_model is succeeded
+
+- name: Copy llama-server.service template to /etc/systemd/system.
+  ansible.builtin.template:
+    src: templates/llama-server.service.j2
+    dest: /etc/systemd/system/llama-server.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart llama-server
+
+- name: Start and enable llama-server service.
+  ansible.builtin.service:
+    name: llama-server
+    state: started
+    enabled: true
