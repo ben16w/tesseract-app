@@ -11,53 +11,94 @@
   ansible.builtin.user:
     name: "{{ tesseract_username }}"
 
-- name: Ensure curl is installed.
+- name: Ensure runtime packages are installed.
   ansible.builtin.package:
     name:
-      - curl
+      - libgomp1
     update_cache: true
 
-- name: Set architecture variable.
-  ansible.builtin.set_fact:
-    arch: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'x64' }}"
-
-- name: Set download variant.
-  ansible.builtin.set_fact:
-    llama_cpp_build_variant: >-
-      {{ 'vulkan-' if llama_cpp_use_vulkan else ('rocm-' + llama_cpp_rocm_version | string + '-' if llama_cpp_use_rocm else '') }}
-
-- name: Get current llama.cpp version.
-  ansible.builtin.command: llama-server --version
-  register: llama_cpp_current_version
+- name: Check installed llama.cpp version.
+  ansible.builtin.slurp:
+    src: /usr/local/share/llama_cpp_version
+  register: llama_cpp_installed_version
   failed_when: false
-  changed_when: false
 
-- name: Download and install llama.cpp if required.
-  when: llama_cpp_version not in llama_cpp_current_version.stdout
+- name: Build and install llama.cpp if required.
+  when: (llama_cpp_installed_version.content | default('') | b64decode).strip() != llama_cpp_version
   notify: restart llama-server
   block:
-    - name: Download the llama.cpp package to /tmp.
+    - name: Ensure build packages are installed.
+      ansible.builtin.package:
+        name: >-
+          {{ ['build-essential', 'cmake', 'git', 'ninja-build'] +
+             (['libvulkan-dev', 'glslc', 'spirv-headers'] if llama_cpp_use_vulkan else []) }}
+        update_cache: true
+
+    - name: Create build directory.
+      ansible.builtin.file:
+        path: /tmp/llama_cpp_build
+        state: directory
+        mode: '0755'
+
+    - name: Download llama.cpp source.
       ansible.builtin.get_url:
-        url: "https://github.com/ggml-org/llama.cpp/releases/download/{{ llama_cpp_version }}/\
-          llama-{{ llama_cpp_version }}-bin-ubuntu-{{ llama_cpp_build_variant }}{{ arch }}.tar.gz"
-        dest: "/tmp/llama-{{ llama_cpp_version }}-bin-ubuntu-{{ llama_cpp_build_variant }}{{ arch }}.tar.gz"
+        url: "https://github.com/ggml-org/llama.cpp/archive/refs/tags/{{ llama_cpp_version }}.tar.gz"
+        dest: "/tmp/llama_cpp_build/llama.cpp-{{ llama_cpp_version }}.tar.gz"
         force: true
         owner: root
         group: root
         mode: '0644'
-      register: download_llama_cpp
+      register: download_llama_cpp_src
       retries: 5
       delay: 10
-      until: download_llama_cpp is succeeded
+      until: download_llama_cpp_src is succeeded
 
-    - name: Extract the llama.cpp package to /usr/local.
+    - name: Extract llama.cpp source.
       ansible.builtin.unarchive:
-        src: "/tmp/llama-{{ llama_cpp_version }}-bin-ubuntu-{{ llama_cpp_build_variant }}{{ arch }}.tar.gz"
-        dest: /usr/local
+        src: "/tmp/llama_cpp_build/llama.cpp-{{ llama_cpp_version }}.tar.gz"
+        dest: /tmp/llama_cpp_build
+        remote_src: true
+
+    - name: Configure llama.cpp build.
+      ansible.builtin.shell:
+        cmd: >-
+          cmake -GNinja
+          -S /tmp/llama_cpp_build/llama.cpp-{{ llama_cpp_version }}
+          -B /tmp/llama_cpp_build/build
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_SHARED_LIBS=OFF
+          {{ '-DGGML_VULKAN=ON' if llama_cpp_use_vulkan else '' }}
+          {{ '-DGGML_HIP=ON' if llama_cpp_use_rocm else '' }}
+        creates: /tmp/llama_cpp_build/build/build.ninja
+      changed_when: true
+
+    - name: Build llama-server.
+      ansible.builtin.shell:
+        cmd: "cmake --build /tmp/llama_cpp_build/build --target llama-server -j $(nproc)"
+        creates: /tmp/llama_cpp_build/build/bin/llama-server
+      changed_when: true
+
+    - name: Install llama-server binary.
+      ansible.builtin.copy:
+        src: /tmp/llama_cpp_build/build/bin/llama-server
+        dest: /usr/local/bin/llama-server
         remote_src: true
         owner: root
         group: root
         mode: '0755'
+
+    - name: Remove build directory.
+      ansible.builtin.file:
+        path: /tmp/llama_cpp_build
+        state: absent
+
+    - name: Record installed llama.cpp version.
+      ansible.builtin.copy:
+        content: "{{ llama_cpp_version }}"
+        dest: /usr/local/share/llama_cpp_version
+        owner: root
+        group: root
+        mode: '0644'
 
 - name: Ensure models directory exists.
   ansible.builtin.file:

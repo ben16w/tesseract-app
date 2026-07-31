@@ -6,11 +6,10 @@
     - vars.yml
   tasks:
     - name: Check llama.cpp version is correct.
-      ansible.builtin.command:
-        cmd: llama-server --version
+      ansible.builtin.slurp:
+        src: /usr/local/share/llama_cpp_version
       register: llama_cpp_version_check
-      failed_when: llama_cpp_version not in llama_cpp_version_check.stdout
-      changed_when: false
+      failed_when: (llama_cpp_version_check.content | b64decode).strip() != llama_cpp_version
 
     - name: Check llama-server health endpoint.
       ansible.builtin.uri:
@@ -18,7 +17,23 @@
         method: GET
         status_code: 200
       register: health_response
-      failed_when: health_response.json.status != 'ok'
+      retries: 15
+      delay: 2
+      until: health_response.status == 200
+      failed_when: health_response.status == 200 and health_response.json.status != 'ok'
+
+    - name: Check llama-server library dependencies.
+      ansible.builtin.command: ldd /usr/local/bin/llama-server
+      register: ldd_check
+      changed_when: false
+      failed_when: "'not found' in ldd_check.stdout"
+
+    - name: Get available models from router.
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ llama_cpp_port }}/models"
+        method: GET
+      register: router_models
+      failed_when: router_models.json.data | length == 0
 
     - name: Generate a response from the model.
       ansible.builtin.uri:
@@ -27,7 +42,7 @@
         body_format: json
         timeout: 120
         body:
-          model: "{{ llama_cpp_models[0].name }}.gguf"
+          model: "{{ router_models.json.data[0].id }}"
           messages:
             - role: user
               content: "Why is the sky blue?"

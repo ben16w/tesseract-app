@@ -26,8 +26,6 @@ llama_cpp_sleep_idle_seconds: 300 # Unload model after this many seconds of inac
 
 llama_cpp_use_vulkan: false
 llama_cpp_use_rocm: false
-llama_cpp_rocm_version: "7.2" # ROCm version suffix used in the release filename.
-# Example: llama_cpp_rocm_version: "7.2"
 
 llama_cpp_rocm_gfx_version: ~
 # Override HSA_OVERRIDE_GFX_VERSION when using ROCm with an unsupported GPU.

@@ -19,7 +19,6 @@ User={{ tesseract_username }}
 Group={{ tesseract_username }}
 Restart=always
 RestartSec=3
-
 {% if llama_cpp_use_rocm is true and llama_cpp_rocm_gfx_version is not none %}
 Environment="HSA_OVERRIDE_GFX_VERSION={{ llama_cpp_rocm_gfx_version }}"
 {% endif %}
