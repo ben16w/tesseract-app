@@ -26,6 +26,7 @@ guardrails:
       mode: pre_call
       api_base: "http://localhost:{{ litellm_headroom_port }}"
       default_on: true
+      unreachable_fallback: {{ litellm_headroom_fallback_type }}
 {% endif %}
 
 general_settings:

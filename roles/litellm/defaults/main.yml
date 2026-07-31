@@ -81,5 +81,6 @@ litellm_mcp_install_uvx: false # Install uv (required for uvx MCP servers).
 litellm_headroom_enabled: false # Install and run the Headroom prompt-compression sidecar service.
 litellm_headroom_version: ~ # e.g. "0.27.0"
 litellm_headroom_port: 8787
+litellm_headroom_fallback_type: "fail_closed" # "fail_open" to forward uncompressed on sidecar failure.
 litellm_headroom_logging: true
 litellm_headroom_log_level: "INFO"
