@@ -26,6 +26,7 @@ llama_cpp_sleep_idle_seconds: 300 # Unload model after this many seconds of inac
 
 llama_cpp_use_vulkan: false
 llama_cpp_use_rocm: false
+llama_cpp_native: true # Compile with -march=native to use CPU-specific SIMD (AVX2, FMA, etc.).
 
 llama_cpp_rocm_gfx_version: ~
 # Override HSA_OVERRIDE_GFX_VERSION when using ROCm with an unsupported GPU.

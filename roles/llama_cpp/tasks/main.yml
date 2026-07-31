@@ -67,6 +67,7 @@
           -B /tmp/llama_cpp_build/build
           -DCMAKE_BUILD_TYPE=Release
           -DBUILD_SHARED_LIBS=OFF
+          {{ '-DGGML_NATIVE=ON' if llama_cpp_native else '' }}
           {{ '-DGGML_VULKAN=ON' if llama_cpp_use_vulkan else '' }}
           {{ '-DGGML_HIP=ON' if llama_cpp_use_rocm else '' }}
         creates: /tmp/llama_cpp_build/build/build.ninja
