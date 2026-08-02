@@ -2,7 +2,11 @@
 - name: Converge
   hosts: all
   vars:
-    dashboard_apps: []
-    dashboard_admin_apps: []
+    dashboard_apps:
+      - name: test-app
+        target: https://app.example.test
+    dashboard_admin_apps:
+      - name: admin-app
+        target: https://admin.example.test
   roles:
     - role: tesseract.app.dashboard

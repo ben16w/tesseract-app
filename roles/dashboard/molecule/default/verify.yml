@@ -4,3 +4,24 @@
   vars_files:
     - ../../defaults/main.yml
   tasks:
+    - name: Check that homer service is running.
+      ansible.builtin.systemd:
+        name: homer
+      register: homer_service
+      failed_when:
+        - homer_service.failed
+        - homer_service.status.ActiveState != 'active'
+
+    - name: Check dashboard config is served.
+      ansible.builtin.uri:
+        url: http://localhost:{{ dashboard_port }}/assets/config.yml
+        return_content: true
+        status_code: 200
+      register: dashboard_config
+
+    - name: Assert dashboard config contains expected apps.
+      ansible.builtin.assert:
+        that:
+          - "'test-app' in dashboard_config.content"
+          - "'admin-app' in dashboard_config.content"
+          - "'Welcome!' in dashboard_config.content"

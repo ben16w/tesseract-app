@@ -1,0 +1,40 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Check Docker daemon is available.
+      ansible.builtin.command:
+        cmd: docker info
+      register: docker_info
+      changed_when: false
+
+    - name: Assert Docker reported a server version.
+      ansible.builtin.assert:
+        that:
+          - "'Server Version:' in docker_info.stdout"
+
+    - name: Check Docker compose environment file.
+      ansible.builtin.slurp:
+        path: /opt/common/compose/.env
+      register: docker_env
+
+    - name: Assert Docker compose environment contains key settings.
+      ansible.builtin.assert:
+        that:
+          - '"COMPOSE_PROJECT_NAME=\"tesseract\"" in (docker_env.content | b64decode)'
+          - '"TESSERACT_HOSTNAME=\"docker-test\"" in (docker_env.content | b64decode)'
+          - '"TESSERACT_DOMAIN=\"example.test\"" in (docker_env.content | b64decode)'
+          - '"TESSERACT_MEDIA_PATH=\"/srv/docker/media\"" in (docker_env.content | b64decode)'
+
+    - name: Check Docker data directories exist.
+      ansible.builtin.stat:
+        path: '{{ item }}'
+      loop:
+        - /srv/docker/media
+        - /srv/docker/appdata
+      register: docker_paths
+
+    - name: Assert Docker data directories were created.
+      ansible.builtin.assert:
+        that:
+          - docker_paths.results | map(attribute='stat.exists') | min
