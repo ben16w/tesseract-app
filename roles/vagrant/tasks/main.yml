@@ -8,54 +8,42 @@
   ansible.builtin.set_fact:
     arch: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
 
-- name: Ensure gpg-agent is installed.
+- name: Install python3-debian for deb822_repository.
   ansible.builtin.apt:
-    name: gpg-agent
+    name: python3-debian
     state: present
     update_cache: true
 
-- name: Ensure /etc/apt/keyrings directory exists.
-  ansible.builtin.file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
-
-- name: Download VirtualBox signing key.
-  ansible.builtin.get_url:
-    url: https://www.virtualbox.org/download/oracle_vbox_2016.asc
-    dest: /etc/apt/keyrings/virtualbox.asc
-    mode: '0644'
-
-- name: Add virtualbox repository into sources list
-  ansible.builtin.apt_repository:
-    repo: >-
-      deb [arch={{ arch }} signed-by=/etc/apt/keyrings/virtualbox.asc]
-      https://download.virtualbox.org/virtualbox/debian
-      {{ ansible_facts['distribution_release'] }} contrib
+- name: Add VirtualBox repository.
+  ansible.builtin.deb822_repository:
+    name: virtualbox
+    types: deb
+    uris: https://download.virtualbox.org/virtualbox/debian
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: contrib
+    architectures: "{{ arch }}"
+    signed_by: "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
     state: present
-    update_cache: true
 
-- name: Install virtualbox
+- name: Install virtualbox.
   ansible.builtin.apt:
     pkg:
       - "virtualbox-{{ vagrant_virtualbox_version }}"
-
-- name: Download Hashicorp signing key.
-  ansible.builtin.get_url:
-    url: https://apt.releases.hashicorp.com/gpg
-    dest: /etc/apt/keyrings/hashicorp.asc
-    mode: '0644'
-
-- name: Add vagrant repository into sources list
-  ansible.builtin.apt_repository:
-    repo: >-
-      deb [arch={{ arch }} signed-by=/etc/apt/keyrings/hashicorp.asc]
-      https://apt.releases.hashicorp.com
-      {{ ansible_facts['distribution_release'] }} main
-    state: present
     update_cache: true
+
+- name: Add HashiCorp repository.
+  ansible.builtin.deb822_repository:
+    name: hashicorp
+    types: deb
+    uris: https://apt.releases.hashicorp.com
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: main
+    architectures: "{{ arch }}"
+    signed_by: "https://apt.releases.hashicorp.com/gpg"
+    state: present
 
 - name: Install vagrant.
   ansible.builtin.apt:
     pkg:
       - vagrant
+    update_cache: true

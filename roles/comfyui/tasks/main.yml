@@ -16,6 +16,7 @@
   ansible.builtin.package:
     name:
       - acl
+      - cron
       - git
       - python3
       - python3-pip

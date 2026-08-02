@@ -80,7 +80,7 @@ litellm_mcp_install_uvx: false # Install uv (required for uvx MCP servers).
 
 litellm_headroom_enabled: false # Install and run the Headroom prompt-compression sidecar service.
 litellm_headroom_version: ~ # e.g. "0.27.0"
-litellm_headroom_packages: # proxy (required), ml, relevance, code, image
+litellm_headroom_packages: # proxy (required), ml, relevance, code, image, llmlingua
   - proxy
   - ml
   - relevance

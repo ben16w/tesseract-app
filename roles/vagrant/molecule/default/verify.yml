@@ -4,7 +4,7 @@
   vars_files:
     - ../../defaults/main.yml
   vars:
-    check_virtualbox_version: "6.1"
+    check_virtualbox_version: "7.1"
   tasks:
     - name: Run virtualbox and get the version.
       ansible.builtin.command:
