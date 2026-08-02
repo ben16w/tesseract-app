@@ -11,7 +11,7 @@
 
 - name: Install headroom proxy in venv.
   ansible.builtin.pip:
-    name: "headroom-ai[proxy,ml]"
+    name: "headroom-ai[{{ litellm_headroom_packages | join(',') }}]"
     version: "{{ litellm_headroom_version }}"
     virtualenv: /opt/litellm/venv
     virtualenv_command: python3 -m venv

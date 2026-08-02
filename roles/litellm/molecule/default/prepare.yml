@@ -2,18 +2,25 @@
 - name: Prepare
   hosts: all
   tasks:
-    - name: Ensure python3 and pip are installed.
+    - name: Ensure python3, pip and venv are installed.
       ansible.builtin.package:
         name:
           - python3
           - python3-pip
+          - python3-venv
         state: present
         update_cache: true
+
+    - name: Create mockllm virtual environment.
+      ansible.builtin.command:
+        cmd: python3 -m venv /opt/mockllm-venv
+        creates: /opt/mockllm-venv/bin/activate
 
     - name: Install mockllm package.
       ansible.builtin.pip:
         name: mockllm
         state: present
+        virtualenv: /opt/mockllm-venv
 
     - name: Download example responses file.
       ansible.builtin.get_url:
@@ -23,9 +30,12 @@
 
     - name: Start mockllm server.
       ansible.builtin.shell: >
-        nohup mockllm start
+        nohup /opt/mockllm-venv/bin/mockllm start
         --responses /tmp/responses.yml
-        --port 8000 &
+        --port 8000 </dev/null >/dev/null 2>&1 &
+      async: 600
+      poll: 0
+      changed_when: false
 
     - name: Wait for mockllm server to start.
       ansible.builtin.wait_for:
