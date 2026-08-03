@@ -69,7 +69,7 @@
         remote_src: true
 
     - name: Configure llama.cpp build.
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: >-
           cmake -GNinja
           -S /tmp/llama_cpp_build/llama.cpp-{{ llama_cpp_version }}
