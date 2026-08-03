@@ -16,7 +16,7 @@
 
     - name: Check if the model exists.
       ansible.builtin.shell:
-        cmd: "set -o pipefail && ollama list | grep {{ ollama_models[0].name }}"
+        cmd: "set -o pipefail && ollama list | grep -F -- {{ ollama_models[0].name | quote }}"
         executable: /bin/bash
       environment:
         OLLAMA_HOST: "127.0.0.1:{{ ollama_port }}"

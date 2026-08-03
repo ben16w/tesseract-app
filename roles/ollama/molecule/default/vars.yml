@@ -6,5 +6,3 @@ ollama_use_vulkan: true
 ollama_download_extension: ".tgz"
 ollama_models:
   - name: smollm
-    url: "https://huggingface.co/QuantFactory/SmolLM-135M-GGUF/resolve/main/\
-      SmolLM-135M.Q4_K_M.gguf"

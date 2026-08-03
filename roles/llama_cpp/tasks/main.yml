@@ -6,6 +6,15 @@
       - llama_cpp_version is not none
       - llama_cpp_models | length > 0
 
+- name: Assert that llama.cpp model definitions are valid.
+  ansible.builtin.assert:
+    that:
+      - item.name | default('') | length > 0
+      - item.url | default('') | regex_search('^https?://') is not none
+      - item.url | default('') | regex_search('.*\.gguf$') is not none
+    fail_msg: "llama_cpp_models entries must define a name and a valid HTTP/HTTPS URL ending with .gguf"
+  loop: "{{ llama_cpp_models }}"
+
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
   ansible.builtin.user:

@@ -9,8 +9,6 @@ ollama_models: []
 # Example:
 # ollama_models:
 #   - name: smollm
-#     url: "https://huggingface.co/QuantFactory/SmolLM-135M-GGUF/resolve/main/\
-#       SmolLM-135M.Q4_K_M.gguf"
 
 ollama_port: 11434
 ollama_max_models: ~

@@ -5,6 +5,15 @@
     that:
       - ollama_version is not none
 
+- name: Assert that Ollama model definitions use direct pulls only.
+  ansible.builtin.assert:
+    that:
+      - item.name | default('') | length > 0
+      - item.url is not defined
+    fail_msg: "ollama_models entries must define only name. URL-based model downloads are not supported."
+  loop: "{{ ollama_models }}"
+  when: ollama_models | length > 0
+
 - name: Ensure tesseract user exists.
   register: tesseract_user_details
   ansible.builtin.user:
@@ -133,8 +142,31 @@
     hour: "{{ ollama_restart_cron_hour }}"
     state: "{{ 'present' if ollama_restart_cron_enabled else 'absent' }}"
 
-- name: Ensure the Ollama models are downloaded.
-  ansible.builtin.include_tasks:
-    file: build_model.yml
+- name: Check if the model already exists in Ollama.
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && ollama list | grep -F -- {{ item.name | quote }}"
+    executable: /bin/bash
+  environment:
+    OLLAMA_HOST: "127.0.0.1:{{ ollama_port }}"
   loop: "{{ ollama_models }}"
+  register: ollama_model_list
+  changed_when: false
+  failed_when: false
   when: ollama_models | length > 0
+
+- name: Assert that Ollama model lookups completed successfully.
+  ansible.builtin.assert:
+    that:
+      - item.rc in [0, 1]
+    fail_msg: "Failed to check whether Ollama model {{ item.item.name }} exists"
+  loop: "{{ ollama_model_list.results | default([]) }}"
+  when: ollama_models | length > 0
+
+- name: Pull missing Ollama models.
+  ansible.builtin.command:
+    cmd: "ollama pull {{ item.item.name }}"
+  environment:
+    OLLAMA_HOST: "127.0.0.1:{{ ollama_port }}"
+  loop: "{{ ollama_model_list.results | default([]) }}"
+  when: item.rc == 1
+  changed_when: true
