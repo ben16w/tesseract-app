@@ -10,12 +10,13 @@
   ansible.builtin.user:
     name: "{{ tesseract_username }}"
 
-- name: Ensure curl, cron, and unzip are installed.
+- name: Ensure curl, cron, unzip, and zstd are installed.
   ansible.builtin.package:
     name:
       - curl
       - cron
       - unzip
+      - zstd
     update_cache: true
 
 - name: Set architecture variable.

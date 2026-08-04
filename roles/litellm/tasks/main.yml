@@ -108,6 +108,7 @@
 
 - name: Disable and stop headroom proxy if disabled.
   when: not litellm_headroom_enabled
+  failed_when: false
   ansible.builtin.systemd:
     name: "headroom"
     enabled: false
