@@ -6,11 +6,10 @@
       - dashboard_apps is not none
       - dashboard_admin_apps is not none
 
-- name: Install unzip and git for installing Homer.
+- name: Install unzip for installing Homer.
   ansible.builtin.package:
     name:
       - unzip
-      - git
     update_cache: true
 
 - name: Download Homer archive.
@@ -58,24 +57,31 @@
     group: root
     mode: '0755'
 
-- name: Git checkout
-  ansible.builtin.git:
-    repo: https://github.com/WalkxCode/dashboard-icons
-    dest: /tmp/dashboard-icons
-    version: main
-  register: download_dashboard_icons
-  retries: 5
-  delay: 10
-  until: download_dashboard_icons is succeeded
-
-- name: Copy dashboard icons
-  ansible.builtin.copy:
-    src: /tmp/dashboard-icons/png/
-    dest: /opt/homer/web/assets/tools
-    remote_src: true
+- name: Download dashboard app icons.
+  ansible.builtin.get_url:
+    url: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/{{ item }}"
+    dest: "/opt/homer/web/assets/tools/{{ item }}"
+    mode: '0644'
     owner: root
     group: root
-    mode: '0755'
+  loop: "{{ dashboard_apps | selectattr('icon', 'defined') | map(attribute='icon') | unique }}"
+  register: download_dashboard_icon
+  retries: 5
+  delay: 10
+  until: download_dashboard_icon is succeeded
+
+- name: Download dashboard admin app icons.
+  ansible.builtin.get_url:
+    url: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/{{ item }}"
+    dest: "/opt/homer/web/assets/tools/{{ item }}"
+    mode: '0644'
+    owner: root
+    group: root
+  loop: "{{ dashboard_admin_apps | selectattr('icon', 'defined') | map(attribute='icon') | unique }}"
+  register: download_dashboard_admin_icon
+  retries: 5
+  delay: 10
+  until: download_dashboard_admin_icon is succeeded
 
 - name: Create Homer config.yml file.
   notify: restart homer

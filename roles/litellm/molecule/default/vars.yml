@@ -7,6 +7,9 @@ litellm_master_key: "sk-1234"
 litellm_logging: true
 litellm_headroom_enabled: true
 litellm_headroom_version: "0.33.0"
+litellm_headroom_packages:
+  - proxy
+
 litellm_mcp_install_npx: true
 litellm_mcp_install_uvx: true
 litellm_mcp_servers:

@@ -47,9 +47,9 @@ steps:
       - apk add --upgrade expat
       - just install-venv
       - just lint
-      - just test-all --distro debian13
-      - just test-all --distro ubuntu2404
-      - just test-all --distro ubuntu2604
+      - just test-all --image debian13
+      - just test-all --image ubuntu2404
+      - just test-all --image ubuntu2604
     when:
       branch:
         - main

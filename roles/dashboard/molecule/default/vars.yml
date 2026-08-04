@@ -1,7 +1,18 @@
 ---
 dashboard_apps:
-  - name: test-app
-    target: https://app.example.test
+  - name: Nextcloud
+    icon: nextcloud.png
+    target: "http://cloud.example.com"
+  - name: Jellyfin
+    icon: jellyfin.png
+    target: "http://jellyfin.example.com"
+  - name: Home Assistant
+    icon: home-assistant.png
+    target: "http://homeassistant.example.com"
 dashboard_admin_apps:
-  - name: admin-app
-    target: https://admin.example.test
+  - name: Syncthing
+    icon: syncthing.png
+    target: "http://localhost:8384"
+  - name: Netdata
+    icon: netdata.png
+    target: "http://localhost:19999"

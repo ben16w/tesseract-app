@@ -17,9 +17,6 @@ roles/{role_name}/
 └── molecule/default/      # Test configuration/
 ```
 
-Common root files include `Justfile`, `requirements.txt`, `galaxy.yml`,
-`README.md`, and this `AGENTS.md`.
-
 ## Ansible Conventions
 
 - Use 2-space YAML indentation and start YAML files with `---`.
@@ -36,17 +33,13 @@ Common root files include `Justfile`, `requirements.txt`, `galaxy.yml`,
 - Use `just` first. Treat it as the source of truth for available setup, lint, test, and maintenance commands.
 - Prefer `Justfile` recipes over ad hoc command sequences.
 - The `Justfile` is managed externally — do not edit it. Run `./setup.sh` to pull the latest.
-- Before using a recipe, verify that any paths it references exist in the current checkout.
 - Keep changes scoped to the relevant role unless a shared change is clearly required.
 
 ## Testing Guidance
 
-- Molecule scenarios live under `roles/{role_name}/molecule/default/`.
 - Prefer validating only the role or roles you changed.
-- Use the recipes exposed by `just` instead of hardcoding command choices in this file.
-- When testing, favor checks for successful converge, important services, relevant files, ports, endpoints, and idempotency.
-- Containers are kept between runs by default; pass `--destroy` (`-d`) only when a complete rebuild is needed.
-- If Docker or other prerequisites are unavailable, report that clearly.
+- Prefer `just molecule` over `just test`; it keeps the container between runs for faster iteration. Pass `-d` only when a complete rebuild is needed.
+- If Docker is unavailable, try running with `sudo`. If that fails, report clearly.
 
 ## Recommended Agent Workflow
 
