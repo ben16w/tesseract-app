@@ -1,11 +1,8 @@
 ---
 - name: Converge
   hosts: all
-  vars:
-    comfyui_version: "v0.18.2"
-    comfyui_port: 8188
-    comfyui_use_cpu: true
-    comfyui_extra_args:
-      - "--preview-method auto"
+  vars_files:
+    - ../../defaults/main.yml
+    - vars.yml
   roles:
     - role: tesseract.app.comfyui

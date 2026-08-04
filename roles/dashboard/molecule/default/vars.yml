@@ -1,0 +1,7 @@
+---
+dashboard_apps:
+  - name: test-app
+    target: https://app.example.test
+dashboard_admin_apps:
+  - name: admin-app
+    target: https://admin.example.test

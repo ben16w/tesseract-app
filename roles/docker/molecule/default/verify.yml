@@ -1,6 +1,9 @@
 ---
 - name: Verify
   hosts: all
+  vars_files:
+    - ../../defaults/main.yml
+    - vars.yml
   tasks:
     - name: Check Docker daemon is available.
       ansible.builtin.command:

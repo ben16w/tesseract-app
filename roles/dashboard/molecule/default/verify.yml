@@ -3,6 +3,7 @@
   hosts: all
   vars_files:
     - ../../defaults/main.yml
+    - vars.yml
   tasks:
     - name: Check that homer service is running.
       ansible.builtin.systemd:

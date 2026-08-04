@@ -2,6 +2,9 @@
 - name: Verify
   hosts: all
   gather_facts: false
+  vars_files:
+    - ../../defaults/main.yml
+    - vars.yml
   tasks:
     - name: Check if ComfyUI service is running.
       ansible.builtin.service:

@@ -3,6 +3,7 @@
   hosts: all
   vars_files:
     - ../../defaults/main.yml
+    - vars.yml
   tasks:
     - name: Run cstates-limit.sh script on host and check if there's any errors.
       ansible.builtin.command:

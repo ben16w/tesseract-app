@@ -1,8 +1,8 @@
 ---
 - name: Converge
   hosts: all
-  vars:
-    tesseract_username: tesseract
-    syncthing_password: password
+  vars_files:
+    - ../../defaults/main.yml
+    - vars.yml
   roles:
     - role: tesseract.app.syncthing
