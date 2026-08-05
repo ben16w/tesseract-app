@@ -38,7 +38,7 @@ roles/{role_name}/
 ## Testing Guidance
 
 - Prefer validating only the role or roles you changed.
-- Prefer `just molecule` over `just test`; it keeps the container between runs for faster iteration. Pass `-d` only when a complete rebuild is needed.
+- Prefer `just molecule` over `just test`; it keeps the container between runs for faster iteration. Destroy the container beforehand when a complete rebuild is needed.
 - If Docker is unavailable, try running with `sudo`. If that fails, report clearly.
 
 ## Recommended Agent Workflow
