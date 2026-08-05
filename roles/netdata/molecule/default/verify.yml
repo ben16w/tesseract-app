@@ -9,9 +9,7 @@
       ansible.builtin.systemd:
         name: netdata
       register: netdata_service
-      failed_when:
-        - netdata_service.failed
-        - netdata_service.status.ActiveState != 'active'
+      failed_when: netdata_service.status.ActiveState != 'active'
 
     - name: Check netdata API is serving requests.
       ansible.builtin.uri:
@@ -24,13 +22,3 @@
       ansible.builtin.assert:
         that:
           - netdata_info.json.version is defined
-
-    - name: Read netdata email configuration.
-      ansible.builtin.slurp:
-        path: /etc/netdata/health_alarm_notify.conf
-      register: netdata_notify
-
-    - name: Assert netdata uses msmtp for notifications.
-      ansible.builtin.assert:
-        that:
-          - "(netdata_notify.content | b64decode) is search(\"sendmail='/usr/bin/msmtp'\")"

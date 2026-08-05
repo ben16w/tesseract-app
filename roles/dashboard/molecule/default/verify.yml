@@ -9,9 +9,7 @@
       ansible.builtin.systemd:
         name: homer
       register: homer_service
-      failed_when:
-        - homer_service.failed
-        - homer_service.status.ActiveState != 'active'
+      failed_when: homer_service.status.ActiveState != 'active'
 
     - name: Check dashboard config is served.
       ansible.builtin.uri:

@@ -10,7 +10,7 @@
         cmd: vboxmanage --version
       changed_when: false
       register: current_virtualbox_version
-      failed_when: "check_virtualbox_version not in current_virtualbox_version.stdout"
+      failed_when: vagrant_virtualbox_version | string not in current_virtualbox_version.stdout
 
     - name: Run vagrant and get the version.
       ansible.builtin.command:
