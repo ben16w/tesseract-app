@@ -34,6 +34,7 @@ roles/{role_name}/
 - Prefer `Justfile` recipes over ad hoc command sequences.
 - The `Justfile` is managed externally — do not edit it. Run `./setup.sh` to pull the latest.
 - Keep changes scoped to the relevant role unless a shared change is clearly required.
+- Use semantic commit messages, all lowercase: `fix`, `feat`, `docs`, `chore`, `refactor`. Keep messages short and simple. Include the role name in parentheses if applicable: `feat(litellm): add gpu support`.
 
 ## Testing Guidance
 
