@@ -18,9 +18,10 @@
         status_code: 200
       register: dashboard_config
 
-    - name: Assert dashboard config contains expected apps.
+    - name: Assert dashboard config contains expected values.
       ansible.builtin.assert:
         that:
-          - "'test-app' in dashboard_config.content"
-          - "'admin-app' in dashboard_config.content"
+          - "'Nextcloud' in dashboard_config.content"
+          - "'http://cloud.example.com' in dashboard_config.content"
+          - "'Syncthing' in dashboard_config.content"
           - "'Welcome!' in dashboard_config.content"
