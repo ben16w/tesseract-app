@@ -114,6 +114,14 @@
     force: false
   notify: restart comfyui
 
+- name: Ensure ComfyUI cleanup cron job is present or absent.
+  ansible.builtin.cron:
+    name: "Clear ComfyUI temp and output directories"
+    job: rm -f /opt/comfyui/temp/*.png /opt/comfyui/output/*.png
+    minute: "0"
+    hour: "{{ comfyui_cleanup_cron_hour }}"
+    state: "{{ 'present' if comfyui_cleanup_cron_enabled else 'absent' }}"
+
 - name: Create cron job to restart ComfyUI service.
   ansible.builtin.cron:
     name: "Restart ComfyUI service"
