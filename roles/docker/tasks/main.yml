@@ -141,7 +141,7 @@
 
 - name: Create and start Docker apps using cli.
   ansible.builtin.command:
-    cmd: docker compose -f {{ docker_compose_list | join(' -f ') }} up -d --remove-orphans
+    cmd: docker compose -f {{ docker_compose_list | join(' -f ') }} up -d --build --remove-orphans
     chdir: "{{ docker_compose_path }}/{{ docker_compose_subdir }}"
   when: docker_apps | length > 0
   register: docker_compose_result
