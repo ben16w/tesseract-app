@@ -1,0 +1,37 @@
+---
+
+- name: Download Wolf udev rules.
+  ansible.builtin.get_url:
+    url: "{{ app_tweaks_wolf_udev_rules_url }}"
+    dest: /etc/udev/rules.d/85-wolf.rules
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload udev rules.
+  ansible.builtin.command:
+    cmd: udevadm control --reload-rules
+  changed_when: false
+
+- name: Load the uhid kernel module at boot.
+  ansible.builtin.copy:
+    content: "uhid\n"
+    dest: /etc/modules-load.d/wolf.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Load the uhid kernel module.
+  ansible.builtin.command:
+    cmd: modprobe uhid
+  changed_when: false
+
+- name: Apply Wolf udev rules to virtual input devices.
+  ansible.builtin.command:
+    cmd: udevadm trigger --action=change --subsystem-match=misc
+  changed_when: false
+
+- name: Wait for udev to apply Wolf rules.
+  ansible.builtin.command:
+    cmd: udevadm settle
+  changed_when: false
