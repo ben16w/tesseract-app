@@ -75,6 +75,7 @@ litellm_mcp_servers: {}
 #       CIRCLECI_BASE_URL: "https://circleci.com"
 
 litellm_mcp_extra_allowed_commands: [] # Extra commands to allow for stdio MCP servers.
+litellm_mcp_enable_stdio: true # Enable stdio MCP servers.
 litellm_mcp_install_npx: false # Install nodejs and npm (required for npx MCP servers).
 litellm_mcp_install_uvx: false # Install uv (required for uvx MCP servers).
 

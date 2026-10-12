@@ -12,6 +12,7 @@
       - litellm_models | rejectattr('model_name', 'defined') | list | length == 0
       - litellm_mcp_servers is mapping
       - litellm_mcp_extra_allowed_commands is iterable
+      - litellm_mcp_enable_stdio is boolean
       - litellm_mcp_install_npx is boolean
       - litellm_mcp_install_uvx is boolean
       - litellm_headroom_enabled is boolean

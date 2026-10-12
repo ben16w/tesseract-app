@@ -20,6 +20,9 @@ Environment="NO_DOCS=True"
 Environment="NO_REDOC=True"
 Environment="DISABLE_ADMIN_UI=True"
 Environment="LITELLM_MASTER_KEY={{ litellm_master_key }}"
+{% if litellm_mcp_enable_stdio %}
+Environment="LITELLM_ENABLE_MCP_STDIO=true"
+{% endif %}
 
 Environment="LITELLM_LOG={{ litellm_log_level }}"
 
