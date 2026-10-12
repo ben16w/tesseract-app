@@ -19,10 +19,7 @@ Environment="PORT={{ litellm_port }}"
 Environment="NO_DOCS=True"
 Environment="NO_REDOC=True"
 Environment="DISABLE_ADMIN_UI=True"
-
-{% if litellm_master_key is not none %}
 Environment="LITELLM_MASTER_KEY={{ litellm_master_key }}"
-{% endif %}
 
 Environment="LITELLM_LOG={{ litellm_log_level }}"
 

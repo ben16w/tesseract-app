@@ -13,7 +13,7 @@
   ansible.builtin.pip:
     name: "headroom-ai[{{ litellm_headroom_packages | join(',') }}]"
     version: "{{ litellm_headroom_version }}"
-    virtualenv: /opt/litellm/venv
+    virtualenv: /opt/headroom/venv
     virtualenv_command: python3 -m venv
     state: present
   notify: restart headroom

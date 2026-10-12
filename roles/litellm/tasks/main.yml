@@ -5,6 +5,9 @@
     that:
       - litellm_version is not none
       - litellm_version is string
+      - litellm_master_key is not none
+      - litellm_master_key is string
+      - litellm_master_key | length > 0
       - litellm_models is iterable
       - litellm_models | rejectattr('model_name', 'defined') | list | length == 0
       - litellm_mcp_servers is mapping

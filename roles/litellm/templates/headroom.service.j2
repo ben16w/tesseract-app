@@ -4,7 +4,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/opt/litellm/venv/bin/headroom proxy \
+ExecStart=/opt/headroom/venv/bin/headroom proxy \
     --host 127.0.0.1 \
     --port {{ litellm_headroom_port }}
 {%- if litellm_headroom_logging %} \
@@ -18,7 +18,7 @@ WorkingDirectory=/opt/litellm
 Restart=always
 RestartSec=3
 
-Environment="PATH=/opt/litellm/venv/bin:{{ ansible_facts['env'].PATH }}"
+Environment="PATH=/opt/headroom/venv/bin:{{ ansible_facts['env'].PATH }}"
 Environment="HEADROOM_TELEMETRY=off"
 Environment="HEADROOM_LOG_LEVEL={{ litellm_headroom_log_level }}"
 
