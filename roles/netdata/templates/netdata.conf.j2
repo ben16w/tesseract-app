@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+#
+# Only overrides are listed here. Stock defaults live in
+# /usr/lib/netdata/conf.d and the running config at
+# http://localhost:{{ netdata_port }}/netdata.conf
+
+[web]
+	bind to = *
+	default port = {{ netdata_port }}
+
+[db]
+	update every = {{ netdata_update_every }}

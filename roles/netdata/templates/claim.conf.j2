@@ -1,0 +1,6 @@
+[global]
+	url = {{ netdata_claim_url }}
+	token = {{ netdata_token }}
+{% if netdata_rooms is not none %}
+	rooms = {{ netdata_rooms }}
+{% endif %}

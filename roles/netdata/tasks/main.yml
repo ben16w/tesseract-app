@@ -43,7 +43,7 @@
 
 - name: Download netdata install script.
   ansible.builtin.get_url:
-    url: https://my-netdata.io/kickstart.sh
+    url: https://get.netdata.cloud/kickstart.sh
     dest: /tmp/netdata_install.sh
     owner: root
     group: root
@@ -60,23 +60,14 @@
     cmd: bash /tmp/netdata_install.sh --dont-wait
     creates: /usr/sbin/netdata
 
-# FIXME This is not working
-# - name: Reduce netdata data collection frequency to 5 seconds.
-#   notify: restart netdata
-#   ansible.builtin.lineinfile:
-#     path: /etc/netdata/netdata.conf
-#     insertafter: "[global]"
-#     line: "update every = 5"
-#     firstmatch: yes
-
-# there may be multiple "bind to"
-# Destination /etc/netdata/netdata.conf does not exist on 32bit Raspbian
-- name: Set netdata to listen of all interfaces.
+- name: Configure netdata.
   notify: restart netdata
-  ansible.builtin.lineinfile:
-    path: /etc/netdata/netdata.conf
-    search_string: bind to =
-    line: bind to = *
+  ansible.builtin.template:
+    src: netdata.conf.j2
+    dest: /etc/netdata/netdata.conf
+    owner: root
+    group: root
+    mode: '0644'
 
 - name: Copy health_alarm_notify.conf if it doesn't exist.
   ansible.builtin.copy:
@@ -114,8 +105,12 @@
         line: "DEFAULT_RECIPIENT_EMAIL='{{ tesseract_email_username }}|critical'"
 
 - name: Claim netdata node.
-  when: netdata_token is not none and netdata_rooms is not none
-  ansible.builtin.command:
-    cmd: /usr/libexec/netdata/netdata-claim.sh -token={{ netdata_token }} -rooms={{ netdata_rooms }}
-    creates: /var/lib/netdata/cloud.d/claim.conf
+  when: netdata_token is not none
+  no_log: true
   notify: restart netdata
+  ansible.builtin.template:
+    src: claim.conf.j2
+    dest: /etc/netdata/claim.conf
+    owner: root
+    group: netdata
+    mode: '0640'

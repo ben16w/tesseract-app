@@ -6,5 +6,7 @@ tesseract_email_password: ~
 
 netdata_emails_disabled: false
 netdata_port: 19999
+netdata_update_every: 5
+netdata_claim_url: https://app.netdata.cloud
 netdata_token: ~
 netdata_rooms: ~
