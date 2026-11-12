@@ -31,6 +31,11 @@
     file: steam_cstates.yml
   when: app_tweaks_enable_steam_cstates is true
 
+- name: Run tasks when Wolf is enabled.
+  ansible.builtin.include_tasks:
+    file: wolf.yml
+  when: app_tweaks_enable_wolf is true
+
 - name: Run tasks when Transmission is enabled.
   ansible.builtin.include_tasks:
     file: transmission.yml

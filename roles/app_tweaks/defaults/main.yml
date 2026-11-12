@@ -13,6 +13,9 @@ app_tweaks_enable_steam: false
 app_tweaks_enable_steam_cstates: false
 app_tweaks_enable_steam_cstates_limit: 2
 
+app_tweaks_enable_wolf: false
+app_tweaks_wolf_udev_rules_url: https://raw.githubusercontent.com/games-on-whales/wolf/stable/85-wolf.rules
+
 app_tweaks_enable_transmission: false
 app_tweaks_openvpn_download_url: ~
 app_tweaks_openvpn_path: /media/appdata/transmission_openvpn_config

@@ -9,3 +9,16 @@
         owner: root
         group: root
         mode: '0755'
+
+    - name: Install udev and kmod for Wolf tasks.
+      ansible.builtin.package:
+        name:
+          - udev
+          - kmod
+        update_cache: true
+
+    - name: Ensure udev is started.
+      ansible.builtin.service:
+        name: systemd-udevd
+        state: started
+      failed_when: false
