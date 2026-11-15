@@ -8,8 +8,15 @@
         that:
           - healthcheck_uuid is not none
 
-    - name: Add cronjob to ping Healthckecks.io.
+    - name: Ensure Healthckecks.io cronjob is present.
       ansible.builtin.cron:
         name: "Healthckecks.io ping."
         minute: "*/{{ healthcheck_minutes }}"
         job: "curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/{{ healthcheck_uuid }}"
+        state: present
+
+- name: Ensure Healthckecks.io cronjob is absent.
+  when: healthcheck_disabled is true
+  ansible.builtin.cron:
+    name: "Healthckecks.io ping."
+    state: absent
