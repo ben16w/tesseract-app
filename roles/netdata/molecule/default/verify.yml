@@ -3,8 +3,8 @@
   hosts: all
   vars_files:
     - ../../defaults/main.yml
+    - vars.yml
   tasks:
-
     - name: Check netdata service is running.
       ansible.builtin.service:
         name: netdata
@@ -25,6 +25,11 @@
         method: GET
         status_code: 200
       register: netdata_info
+
+    - name: Assert netdata API returned version information.
+      ansible.builtin.assert:
+        that:
+          - netdata_info.json.version is defined
 
     - name: Read netdata.conf.
       ansible.builtin.slurp:
@@ -67,8 +72,8 @@
       ansible.builtin.assert:
         that:
           - "'[global]' in claim_conf_content"
-          - "'token = molecule-test-token' in claim_conf_content"
-          - "'rooms = molecule-test-room' in claim_conf_content"
+          - "'token = {{ netdata_token }}' in claim_conf_content"
+          - "'rooms = {{ netdata_rooms }}' in claim_conf_content"
           - "'url = https://app.netdata.cloud' in claim_conf_content"
         fail_msg: "claim.conf is missing expected claiming settings"
       vars:

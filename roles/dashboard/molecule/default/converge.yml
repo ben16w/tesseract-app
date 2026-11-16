@@ -1,23 +1,8 @@
 ---
 - name: Converge
   hosts: all
-  vars:
-    dashboard_apps:
-      - name: Nextcloud
-        icon: nextcloud.png
-        target: "http://cloud.example.com"
-      - name: Jellyfin
-        icon: jellyfin.png
-        target: "http://jellyfin.example.com"
-      - name: Home Assistant
-        icon: home-assistant.png
-        target: "http://homeassistant.example.com"
-    dashboard_admin_apps:
-      - name: Syncthing
-        icon: syncthing.png
-        target: "http://localhost:8384"
-      - name: Netdata
-        icon: netdata.png
-        target: "http://localhost:19999"
+  vars_files:
+    - ../../defaults/main.yml
+    - vars.yml
   roles:
     - role: tesseract.app.dashboard

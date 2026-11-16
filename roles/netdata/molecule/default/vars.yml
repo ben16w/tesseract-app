@@ -1,0 +1,4 @@
+---
+netdata_emails_disabled: true
+netdata_token: molecule-test-token
+netdata_rooms: molecule-test-room

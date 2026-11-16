@@ -1,7 +1,8 @@
 ---
 - name: Converge
   hosts: all
-  vars:
-    vagrant_virtualbox_version: 7.1
+  vars_files:
+    - ../../defaults/main.yml
+    - vars.yml
   roles:
     - role: tesseract.app.vagrant

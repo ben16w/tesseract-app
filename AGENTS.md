@@ -34,11 +34,12 @@ roles/{role_name}/
 - Prefer `Justfile` recipes over ad hoc command sequences.
 - The `Justfile` is managed externally — do not edit it. Run `./setup.sh` to pull the latest.
 - Keep changes scoped to the relevant role unless a shared change is clearly required.
+- Use semantic commit messages, all lowercase: `fix`, `feat`, `docs`, `chore`, `refactor`. Keep messages short and simple. Include the role name in parentheses if applicable: `feat(litellm): add gpu support`.
 
 ## Testing Guidance
 
 - Prefer validating only the role or roles you changed.
-- Prefer `just molecule` over `just test`; it keeps the container between runs for faster iteration. Pass `-d` only when a complete rebuild is needed.
+- Prefer `just molecule` over `just test`; it keeps the container between runs for faster iteration. Destroy the container beforehand when a complete rebuild is needed.
 - If Docker is unavailable, try running with `sudo`. If that fails, report clearly.
 
 ## Recommended Agent Workflow

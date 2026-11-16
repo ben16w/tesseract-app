@@ -1,0 +1,17 @@
+---
+- name: Verify
+  hosts: all
+  vars_files:
+    - ../../defaults/main.yml
+    - vars.yml
+  tasks:
+    - name: Check Docker daemon is available.
+      ansible.builtin.command:
+        cmd: docker info
+      register: docker_info
+      changed_when: false
+
+    - name: Assert Docker reported a server version.
+      ansible.builtin.assert:
+        that:
+          - "'Server Version:' in docker_info.stdout"
