@@ -50,7 +50,7 @@
 - name: Create Homer server.py file.
   notify: restart homer
   ansible.builtin.template:
-    src: templates/server.py.j2
+    src: server.py.j2
     dest: /opt/homer/server.py
     force: true
     owner: root
@@ -86,7 +86,7 @@
 - name: Create Homer config.yml file.
   notify: restart homer
   ansible.builtin.template:
-    src: templates/config.yml.j2
+    src: config.yml.j2
     dest: /opt/homer/web/assets/config.yml
     force: true
     owner: root

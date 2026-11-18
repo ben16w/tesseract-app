@@ -35,7 +35,7 @@
 
     - name: Create the Modelfile containing the model path.
       ansible.builtin.template:
-        src: templates/Modelfile.j2
+        src: Modelfile.j2
         dest: "/tmp/Modelfile.{{ item.name }}"
         owner: root
         group: root

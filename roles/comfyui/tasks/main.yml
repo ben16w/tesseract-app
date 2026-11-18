@@ -106,7 +106,7 @@
 - name: Deploy ComfyUI manager configuration.
   when: comfyui_enable_manager | bool
   ansible.builtin.template:
-    src: templates/manager-config.ini.j2
+    src: manager-config.ini.j2
     dest: /opt/comfyui/user/__manager/config.ini
     owner: "{{ tesseract_username }}"
     group: "{{ tesseract_username }}"
@@ -132,7 +132,7 @@
 
 - name: Deploy systemd service.
   ansible.builtin.template:
-    src: templates/comfyui.service.j2
+    src: comfyui.service.j2
     dest: /etc/systemd/system/comfyui.service
     owner: root
     group: root

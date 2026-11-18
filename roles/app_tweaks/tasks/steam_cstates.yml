@@ -44,7 +44,7 @@
 
 - name: Template cstates-limit.sh script to scripts directory.
   ansible.builtin.template:
-    src: templates/cstates-limit.sh.j2
+    src: cstates-limit.sh.j2
     dest: "{{ app_tweaks_scripts_path }}/cstates-limit.sh"
     owner: root
     group: root

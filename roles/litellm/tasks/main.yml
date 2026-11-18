@@ -69,7 +69,7 @@
 
 - name: Template the LiteLLM config file.
   ansible.builtin.template:
-    src: templates/config.yaml.j2
+    src: config.yaml.j2
     dest: "/opt/litellm/config.yaml"
     owner: root
     group: root
@@ -78,7 +78,7 @@
 
 - name: Deploy systemd service.
   ansible.builtin.template:
-    src: templates/litellm.service.j2
+    src: litellm.service.j2
     dest: "/etc/systemd/system/litellm.service"
     owner: root
     group: root
@@ -104,7 +104,7 @@
 
     - name: Deploy logrotate configuration.
       ansible.builtin.template:
-        src: templates/litellm_logrotate.j2
+        src: litellm_logrotate.j2
         dest: "/etc/logrotate.d/litellm"
         owner: root
         group: root

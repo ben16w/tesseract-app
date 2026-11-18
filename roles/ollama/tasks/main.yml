@@ -10,11 +10,12 @@
   ansible.builtin.user:
     name: "{{ tesseract_username }}"
 
-- name: Ensure curl, cron, unzip, and zstd are installed.
+- name: Ensure curl, cron, gzip, unzip, and zstd are installed.
   ansible.builtin.package:
     name:
       - curl
       - cron
+      - gzip
       - unzip
       - zstd
     update_cache: true
@@ -91,7 +92,7 @@
 
 - name: Copy ollama.service template to /etc/systemd/system.
   ansible.builtin.template:
-    src: templates/ollama.service.j2
+    src: ollama.service.j2
     dest: /etc/systemd/system/ollama.service
     owner: root
     group: root
@@ -112,7 +113,7 @@
 
 - name: Template the set_keep_alive.sh script.
   ansible.builtin.template:
-    src: templates/set_keep_alive.sh.j2
+    src: set_keep_alive.sh.j2
     dest: /opt/ollama/bin/set_keep_alive.sh
     owner: root
     group: root
