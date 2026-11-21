@@ -53,6 +53,23 @@
         cmd: grep -E "^sendmail='/usr/bin/msmtp'" /etc/netdata/health_alarm_notify.conf
       changed_when: false
 
+    - name: Read docker health alerts config.
+      ansible.builtin.slurp:
+        src: /etc/netdata/health.d/docker.conf
+      register: docker_health_conf
+
+    - name: Verify docker health alerts are critical and container-down is enabled.
+      ansible.builtin.assert:
+        that:
+          - "'template: docker_container_unhealthy' in docker_health_content"
+          - "'template: docker_container_down' in docker_health_content"
+          - "'crit: $this > 0' in docker_health_content"
+          - "'chart labels: container_name=' ~ netdata_docker_down_containers in docker_health_content"
+          - "'warn: $this > 0' not in docker_health_content"
+        fail_msg: "docker health.d alerts are missing expected critical/down overrides"
+      vars:
+        docker_health_content: "{{ docker_health_conf.content | b64decode }}"
+
     - name: Check claim.conf exists with secure ownership.
       ansible.builtin.stat:
         path: /etc/netdata/claim.conf

@@ -86,6 +86,23 @@
     search_string: sendmail=
     line: "sendmail='/usr/bin/msmtp'"
 
+- name: Ensure netdata health.d directory exists.
+  ansible.builtin.file:
+    path: /etc/netdata/health.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure critical docker container health alerts.
+  notify: restart netdata
+  ansible.builtin.template:
+    src: docker.conf.j2
+    dest: /etc/netdata/health.d/docker.conf
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: When emails are not disabled.
   when: netdata_emails_disabled is false
   block:
@@ -102,7 +119,7 @@
       ansible.builtin.lineinfile:
         path: /etc/netdata/health_alarm_notify.conf
         search_string: DEFAULT_RECIPIENT_EMAIL=
-        line: "DEFAULT_RECIPIENT_EMAIL='{{ tesseract_email_username }}|critical'"
+        line: "DEFAULT_RECIPIENT_EMAIL='{{ tesseract_email_username }}|{{ netdata_email_severity }}'"
 
 - name: Claim netdata node.
   when: netdata_token is not none

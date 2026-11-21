@@ -5,8 +5,10 @@ tesseract_email_username: ~
 tesseract_email_password: ~
 
 netdata_emails_disabled: false
+netdata_email_severity: critical
 netdata_port: 19999
 netdata_update_every: 5
+netdata_docker_down_containers: "*"
 netdata_claim_url: https://app.netdata.cloud
 netdata_token: ~
 netdata_rooms: ~

@@ -1,0 +1,17 @@
+# Critical docker alerts (email severity is configurable)
+
+template: docker_container_unhealthy
+  on: docker.container_health_status
+  every: 10s
+  lookup: average -10s of unhealthy
+  crit: $this > 0
+  to: sysadmin
+
+template: docker_container_down
+  on: docker.container_state
+  chart labels: container_name={{ netdata_docker_down_containers }}
+  every: 10s
+  lookup: average -10s of exited
+  crit: $this > 0
+  delay: down 1m multiplier 1.5 max 2h
+  to: sysadmin
