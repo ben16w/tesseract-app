@@ -4,10 +4,12 @@
   ansible.builtin.assert:
     that:
       - vagrant_virtualbox_version is not none
-      - (vagrant_virtualbox_version | string) is match('^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$')
+      - vagrant_virtualbox_build is not none
+      - (vagrant_virtualbox_version | string) is match('^[0-9]+\.[0-9]+\.[0-9]+$')
+      - (vagrant_virtualbox_build | string) is match('^[0-9]+$')
     fail_msg: >-
-      vagrant_virtualbox_version must be an Oracle version-build string like
-      '7.1.18-173720' or '7.2.18-175117'.
+      Set vagrant_virtualbox_version (e.g. '7.2.18') and vagrant_virtualbox_build
+      (e.g. '175117') from the Oracle .deb name.
 
 - name: Set architecture variable.
   ansible.builtin.set_fact:
@@ -41,7 +43,7 @@
 - name: Download and install VirtualBox if required.
   when: >-
     vagrant_installed_virtualbox_version.rc != 0
-    or (vagrant_virtualbox_version | replace('-', 'r'))
+    or (vagrant_virtualbox_version ~ 'r' ~ vagrant_virtualbox_build)
     not in vagrant_installed_virtualbox_version.stdout
   block:
     - name: Gather package facts.
@@ -61,9 +63,9 @@
     - name: Download VirtualBox package.
       ansible.builtin.get_url:
         url: "https://download.virtualbox.org/virtualbox/\
-          {{ vagrant_virtualbox_version.split('-')[0] }}/\
-          virtualbox-{{ vagrant_virtualbox_version.split('-')[0].split('.')[0:2] | join('.') }}_\
-          {{ vagrant_virtualbox_version }}~\
+          {{ vagrant_virtualbox_version }}/\
+          virtualbox-{{ vagrant_virtualbox_version.split('.')[0:2] | join('.') }}_\
+          {{ vagrant_virtualbox_version }}-{{ vagrant_virtualbox_build }}~\
           {{ ansible_facts['distribution'] }}~\
           {{ ansible_facts['distribution_release'] }}_{{ arch }}.deb"
         dest: /tmp/virtualbox.deb

@@ -1,5 +1,7 @@
 ---
 
 vagrant_virtualbox_version: ~
-# Example (Oracle version-build string from the .deb name):
-# vagrant_virtualbox_version: "7.2.18-175117"
+vagrant_virtualbox_build: ~
+# Example (from the Oracle .deb name virtualbox-7.2_7.2.18-175117~...):
+# vagrant_virtualbox_version: "7.2.18"
+# vagrant_virtualbox_build: "175117"

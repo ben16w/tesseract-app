@@ -11,7 +11,7 @@
       changed_when: false
       register: current_virtualbox_version
       failed_when: >-
-        (vagrant_virtualbox_version | replace('-', 'r'))
+        (vagrant_virtualbox_version ~ 'r' ~ vagrant_virtualbox_build)
         not in current_virtualbox_version.stdout
 
     - name: Run vagrant and get the version.
