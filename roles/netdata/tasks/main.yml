@@ -2,44 +2,11 @@
 
 # https://learn.netdata.cloud/guides/configure/performance
 
-- name: Install curl and msmtp.
+- name: Install curl.
   ansible.builtin.apt:
     pkg:
-      - msmtp
       - curl
     update_cache: true
-
-- name: When emails are not disabled.
-  when: netdata_emails_disabled is false
-  block:
-
-    - name: Assert that all required inputs have been provided.
-      ansible.builtin.assert:
-        that:
-          - tesseract_email_host is not none
-          - tesseract_email_port is not none
-          - tesseract_email_username is not none
-          - tesseract_email_password is not none
-
-    - name: Add msmtp email global config.
-      no_log: true
-      ansible.builtin.blockinfile:
-        path: /etc/msmtprc
-        create: true
-        owner: root
-        group: root
-        mode: '0644'
-        block: |
-          account default
-          tls on
-          tls_starttls off
-          tls_certcheck off
-          auth login
-          host "{{ tesseract_email_host }}"
-          port "{{ tesseract_email_port }}"
-          user "{{ tesseract_email_username }}"
-          from "{{ tesseract_email_username }}"
-          password "{{ tesseract_email_password }}"
 
 - name: Download netdata install script.
   ansible.builtin.get_url:
@@ -69,26 +36,88 @@
     group: root
     mode: '0644'
 
-- name: Copy health_alarm_notify.conf if it doesn't exist.
-  ansible.builtin.copy:
-    src: /usr/lib/netdata/conf.d/health_alarm_notify.conf
-    dest: /etc/netdata/health_alarm_notify.conf
-    remote_src: true
-    force: false
+- name: Ensure netdata health.d directory exists.
+  ansible.builtin.file:
+    path: /etc/netdata/health.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure critical docker container health alerts.
+  notify: restart netdata
+  ansible.builtin.template:
+    src: docker.conf.j2
+    dest: /etc/netdata/health.d/docker.conf
     owner: root
     group: root
     mode: '0644'
 
-- name: Set netdata to use msmtp for email.
+- name: Claim netdata node.
+  when: netdata_token is not none
+  no_log: true
   notify: restart netdata
-  ansible.builtin.lineinfile:
-    path: /etc/netdata/health_alarm_notify.conf
-    search_string: sendmail=
-    line: "sendmail='/usr/bin/msmtp'"
+  ansible.builtin.template:
+    src: claim.conf.j2
+    dest: /etc/netdata/claim.conf
+    owner: root
+    group: netdata
+    mode: '0640'
 
 - name: When emails are not disabled.
   when: netdata_emails_disabled is false
   block:
+
+    - name: Assert that all required inputs have been provided.
+      ansible.builtin.assert:
+        that:
+          - tesseract_email_host is not none
+          - tesseract_email_port is not none
+          - tesseract_email_username is not none
+          - tesseract_email_password is not none
+
+    - name: Install msmtp.
+      ansible.builtin.apt:
+        pkg:
+          - msmtp
+        update_cache: true
+
+    - name: Add msmtp email global config.
+      no_log: true
+      ansible.builtin.blockinfile:
+        path: /etc/msmtprc
+        create: true
+        owner: root
+        group: netdata
+        mode: '0640'
+        block: |
+          account default
+          tls on
+          tls_starttls off
+          tls_certcheck off
+          auth login
+          host "{{ tesseract_email_host }}"
+          port "{{ tesseract_email_port }}"
+          user "{{ tesseract_email_username }}"
+          from "{{ tesseract_email_username }}"
+          password "{{ tesseract_email_password }}"
+
+    - name: Copy health_alarm_notify.conf if it doesn't exist.
+      ansible.builtin.copy:
+        src: /usr/lib/netdata/conf.d/health_alarm_notify.conf
+        dest: /etc/netdata/health_alarm_notify.conf
+        remote_src: true
+        force: false
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Set netdata to use msmtp for email.
+      notify: restart netdata
+      ansible.builtin.lineinfile:
+        path: /etc/netdata/health_alarm_notify.conf
+        search_string: sendmail=
+        line: "sendmail='/usr/bin/msmtp'"
 
     - name: Set netdata email sender.
       notify: restart netdata
@@ -102,15 +131,4 @@
       ansible.builtin.lineinfile:
         path: /etc/netdata/health_alarm_notify.conf
         search_string: DEFAULT_RECIPIENT_EMAIL=
-        line: "DEFAULT_RECIPIENT_EMAIL='{{ tesseract_email_username }}|critical'"
-
-- name: Claim netdata node.
-  when: netdata_token is not none
-  no_log: true
-  notify: restart netdata
-  ansible.builtin.template:
-    src: claim.conf.j2
-    dest: /etc/netdata/claim.conf
-    owner: root
-    group: netdata
-    mode: '0640'
+        line: "DEFAULT_RECIPIENT_EMAIL='{{ tesseract_email_username }}|{{ netdata_email_severity }}'"

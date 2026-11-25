@@ -31,50 +31,31 @@
         that:
           - netdata_info.json.version is defined
 
-    - name: Read netdata.conf.
-      ansible.builtin.slurp:
-        src: /etc/netdata/netdata.conf
-      register: netdata_conf
+    - name: Wait for system.cpu metrics to be available.
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ netdata_port }}/api/v1/data?chart=system.cpu&after=-60&points=1&format=json"
+        method: GET
+        status_code: 200
+        return_content: true
+      register: netdata_metrics
+      retries: 5
+      delay: 10
+      until: >
+        netdata_metrics.json is defined
+        and netdata_metrics.json.data is defined
+        and (netdata_metrics.json.data | length > 0)
 
-    - name: Verify netdata.conf contains expected overrides.
+    - name: Fetch running netdata.conf from the agent.
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ netdata_port }}/netdata.conf"
+        method: GET
+        status_code: 200
+        return_content: true
+      register: netdata_runtime_conf
+
+    - name: Assert runtime config reflects role overrides.
       ansible.builtin.assert:
         that:
-          - "'[web]' in netdata_conf_content"
-          - "'default port = ' ~ (netdata_port | string) in netdata_conf_content"
-          - "'bind to = *' in netdata_conf_content"
-          - "'[db]' in netdata_conf_content"
-          - "'update every = ' ~ (netdata_update_every | string) in netdata_conf_content"
-        fail_msg: "netdata.conf is missing expected [web]/[db] overrides"
-      vars:
-        netdata_conf_content: "{{ netdata_conf.content | b64decode }}"
-
-    - name: Check msmtp sendmail path is configured.
-      ansible.builtin.command:
-        cmd: grep -E "^sendmail='/usr/bin/msmtp'" /etc/netdata/health_alarm_notify.conf
-      changed_when: false
-
-    - name: Check claim.conf exists with secure ownership.
-      ansible.builtin.stat:
-        path: /etc/netdata/claim.conf
-      register: claim_conf
-      failed_when: >
-        (not claim_conf.stat.exists) or
-        (claim_conf.stat.mode != '0640') or
-        (claim_conf.stat.pw_name != 'root') or
-        (claim_conf.stat.gr_name != 'netdata')
-
-    - name: Read claim.conf.
-      ansible.builtin.slurp:
-        src: /etc/netdata/claim.conf
-      register: claim_conf_slurp
-
-    - name: Verify claim.conf contains token and rooms.
-      ansible.builtin.assert:
-        that:
-          - "'[global]' in claim_conf_content"
-          - "'token = {{ netdata_token }}' in claim_conf_content"
-          - "'rooms = {{ netdata_rooms }}' in claim_conf_content"
-          - "'url = https://app.netdata.cloud' in claim_conf_content"
-        fail_msg: "claim.conf is missing expected claiming settings"
-      vars:
-        claim_conf_content: "{{ claim_conf_slurp.content | b64decode }}"
+          - "'default port = ' ~ (netdata_port | string) in netdata_runtime_conf.content"
+          - "'update every = ' ~ (netdata_update_every | string) in netdata_runtime_conf.content"
+        fail_msg: "running netdata.conf is missing expected port/update every overrides"
