@@ -106,12 +106,14 @@
     owner: root
     group: root
     mode: '0644'
+  notify: restart scrutiny
 
 - name: Make sure scrutiny service unit is running and enabled.
   ansible.builtin.systemd:
     state: started
     name: scrutiny
     enabled: true
+    daemon_reload: true
 
 - name: Add cron job to schedule the scrutiny collector to run periodically.
   ansible.builtin.cron:

@@ -108,3 +108,4 @@
     state: started
     name: homer
     enabled: true
+    daemon_reload: true

@@ -1,7 +1,8 @@
 ---
 
 - name: Restart drone-runner-exec service.
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: drone-runner-exec
     state: restarted
+    daemon_reload: true
   listen: restart drone-runner-exec

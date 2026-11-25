@@ -5,3 +5,4 @@
   ansible.builtin.systemd:
     state: restarted
     name: homer
+    daemon_reload: true

@@ -8,7 +8,8 @@
   listen: restart influxdb
 
 - name: Restart scrutiny service.
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: scrutiny.service
     state: restarted
+    daemon_reload: true
   listen: restart scrutiny

@@ -100,10 +100,11 @@
   notify: restart ollama
 
 - name: Start and enable ollama service.
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: ollama
     state: started
     enabled: true
+    daemon_reload: true
 
 - name: Ensure /opt/ollama/bin directory exists.
   ansible.builtin.file:

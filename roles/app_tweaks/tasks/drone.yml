@@ -97,7 +97,8 @@
     mode: '0644'
 
 - name: Ensure drone-runner-exec service is enabled and running.
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: drone-runner-exec
     enabled: true
     state: started
+    daemon_reload: true
