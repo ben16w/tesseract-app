@@ -9,11 +9,9 @@
       vagrant_virtualbox_version must be an Oracle version-build string like
       '7.1.18-173720' or '7.2.18-175117'.
 
-- name: Set architecture and VirtualBox download facts.
+- name: Set architecture variable.
   ansible.builtin.set_fact:
     arch: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
-    vagrant_virtualbox_semver: "{{ vagrant_virtualbox_version.split('-')[0] }}"
-    vagrant_virtualbox_series: "{{ vagrant_virtualbox_version.split('-')[0].split('.')[0:2] | join('.') }}"
 
 - name: Install python3-debian for deb822_repository.
   ansible.builtin.apt:
@@ -63,8 +61,9 @@
     - name: Download VirtualBox package.
       ansible.builtin.get_url:
         url: "https://download.virtualbox.org/virtualbox/\
-          {{ vagrant_virtualbox_semver }}/\
-          virtualbox-{{ vagrant_virtualbox_series }}_{{ vagrant_virtualbox_version }}~\
+          {{ vagrant_virtualbox_version.split('-')[0] }}/\
+          virtualbox-{{ vagrant_virtualbox_version.split('-')[0].split('.')[0:2] | join('.') }}_\
+          {{ vagrant_virtualbox_version }}~\
           {{ ansible_facts['distribution'] }}~\
           {{ ansible_facts['distribution_release'] }}_{{ arch }}.deb"
         dest: /tmp/virtualbox.deb
