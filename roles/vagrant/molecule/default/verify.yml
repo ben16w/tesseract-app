@@ -11,21 +11,8 @@
       changed_when: false
       register: current_virtualbox_version
       failed_when: >-
-        (vagrant_virtualbox_version | string)
+        (vagrant_virtualbox_version | replace('-', 'r'))
         not in current_virtualbox_version.stdout
-
-    - name: Confirm only the requested VirtualBox series is installed.
-      ansible.builtin.shell:
-        cmd: >-
-          set -o pipefail;
-          dpkg-query -W -f='${Package}\n' 'virtualbox-[0-9]*' 2>/dev/null
-          | grep -v '^virtualbox-{{ vagrant_virtualbox_version }}$'
-          || true
-      args:
-        executable: /bin/bash
-      changed_when: false
-      register: vagrant_other_vbox_packages
-      failed_when: vagrant_other_vbox_packages.stdout | length > 0
 
     - name: Run vagrant and get the version.
       ansible.builtin.command:

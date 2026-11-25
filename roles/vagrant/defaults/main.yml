@@ -1,5 +1,5 @@
 ---
 
 vagrant_virtualbox_version: ~
-# Example (quote as a string so YAML does not parse it as a float):
-# vagrant_virtualbox_version: "7.2"
+# Example (Oracle version-build string from the .deb name):
+# vagrant_virtualbox_version: "7.2.18-175117"

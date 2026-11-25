@@ -1,18 +1,19 @@
 ---
+
 - name: Assert that all required inputs have been provided.
   ansible.builtin.assert:
     that:
       - vagrant_virtualbox_version is not none
-      - (vagrant_virtualbox_version | string) is match('^[0-9]+\.[0-9]+$')
+      - (vagrant_virtualbox_version | string) is match('^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$')
     fail_msg: >-
-      vagrant_virtualbox_version must be an Oracle package series like '7.0' or
-      '7.2' (major.minor), not a full version string.
+      vagrant_virtualbox_version must be an Oracle version-build string like
+      '7.1.18-173720' or '7.2.18-175117'.
 
-- name: Set architecture and VirtualBox package facts.
+- name: Set architecture and VirtualBox download facts.
   ansible.builtin.set_fact:
     arch: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
-    vagrant_virtualbox_package: "virtualbox-{{ vagrant_virtualbox_version }}"
-    vagrant_is_container: "{{ ansible_facts['virtualization_type'] | default('') in ['docker', 'container', 'podman', 'lxc', 'openvz'] }}"
+    vagrant_virtualbox_semver: "{{ vagrant_virtualbox_version.split('-')[0] }}"
+    vagrant_virtualbox_series: "{{ vagrant_virtualbox_version.split('-')[0].split('.')[0:2] | join('.') }}"
 
 - name: Install python3-debian for deb822_repository.
   ansible.builtin.apt:
@@ -20,55 +21,72 @@
     state: present
     update_cache: true
 
-- name: Add VirtualBox repository.
+- name: Remove VirtualBox apt repository.
   ansible.builtin.deb822_repository:
     name: virtualbox
-    types: deb
-    uris: https://download.virtualbox.org/virtualbox/debian
-    suites: "{{ ansible_facts['distribution_release'] }}"
-    components: contrib
-    architectures: "{{ arch }}"
-    signed_by: "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
-    state: present
+    state: absent
 
 - name: Install matching kernel headers for VirtualBox modules.
+  when: >-
+    ansible_facts['virtualization_type'] | default('')
+    not in ['docker', 'container', 'podman', 'lxc', 'openvz']
   ansible.builtin.apt:
     name: "linux-headers-{{ ansible_facts['kernel'] }}"
     state: present
-  when: not (vagrant_is_container | bool)
 
-- name: Install virtualbox.  # noqa: package-latest
-  ansible.builtin.apt:
-    name: "{{ vagrant_virtualbox_package }}"
-    state: latest
-    update_cache: true
-
-- name: Discover other VirtualBox package series.
-  ansible.builtin.shell:
-    cmd: >
-      set -o pipefail;
-      dpkg-query -W -f='${Package}\n' 'virtualbox-[0-9]*' 2>/dev/null
-      | grep -v '^{{ vagrant_virtualbox_package }}$'
-      || true
-  args:
-    executable: /bin/bash
-  register: vagrant_vbox_purge_candidates
+- name: Read installed VirtualBox version.
+  ansible.builtin.command: vboxmanage --version
+  register: vagrant_installed_virtualbox_version
+  failed_when: false
   changed_when: false
 
-- name: Purge other VirtualBox package series.
-  ansible.builtin.apt:
-    name: "{{ item }}"
-    state: absent
-    purge: true
-  loop: "{{ vagrant_vbox_purge_candidates.stdout_lines }}"
-  when: vagrant_vbox_purge_candidates.stdout_lines | length > 0
+- name: Download and install VirtualBox if required.
+  when: >-
+    vagrant_installed_virtualbox_version.rc != 0
+    or (vagrant_virtualbox_version | replace('-', 'r'))
+    not in vagrant_installed_virtualbox_version.stdout
+  block:
+    - name: Gather package facts.
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Remove existing VirtualBox series packages.
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: absent
+        purge: true
+      loop: >-
+        {{ ansible_facts.packages.keys()
+           | select('match', '^virtualbox-[0-9]')
+           | list }}
+
+    - name: Download VirtualBox package.
+      ansible.builtin.get_url:
+        url: "https://download.virtualbox.org/virtualbox/\
+          {{ vagrant_virtualbox_semver }}/\
+          virtualbox-{{ vagrant_virtualbox_series }}_{{ vagrant_virtualbox_version }}~\
+          {{ ansible_facts['distribution'] }}~\
+          {{ ansible_facts['distribution_release'] }}_{{ arch }}.deb"
+        dest: /tmp/virtualbox.deb
+        mode: '0644'
+        force: true
+      register: download_virtualbox
+      retries: 5
+      delay: 10
+      until: download_virtualbox is succeeded
+
+    - name: Install VirtualBox package.
+      ansible.builtin.apt:
+        deb: /tmp/virtualbox.deb
 
 - name: Ensure VirtualBox kernel module service is enabled and started.
+  when: >-
+    ansible_facts['virtualization_type'] | default('')
+    not in ['docker', 'container', 'podman', 'lxc', 'openvz']
   ansible.builtin.systemd:
     name: vboxdrv
     enabled: true
     state: started
-  when: not (vagrant_is_container | bool)
 
 - name: Add HashiCorp repository.
   ansible.builtin.deb822_repository:
@@ -81,8 +99,8 @@
     signed_by: "https://apt.releases.hashicorp.com/gpg"
     state: present
 
-- name: Install vagrant.  # noqa: package-latest
+- name: Install vagrant.
   ansible.builtin.apt:
     name: vagrant
-    state: latest
+    state: present
     update_cache: true
