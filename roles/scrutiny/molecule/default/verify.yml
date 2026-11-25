@@ -5,15 +5,30 @@
     - ../../defaults/main.yml
     - vars.yml
   tasks:
+    - name: Check influxdb service is running and enabled.
+      ansible.builtin.systemd:
+        name: influxdb
+      register: influxdb_service
+      failed_when: >-
+        influxdb_service.status.ActiveState != 'active'
+        or influxdb_service.status.UnitFileState != 'enabled'
 
-    - name: Verify Influxdb is serving web requests.
+    - name: Check scrutiny service is running and enabled.
+      ansible.builtin.systemd:
+        name: scrutiny
+      register: scrutiny_service
+      failed_when: >-
+        scrutiny_service.status.ActiveState != 'active'
+        or scrutiny_service.status.UnitFileState != 'enabled'
+
+    - name: Verify InfluxDB health endpoint.
       ansible.builtin.uri:
-        url: "http://localhost:{{ scrutiny_influxdb_port }}"
+        url: "http://localhost:{{ scrutiny_influxdb_port }}/health"
         status_code: 200
 
-    - name: Verify Scrutiny is serving web requests.
+    - name: Verify Scrutiny health endpoint.
       ansible.builtin.uri:
-        url: "http://localhost:{{ scrutiny_ui_port }}"
+        url: "http://localhost:{{ scrutiny_ui_port }}/api/health"
         status_code: 200
 
     - name: Verify the Scrutiny collector runs successfully.
@@ -22,3 +37,14 @@
       register: scrutiny_collector_output
       failed_when: scrutiny_collector_output.rc != 0
       changed_when: false
+
+    - name: Verify Scrutiny summary API after collector.
+      ansible.builtin.uri:
+        url: "http://localhost:{{ scrutiny_ui_port }}/api/summary"
+        status_code: 200
+      register: scrutiny_summary
+
+    - name: Assert Scrutiny summary API succeeded.
+      ansible.builtin.assert:
+        that:
+          - scrutiny_summary.json.success

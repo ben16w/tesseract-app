@@ -14,6 +14,14 @@ web:
     host: localhost
     port: {{ scrutiny_influxdb_port }}
 
+{% if scrutiny_mute_uuids | length > 0 %}
+devices:
+{% for uuid in scrutiny_mute_uuids %}
+  - scrutiny_uuid: {{ uuid }}
+    notifications:
+      disabled: true
+{% endfor %}
+{% endif %}
 notify:
   urls:
     - "smtp://{{ tesseract_email_username }}:{{ tesseract_email_password }}@{{ tesseract_email_host }}:{{ tesseract_email_port }}/?fromAddress={{ tesseract_email_username }}&toAddresses={{ tesseract_email_username }}"

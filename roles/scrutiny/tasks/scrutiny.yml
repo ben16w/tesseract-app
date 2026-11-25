@@ -1,0 +1,121 @@
+---
+
+- name: Create scrutiny config directory if it does not exist.
+  ansible.builtin.file:
+    path: /opt/scrutiny/config
+    state: directory
+    mode: '0755'
+
+- name: Create scrutiny web directory if it does not exist.
+  ansible.builtin.file:
+    path: /opt/scrutiny/web
+    state: directory
+    mode: '0755'
+
+- name: Create scrutiny bin directory if it does not exist.
+  ansible.builtin.file:
+    path: /opt/scrutiny/bin
+    state: directory
+    mode: '0755'
+
+- name: Read installed Scrutiny version.
+  ansible.builtin.slurp:
+    src: /opt/scrutiny/VERSION
+  register: scrutiny_installed_version
+  failed_when: false
+
+- name: Download and install Scrutiny if required.
+  when: >-
+    scrutiny_installed_version.content is not defined
+    or (scrutiny_installed_version.content | b64decode | trim) != scrutiny_version
+  notify: restart scrutiny
+  block:
+    - name: Remove existing scrutiny web frontend.
+      ansible.builtin.file:
+        path: /opt/scrutiny/web
+        state: absent
+
+    - name: Recreate scrutiny web directory.
+      ansible.builtin.file:
+        path: /opt/scrutiny/web
+        state: directory
+        mode: '0755'
+
+    - name: Download scrutiny-web.
+      ansible.builtin.get_url:
+        url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ scrutiny_version }}/scrutiny-web-linux-{{ download_arch }}"
+        dest: /opt/scrutiny/bin/scrutiny-web
+        mode: '0755'
+        force: true
+      register: download_scrutiny_web
+      retries: 5
+      delay: 10
+      until: download_scrutiny_web is succeeded
+
+    - name: Download scrutiny-collector-metrics.
+      ansible.builtin.get_url:
+        url: "https://github.com/AnalogJ/scrutiny/releases/download/v{{ scrutiny_version }}/scrutiny-collector-metrics-linux-{{ download_arch }}"
+        dest: /opt/scrutiny/bin/scrutiny-collector-metrics
+        mode: '0755'
+        force: true
+      register: download_scrutiny_collector_metrics
+      retries: 5
+      delay: 10
+      until: download_scrutiny_collector_metrics is succeeded
+
+    - name: Download scrutiny-web-frontend.
+      ansible.builtin.get_url:
+        url: https://github.com/AnalogJ/scrutiny/releases/download/v{{ scrutiny_version }}/scrutiny-web-frontend.tar.gz
+        dest: /tmp/scrutiny-web-frontend.tar.gz
+        mode: '0755'
+        force: true
+      register: download_scrutiny_web_frontend
+      retries: 5
+      delay: 10
+      until: download_scrutiny_web_frontend is succeeded
+
+    - name: Unarchive scrutiny-web-frontend from archive.
+      ansible.builtin.unarchive:
+        src: /tmp/scrutiny-web-frontend.tar.gz
+        dest: /opt/scrutiny/web/
+        remote_src: true
+        extra_opts:
+          - "--strip-components=1"
+
+    - name: Record installed Scrutiny version.
+      ansible.builtin.copy:
+        content: "{{ scrutiny_version }}\n"
+        dest: /opt/scrutiny/VERSION
+        mode: '0644'
+
+- name: Put all scrutiny configuration into place.
+  ansible.builtin.template:
+    src: scrutiny.yaml.j2
+    dest: /opt/scrutiny/config/scrutiny.yaml
+    force: true
+    owner: root
+    group: root
+    mode: '0755'
+  notify: restart scrutiny
+
+- name: Put scrutiny service file into place.
+  ansible.builtin.template:
+    src: scrutiny.service.j2
+    dest: /etc/systemd/system/scrutiny.service
+    force: true
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Make sure scrutiny service unit is running and enabled.
+  ansible.builtin.systemd:
+    state: started
+    name: scrutiny
+    enabled: true
+
+- name: Add cron job to schedule the scrutiny collector to run periodically.
+  ansible.builtin.cron:
+    name: "Run scrutiny collector."
+    hour: "{{ scrutiny_cron_hour }}"
+    minute: "{{ scrutiny_cron_minute }}"
+    job: ". /etc/profile; /opt/scrutiny/bin/scrutiny-collector-metrics run --api-endpoint 'http://localhost:{{ scrutiny_ui_port }}'"

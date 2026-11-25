@@ -1,5 +1,12 @@
 ---
 
+- name: Restart influxdb service.
+  ansible.builtin.systemd:
+    name: influxdb.service
+    state: restarted
+    daemon_reload: true
+  listen: restart influxdb
+
 - name: Restart scrutiny service.
   ansible.builtin.service:
     name: scrutiny.service

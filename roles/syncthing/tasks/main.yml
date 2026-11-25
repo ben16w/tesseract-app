@@ -6,6 +6,10 @@
       - tesseract_username is not none
       - syncthing_password is not none
 
+- name: Ensure tesseract user exists.
+  ansible.builtin.user:
+    name: "{{ tesseract_username }}"
+
 - name: Install python3-debian for deb822_repository.
   ansible.builtin.apt:
     name: python3-debian

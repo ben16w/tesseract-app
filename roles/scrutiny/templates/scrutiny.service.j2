@@ -2,6 +2,7 @@
 Description=Systemd service to start a Scrutiny app at boot.
 After=influxdb.service
 Requires=influxdb.service
+PartOf=influxdb.service
 
 [Service]
 Type=simple

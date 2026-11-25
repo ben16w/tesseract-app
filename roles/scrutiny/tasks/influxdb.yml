@@ -1,0 +1,66 @@
+---
+
+- name: Create influxdb directory if it does not exist.
+  ansible.builtin.file:
+    path: /opt/influxdb
+    state: directory
+    mode: '0755'
+
+- name: Read installed InfluxDB version.
+  ansible.builtin.slurp:
+    src: /opt/influxdb/VERSION
+  register: influxdb_installed_version
+  failed_when: false
+
+- name: Download and install InfluxDB if required.
+  when: >-
+    influxdb_installed_version.content is not defined
+    or (influxdb_installed_version.content | b64decode | trim) != scrutiny_influxdb_version
+  notify: restart influxdb
+  block:
+    - name: Remove existing InfluxDB binary.
+      ansible.builtin.file:
+        path: /opt/influxdb/influxd
+        state: absent
+
+    - name: Download influxdb.
+      ansible.builtin.get_url:
+        url: "https://dl.influxdata.com/influxdb/releases/influxdb2-{{ scrutiny_influxdb_version }}_linux_{{ download_arch }}.tar.gz"
+        dest: /tmp/influxdb.tar.gz
+        mode: '0755'
+        force: true
+      register: download_influxdb
+      retries: 5
+      delay: 10
+      until: download_influxdb is succeeded
+
+    - name: Unarchive influxdb from archive.
+      ansible.builtin.unarchive:
+        src: /tmp/influxdb.tar.gz
+        dest: /opt/influxdb/
+        remote_src: true
+        extra_opts:
+          - "--strip-components=1"
+
+    - name: Record installed InfluxDB version.
+      ansible.builtin.copy:
+        content: "{{ scrutiny_influxdb_version }}\n"
+        dest: /opt/influxdb/VERSION
+        mode: '0644'
+
+- name: Put influxdb service file into place.
+  ansible.builtin.template:
+    src: influxdb.service.j2
+    dest: /etc/systemd/system/influxdb.service
+    force: true
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart influxdb
+
+- name: Make sure influxdb service unit is running and enabled.
+  ansible.builtin.systemd:
+    state: started
+    name: influxdb
+    enabled: true
+    daemon_reload: true
